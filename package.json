@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "america-scores-backend",
   "version": "0.0.1",
   "description": "The backend for the America SCORES data collection app.",
   "main": "index.js",
