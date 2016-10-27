@@ -2,15 +2,13 @@
 process.env.NODE_ENV = 'test';
 
 // Require the testing dependencies
-const sinon = require('sinon');
-const Promise = require('bluebird');
-const pool = require('../../config/config').pool;
-const sites = require('../../routes/sites');
-const config = require('../../config/config');
+var sinon = require('sinon');
+var Promise = require('bluebird');
+var pool = require('../../config/config').pool;
+var config = require('../../config/config');
 var chai = require('chai');
 var assert = chai.assert;
-
-var students = require('../../routes/students')
+var accounts = require('../../routes/accounts')
 
 // Accounts testing block
 describe('Accounts', function() {
