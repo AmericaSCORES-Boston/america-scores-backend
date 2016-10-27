@@ -2,7 +2,7 @@
 process.env.NODE_ENV = 'test';
 
 // Require the testing dependencies
-var sinon = require('sinon'); // how is sinon used? To check if things are called?
+var sinon = require('sinon'); // $$$ how is sinon used? To check if things are called?
 var chai = require('chai');
 var assert = chai.assert;
 
@@ -18,18 +18,17 @@ describe('Students', function() {
   //
   // });
 
-  // mysql returns an array of objects(dict) representing each row
-  // Test getStudents(req, res)
-  describe('getStudents(req, res)', function() {
-    it('should return an empty array when the database is empty', function () {
+  // $$$ mysql returns an array of objects(dict) representing each row
+  // Test getStudents(req)
+  describe('getStudents(req)', function() {
+    it('should return an empty array when the database is empty', function() {
       var req = {
         // create fake request here
       };
 
-      var res = {};
+      var result = students.getStudents(req);
 
-      var result = students.getStudents(req, res);
-
+      // $$$ NOTE: result is actually JSON, not the straight SQL array
       // res body should be an array
       assert.typeOf(result, 'array', 'res body should be an array');
       // res length should be 0
@@ -39,34 +38,54 @@ describe('Students', function() {
     });
   });
 
-  // Test postStudent(req, res)
-  describe('postStudent(req, res)', function() {
-    it('should add a new students new students', function () {
+  // Test postStudent(req)
+  describe('postStudent(req)', function() {
+    it('should add a new students new students', function() {
       var req = {
 
       };
 
-      var res = {};
-
-      var result = students.postStudent(req, res);
-
-
+      var result = students.postStudent(req);
     });
   });
 
-  // Test getStudent(req, res)
+  // Test getStudent(req)
+  describe('getStudent(req)', function() {
+    it('should $$$', function() {
+      var req = {
 
-  // Test updateStudent(req, res)
+      };
 
-  // Test deleteStudent(req, res)
+      var result = students.postStudent(req);
+    });
 
+  });
 
+  // Test updateStudent(req)
+  describe('updateStudent(req)', function() {
+    it('should $$$', function() {
+      var req = {
 
+      };
+
+      var result = students.updateStudent(req);
+    });
+  });
+
+  // Test deleteStudent(req)
+  describe('deleteStudent(req)', function() {
+    it('should $$$', function() {
+      var req = {
+
+      };
+
+      var result = students.deleteStudent(req);
+
+    });
+  });
 });
 
 /* What functions are you testing?
-
-Do we need chai-http?
 
 Get all the student data
 
