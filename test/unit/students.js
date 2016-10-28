@@ -94,16 +94,12 @@ describe('Students', function() {
     function() {
       var req = {data: annabeth};
 
-      function callPost() {
-        return students.postStudent(req);
-      };
-
       // Assert that an error is thrown when trying to add student already in DB
-      assert.throw(callPost, Error);
+      assert.throw(function() {students.postStudent(req)}, Error);
       // Assert that the error message is correct
-      var promise = callPost()
-      .then(function() {
-        assert.equal(callPost().message,
+      var promise = students.postStudent(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
         'Unable to add student because they already exist in the database');
         done();
       });
@@ -118,17 +114,13 @@ describe('Students', function() {
         }
       };
 
-      function callPost() {
-        return students.postStudent(req);
-      };
-
       // Assert that an error is thrown when last name is missing
-      assert.throw(callPost, Error);
+      assert.throw(function() {students.postStudent(req)}, Error);
       // Assert that the error message is correct
-      var promise = callPost()
-      .then(function() {
-        assert.equal(callPost().message,
-        // TODO(jacqulineali): for future JIRA, log which field is missing
+      var promise = students.postStudent(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
+        // TODO(jacquelineali): for future JIRA, log which field is missing
         'Unable to add student due to missing fields');
         done();
       });
@@ -143,17 +135,13 @@ describe('Students', function() {
         }
       };
 
-      function callPost() {
-        return students.postStudent(req);
-      };
-
       // Assert that an error is thrown when fields are missing
-      assert.throw(callPost, Error);
+      assert.throw(function() {students.postStudent(req)}, Error);
       // Assert that the error message is correct
-      var promise = callPost()
-      .then(function() {
-        assert.equal(callPost().message,
-        // TODO(jacqulineali): for future JIRA, log which fields are missing
+      var promise = students.postStudent(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
+        // TODO(jacquelineali): for future JIRA, log which fields are missing
         'Unable to add student due to missing fields');
         done();
       });
@@ -168,17 +156,13 @@ describe('Students', function() {
         }
       };
 
-      function callPost() {
-        return students.postStudent(req);
-      };
-
       // Assert that an error is thrown when fields are missing
-      assert.throw(callPost, Error);
+      assert.throw(function() {students.postStudent(req)}, Error);
       // Assert that the error message is correct
-      var promise = callPost()
-      .then(function() {
-        assert.equal(callPost().message,
-        // TODO(jacqulineali): for future JIRA, log which fields are missing
+      var promise = students.postStudent()
+      .then(function(result) {
+        assert.equal(result.message,
+        // TODO(jacquelineali): for future JIRA, log which fields are missing
         'Unable to add student due to missing fields');
         done();
       });
@@ -210,21 +194,17 @@ describe('Students', function() {
           // The student_id is contained in the request
           student_id: 617
         }
+      }
 
-        function callGet() {
-          return students.getStudent(req);
-        }
-
-        // Assert that an error is thrown when nonexistent ID is given
-        assert.throw(callGet, Error);
-        // Assert that the error message is correct
-        var promise = callGet()
-        .then(function() {
-          assert.equal(callGet().message,
+      // Assert that an error is thrown when nonexistent ID is given
+      assert.throw(function() {students.getStudent(req)}, Error);
+      // Assert that the error message is correct
+      var promise = students.getStudent(req);
+      promise.then(function(result) {
+          assert.equal(result.message,
           'Failed to get: The given student id is not in the database');
           done();
         });
-      };
     });
 
     it('should return an error when given a student_id of invalid type',
@@ -234,21 +214,17 @@ describe('Students', function() {
           // The student_id is contained in the request
           student_id: 'superbad'
         }
+      }
 
-        function callGet() {
-          return students.getStudent(req);
-        }
-
-        // Assert that an error is thrown when an invalid ID type is given
-        assert.throw(callGet, Error);
-        // Assert that the error message is correct
-        var promise = callGet()
-        .then(function() {
-          assert.equal(callGet().message,
-          'Failed to get student. Invalid student_id type: must be an integer');
-          done();
-        });
-      };
+      // Assert that an error is thrown when an invalid ID type is given
+      assert.throw(function() {students.getStudent(req)}, Error);
+      // Assert that the error message is correct
+      var promise = students.getStudent(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
+        'Failed to get student. Invalid student_id type: must be an integer');
+        done();
+      });
     });
   });
 
@@ -305,6 +281,18 @@ describe('Students', function() {
           }
         }
       };
+
+      // Assert that an error is thrown when a nonexistent student is given
+      assert.throw(function() {students.updateStudent(req)}, Error);
+      // Assert that the error message is correct
+      var promise = students.updateStudent(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
+        'Unable to update student because they have not yet been added');
+        done();
+      });
+
+
 
     });
   });
