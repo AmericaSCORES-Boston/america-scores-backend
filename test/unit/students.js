@@ -203,14 +203,52 @@ describe('Students', function() {
       });
     });
 
-    it('should __do what?__ when given a student_id that\'s not in the DB',
+    it('should return an error when given a student_id that\'s not in the DB',
     function() {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 617
+        }
 
+        function callGet() {
+          return students.getStudent(req);
+        }
+
+        // Assert that an error is thrown when nonexistent ID is given
+        assert.throw(callGet, Error);
+        // Assert that the error message is correct
+        var promise = callGet()
+        .then(function() {
+          assert.equal(callGet().message,
+          'Failed to get: The given student id is not in the database');
+          done();
+        });
+      };
     });
 
-    it('should __do what?___ when given a student_id of invalid type',
+    it('should return an error when given a student_id of invalid type',
     function () {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 'superbad'
+        }
 
+        function callGet() {
+          return students.getStudent(req);
+        }
+
+        // Assert that an error is thrown when an invalid ID type is given
+        assert.throw(callGet, Error);
+        // Assert that the error message is correct
+        var promise = callGet()
+        .then(function() {
+          assert.equal(callGet().message,
+          'Failed to get student. Invalid student_id type: must be an integer');
+          done();
+        });
+      };
     });
   });
 
@@ -255,8 +293,18 @@ describe('Students', function() {
         });
     });
 
-    it('should __do what__ on attempt to update student that doesn\'t exist',
+    it('should return an error for attempts to update nonexistent student',
     function() {
+      var req = {
+        params: {
+          student_id: 777
+        },
+        data: {
+          updateValues: {
+            first_name: 'Karkat'
+          }
+        }
+      };
 
     });
   });
