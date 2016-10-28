@@ -19,5 +19,5 @@ function deleteStudent(req) {
 }
 
 // export Student functions
-module.exports = { getStudents, getStudent, postStudent, updateStudent,
-  deleteStudent };
+module.exports = {getStudents, getStudent, postStudent, updateStudent,
+  deleteStudent};

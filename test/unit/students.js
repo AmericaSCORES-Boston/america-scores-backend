@@ -14,8 +14,8 @@ var students = require('../../routes/students');
 // to the test DB using a DB connection (SELECT * FROM Student)
 
 // A function for getting all the student data in the database
-// TODO: Replace this with the SQL call mentioned above so that we don't depend on
-// a function written by you in every test
+// TODO: Replace this with the SQL call mentioned above so that we don't depend
+// on a function written by you in every test
 function getAllStudents() {
   return students.getStudents({});
 }
@@ -24,6 +24,13 @@ function getAllStudents() {
 var percy = {
   'student_id': 123,
   'firstname': 'Percy',
+  'lastname': 'Jackson',
+  'dob': new Date(93, 7, 18)
+};
+
+var perseus = {
+  'student_id': 123,
+  'firstname': 'Perseus',
   'lastname': 'Jackson',
   'dob': new Date(93, 7, 18)
 };
@@ -60,7 +67,7 @@ describe('Students', function() {
 
   describe('postStudent(req)', function() {
     it('should add a new student to the database', function() {
-      var req = {dave}; // NOTE: Is this the right form for the request? Double check.
+      var req = {dave}; // NOTE: Is this the right form for the request? Check.
       var studentCount;
       // Get the contents of the database before calling addStudent
       getAllStudents()
@@ -82,20 +89,42 @@ describe('Students', function() {
           done();
         });
     });
+
+    it('should __(what does SQL do?)_ if the student exists',
+    function() {
+
+    });
+
+    // TODO Can you post a student without an ID and have SQL generate it for
+    // you? Test!
   });
 
-  // Test getStudent(req)
   describe('getStudent(req)', function() {
-    it('should get a specific student by student_id', function() {
+    it('should get an existing student by student_id', function() {
       var req = {
-
+        params: {
+          // The student_id is contained in the request
+          student_id: 789
+        }
       };
 
       var promise = students.getStudent(req);
 
       promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual([dave], data);
         done();
       });
+    });
+
+    it('should __do what?__ when given a student_id that\'s not in the DB',
+    function() {
+
+    });
+
+    it('should __do what?___ when given a student_id of invalid type',
+    function () {
+
     });
   });
 
@@ -105,6 +134,17 @@ describe('Students', function() {
       var req = {
 
       };
+
+      var studentCount;
+
+      // Check the state of the object before the update
+      getAllStudents()
+        .then(function(data) {
+          studentCount = data.length;
+          oldDB = data;
+
+          return students.updateStudent(req);
+        })
 
       var promise = students.updateStudent(req);
 
@@ -131,12 +171,6 @@ describe('Students', function() {
 });
 
 /* What functions are you testing?
-
-Get all the student data
-
-Add/create a new student
-
-Get a specific student
 
 Update a specific student’s info
 
