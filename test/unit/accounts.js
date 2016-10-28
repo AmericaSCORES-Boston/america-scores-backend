@@ -2,7 +2,6 @@
 process.env.NODE_ENV = 'test';
 
 // Require the testing dependencies
-var sinon = require('sinon');
 var Promise = require('bluebird');
 var pool = require('../../config/config').pool;
 var config = require('../../config/config');
@@ -12,50 +11,131 @@ var accounts = require('../../routes/accounts')
 
 // Accounts testing block
 describe('Accounts', function() {
-  // before(function() {
-  //   // runs before all tests in this block
-  // });
-  // // $$$ TODO: INSERT THINGS TO DO BEFORE EACH TEST
-  // beforeEach(function() {
-  //
-  // });
-
-  // mysql returns an array of objects(dict) representing each row
-  // Test getStudents(req, res)
-  describe('getAccounts(req, res)', function() {
     beforeEach(function() {
-      app = require('../routes/accounts');
-    })
-    it('should return an empty array when the database is empty', function () {
-      var res = {};
+      //clear DB
+      //seed data
+    });
 
-      var result = students.getAccounts(req, res);
-      // res body should be an array
-      assert.typeOf(result, 'array', 'res body should be an array');
-      // res length should be 0
-      assert.lengthOf(result, 0, 'res length should be 0');
-      // res should have status 200
+/* TODO DELETE
+*/
+describe('sites', function() {
+    it('gets all sites', function(done) {
+      var promise = sites.getSites({});
 
+      promise.then(function(data) {
+        assert.deepEqual([{
+          site_id: 'fakeID1',
+          site_name: 'fakeSiteName',
+          site_address: '123 Boston, MA'
+        },
+        {
+          site_id: 'fakeID2',
+          site_name: 'fakeSiteName',
+          site_address: '123 Boston, MA'
+        }], data);
+        done();
+      });
+    });
+}
+/*
+*/
+
+    describe('/GET accounts', function() {
+      it('it should get all accounts', function(done){
+        var promise = accounts.getAccounts({}});
+
+        promise.then(function(data) {
+          assert.lengthOf(data, 2);
+          assert.typeOf(data, 'array');
+          assert.deepEqual([{
+            id: '1',
+            firstName: 'first1',
+            lastName: 'last1',
+            email: '1@email.com'
+            type: 'coach'
+          },
+          {
+            id: '2',
+            firstName: 'first2',
+            lastName: 'last2',
+            email: '2@email.com'
+            type: 'admin'
+          }], data);
+          done();
+        });
+      });
+    });
+
+  describe('/GET account', function() {
+    it('it should retrieve a single account', function(done){
+      var promise  = accounts.getAccount({
+        params : {
+          id : '1'
+        }
+      });
+
+      promise.then(function(data) {
+        assert.equal({
+          id: '1',
+          firstName: 'first1',
+          lastName: 'last1',
+          email: '1@email.com'
+          type: 'coach'
+        }, data);
+        done();
+      });
     });
   });
 
-  describe('getAccount(req, res)', function() {
-    var req = {
-      account_id : '1234'
-    };
-    getAccount(req, res);
-  })
+  describe('/PUT account', function(){
+    it('it should update an account', function(done){
+      var promise  = accounts.updateAccount({
+        params : {
+          id: '2',
+          firstName: 'last2',
+          lastName: 'first2',
+          email: '2@email.com'
+          type: 'admin'
+        }
+      });
 
-  describe('updateAccount(req, res)', function() {
-    updateAccount(req, res);
-  })
+      promise.then(function(data) {
+        //TODO verify data updated
+        done();
+      });
+    });
+  });
 
-  describe('deleteAccount(req, res)', function(){
-    deleteAccount(req, res);
-  })
+  describe('/POST account', function(){
+    it('it should add an account', function(done){
+      var promise  = accounts.addAccount({
+        params : {
+          id: '3',
+          firstName: 'first3',
+          lastName: 'last3',
+          email: '3@email.com'
+          type: 'staff'
+        }
+      });
+
+      promise.then(function(data) {
+        //TODO verify account added
+        done();
+      });
+    });
+  });
+
+  describe('/DELETE account', function(){
+    it('it should delete an account', function(done){
+      var promise = deleteAccount({
+        params : {
+          id: '1'
+        }
+      });
+
+      promise.then(function(data) {
+        //TODO verify delete
+      });
+    });
+  });
 });
-
-/* What functions are you testing?
-
-Do we need chai-http?
-*/
