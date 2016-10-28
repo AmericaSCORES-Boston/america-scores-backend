@@ -1,5 +1,5 @@
 function getStudents(req) {
-  return Promise.resolve('stub');
+
 }
 
 function getStudent(req) {
