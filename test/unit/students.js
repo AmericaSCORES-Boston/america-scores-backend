@@ -175,27 +175,47 @@ describe('Students', function() {
     });
   });
 
-  // Test deleteStudent(req)
   describe('deleteStudent(req)', function() {
     it('should delete a given student from the database', function() {
       var req = {
-
+        params: {
+          student_id: 456
+        }
       };
 
-      var promise = students.deleteStudent(req);
+      var studentCount;
+      var oldDB;
+      // Check the state of the object before the update
+      getAllStudents()
+        .then(function(data) {
+          // Remember the number of students and the state of data before update
+          studentCount = data.length;
 
-      promise.then(function(data) {
-
+          // Call deleteStudent
+          return students.deleteStudent(req);
+        })
+        .then(function() {
+          // Get the current student data in the database
+          return getAllStudents();
+        })
+        .then(function(data) {
+          // Check that the number of students decreased by one
+          assert.lengthOf(data, studentCount - 1);
+          // Check that the correct student is no longer present
+          assert.deepEqual([annabeth], data);
+          done();
+        });
       });
+    });
+
+    it('should _do what_ on attempt to delete student that doesn\'t exist',
+    function() {
+
     });
   });
 });
 
-/* What functions are you testing?
-
-Update a specific student’s info
-
-Delete a specific student
+/* TODO: Test the following functions
 
 Get all students for a site
 
