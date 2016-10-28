@@ -61,6 +61,15 @@ describe('Accounts', function() {
         done();
       });
     });
+
+    it('it should return missing argument error', function(done){
+      var promise  = accounts.getAccount({});
+
+      promise.then(function(data) {
+        //TODO verify error
+        done();
+      });
+    });
   });
 
   describe('/PUT account', function(){
@@ -77,6 +86,15 @@ describe('Accounts', function() {
 
       promise.then(function(data) {
         //TODO verify data updated
+        done();
+      });
+    });
+
+    it('it should return missing argument error', function(done){
+      var promise  = accounts.updateAccount({});
+
+      promise.then(function(data) {
+        //TODO verify error
         done();
       });
     });
@@ -99,6 +117,15 @@ describe('Accounts', function() {
         done();
       });
     });
+
+    it('it should return missing argument error', function(done){
+      var promise  = accounts.addAccount({});
+
+      promise.then(function(data) {
+        //TODO verify error
+        done();
+      });
+    });
   });
 
   describe('/DELETE account', function(){
@@ -111,6 +138,16 @@ describe('Accounts', function() {
 
       promise.then(function(data) {
         //TODO verify delete
+        done();
+      });
+    });
+
+    it('it should return missing argument error', function(done){
+      var promise = deleteAccount({});
+
+      promise.then(function(data) {
+        //TODO verify error
+        done();
       });
     });
   });
