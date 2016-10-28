@@ -6,6 +6,10 @@ function getAccount(req){
   //returns promise
 }
 
+function addAccount(req){
+  //returns promise
+}
+
 function updateAccount(req){
   //returns promise
 }
@@ -14,4 +18,4 @@ function deleteAccount(req){
   //returns promise
 }
 
-module.exports(getAccounts, getAccount, updateAccount, deleteAccount);
+module.exports(getAccounts, getAccount, addAccount, updateAccount, deleteAccount);

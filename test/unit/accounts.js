@@ -16,30 +16,6 @@ describe('Accounts', function() {
       //seed data
     });
 
-/* TODO DELETE
-*/
-describe('sites', function() {
-    it('gets all sites', function(done) {
-      var promise = sites.getSites({});
-
-      promise.then(function(data) {
-        assert.deepEqual([{
-          site_id: 'fakeID1',
-          site_name: 'fakeSiteName',
-          site_address: '123 Boston, MA'
-        },
-        {
-          site_id: 'fakeID2',
-          site_name: 'fakeSiteName',
-          site_address: '123 Boston, MA'
-        }], data);
-        done();
-      });
-    });
-}
-/*
-*/
-
     describe('/GET accounts', function() {
       it('it should get all accounts', function(done){
         var promise = accounts.getAccounts({}});
