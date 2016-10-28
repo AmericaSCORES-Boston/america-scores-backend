@@ -6,9 +6,21 @@ var sinon = require('sinon');
 var chai = require('chai');
 var assert = chai.assert;
 
+// The file to be tested
 var students = require('../../routes/students');
 
-// Example students
+// Get DB connection for use in asserts
+// TODO: Replace calls to getStudents in unrelated tests with actual queries
+// to the test DB using a DB connection (SELECT * FROM Student)
+
+// A function for getting all the student data in the database
+// TODO: Replace this with the SQL call mentioned above so that we don't depend on
+// a function written by you in every test
+function getAllStudents() {
+  return students.getStudents({});
+}
+
+// Create example students for expected results
 var percy = {
   'student_id': 123,
   'firstname': 'Percy',
@@ -32,8 +44,7 @@ var dave = {
 
 // Students testing block
 describe('Students', function() {
-  // TODO: Do I need a beforeeach?
-
+  // NOTE: Do I need a beforeeach?
   describe('getStudents(req)', function() {
     it('should get all the students in the database', function() {
       // GET all doesn't need anything from the request, so pass in empty
@@ -41,7 +52,7 @@ describe('Students', function() {
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
-        assert.deepEqual({[percy, annabeth], data});
+        assert.deepEqual([percy, annabeth], data);
         done();
       });
     });
@@ -50,22 +61,26 @@ describe('Students', function() {
   describe('postStudent(req)', function() {
     it('should add a new student to the database', function() {
       var req = {dave}; // NOTE: Is this the right form for the request? Double check.
-
-      // NOTE: Should I check that the DB only has percy and annabeth before and
-      // that dave wasn't already there?
-      var promise = students.postStudent(req);
-
-      promise.then(function() {
-        return students.getStudents({}); // NOTE: is it bad form to call this?
-        // Unit tests should stand alone and not assume the other functions work.
-        // But then...how do I get the data to check that the change was made?
-      })
-      .then(function(data) {
-        // Verify that the student was added
-        assert.deepEqual({[percy, annabeth, dave], data});
-        assert.length(data, 3);
-        done();
-      });
+      var studentCount;
+      // Get the contents of the database before calling addStudent
+      getAllStudents()
+        .then(function(data) {
+          // Count the number of students
+          studentCount = data.length;
+          // Call the function to be tested
+          return students.postStudent(req);
+        })
+        .then(function() {
+          // Get the contents of the database after calling postStudent
+          return getAllStudents();
+        })
+        .then(function(data) {
+          // Verify that the number of students in the DB increased by one
+          assert.length(data, studentCount + 1);
+          // Verify that the correct student data was added
+          assert.deepEqual([percy, annabeth, dave], data);
+          done();
+        });
     });
   });
 
