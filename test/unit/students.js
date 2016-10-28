@@ -132,25 +132,46 @@ describe('Students', function() {
   describe('updateStudent(req)', function() {
     it('should update the information for a given student', function() {
       var req = {
-
+        params: {
+          student_id: 123
+        },
+        data: {
+          updateValues: {
+            firstname: 'Perseus'
+          }
+        }
       };
 
       var studentCount;
-
+      var oldDB;
       // Check the state of the object before the update
       getAllStudents()
         .then(function(data) {
+          // Remember the number of students and the state of data before update
           studentCount = data.length;
           oldDB = data;
 
+          // Call updateStudent
           return students.updateStudent(req);
         })
+        .then(function() {
+          // Get the DB after the update
+          return getAllStudents();
+        })
+        .then(function(data) {
+          // Assert that the number of students is the same as before
+          assert.lengthOf(data, studentCount);
+          // Assert that the old data and new data aren't the same
+          assert.notDeepEqual(oldDB, data);
+          // Assert that the new data reflects the update changes
+          assert.deepEqual([perseus, annabeth], data);
+          done();
+        });
+    });
 
-      var promise = students.updateStudent(req);
+    it('should __do what__ on attempt to update student that doesn\'t exist',
+    function() {
 
-      promise.then(function(data) {
-
-      });
     });
   });
 
