@@ -23,29 +23,29 @@ function getAllStudents() {
 // Create example students for expected results
 var percy = {
   'student_id': 123,
-  'firstname': 'Percy',
-  'lastname': 'Jackson',
+  'first_name': 'Percy',
+  'last_name': 'Jackson',
   'dob': new Date(93, 7, 18)
 };
 
 var perseus = {
   'student_id': 123,
-  'firstname': 'Perseus',
-  'lastname': 'Jackson',
+  'first_name': 'Perseus',
+  'last_name': 'Jackson',
   'dob': new Date(93, 7, 18)
 };
 
 var annabeth = {
   'student_id': 456,
-  'firstname': 'Annabeth',
-  'lastname': 'Chase',
+  'first_name': 'Annabeth',
+  'last_name': 'Chase',
   'dob': new Date(93, 6, 12)
 };
 
 var dave = {
   'student_id': 789,
-  'firstname': 'Dave',
-  'lastname': 'Strider',
+  'first_name': 'Dave',
+  'last_name': 'Strider',
   'dob': new Date(95, 11, 3)
 };
 
@@ -67,7 +67,7 @@ describe('Students', function() {
 
   describe('postStudent(req)', function() {
     it('should add a new student to the database', function() {
-      var req = {dave}; // NOTE: Is this the right form for the request? Check.
+      var req = {dave};
       var studentCount;
       // Get the contents of the database before calling addStudent
       getAllStudents()
@@ -90,13 +90,29 @@ describe('Students', function() {
         });
     });
 
-    it('should __(what does SQL do?)_ if the student exists',
+    it('should return an error and not post if the student already exists',
+    function() {
+      var req = {annabeth};
+
+      function callPost() {
+        return students.postStudent(req);
+      };
+
+      // Assert that an error is thrown when trying to add student already in DB
+      assert.throw(callPost, Error);
+      // Assert that the error message is correct
+      var promise = callPost()
+      .then(function() {
+        assert.equal(callPost().message,
+        'Unable to add student because they already exist in the database');
+        done();
+      });
+    });
+
+    it('should not post a student if the request is missing required fields',
     function() {
 
     });
-
-    // TODO Can you post a student without an ID and have SQL generate it for
-    // you? Test!
   });
 
   describe('getStudent(req)', function() {
@@ -137,7 +153,7 @@ describe('Students', function() {
         },
         data: {
           updateValues: {
-            firstname: 'Perseus'
+            first_name: 'Perseus'
           }
         }
       };
