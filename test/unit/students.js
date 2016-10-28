@@ -67,7 +67,7 @@ describe('Students', function() {
 
   describe('postStudent(req)', function() {
     it('should add a new student to the database', function() {
-      var req = {dave};
+      var req = {data: dave};
       var studentCount;
       // Get the contents of the database before calling addStudent
       getAllStudents()
@@ -92,7 +92,7 @@ describe('Students', function() {
 
     it('should return an error and not post if the student already exists',
     function() {
-      var req = {annabeth};
+      var req = {data: annabeth};
 
       function callPost() {
         return students.postStudent(req);
@@ -109,9 +109,79 @@ describe('Students', function() {
       });
     });
 
-    it('should not post a student if the request is missing required fields',
+    it('should not post a student if the request is missing a last_name',
     function() {
+      var req = {
+        data: {
+          first_name: 'Korra',
+          dob: new Date(94, 11, 18)
+        }
+      };
 
+      function callPost() {
+        return students.postStudent(req);
+      };
+
+      // Assert that an error is thrown when last name is missing
+      assert.throw(callPost, Error);
+      // Assert that the error message is correct
+      var promise = callPost()
+      .then(function() {
+        assert.equal(callPost().message,
+        // TODO(jacqulineali): for future JIRA, log which field is missing
+        'Unable to add student due to missing fields');
+        done();
+      });
+    });
+
+    it('should not post a student if the request is missing a birthdate',
+    function() {
+      var req = {
+        data: {
+          first_name: 'Asami',
+          last_name: 'Sato'
+        }
+      };
+
+      function callPost() {
+        return students.postStudent(req);
+      };
+
+      // Assert that an error is thrown when fields are missing
+      assert.throw(callPost, Error);
+      // Assert that the error message is correct
+      var promise = callPost()
+      .then(function() {
+        assert.equal(callPost().message,
+        // TODO(jacqulineali): for future JIRA, log which fields are missing
+        'Unable to add student due to missing fields');
+        done();
+      });
+    });
+
+    it('should not post a student if the request is missing a first_name',
+    function() {
+      var req = {
+        data: {
+          last_name: 'Lupin',
+          dob: new Date(65, 11, 18)
+        }
+      };
+
+      function callPost() {
+        return students.postStudent(req);
+      };
+
+      // Assert that an error is thrown when fields are missing
+      assert.throw(callPost, Error);
+      // Assert that the error message is correct
+      var promise = callPost()
+      .then(function() {
+        assert.equal(callPost().message,
+        // TODO(jacqulineali): for future JIRA, log which fields are missing
+        'Unable to add student due to missing fields');
+        done();
+      });
     });
   });
 
