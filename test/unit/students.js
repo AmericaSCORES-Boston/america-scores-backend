@@ -2,7 +2,6 @@
 process.env.NODE_ENV = 'test';
 
 // Require the testing dependencies
-var sinon = require('sinon');
 var chai = require('chai');
 var assert = chai.assert;
 
@@ -35,11 +34,25 @@ var perseus = {
   'dob': new Date(93, 7, 18)
 };
 
+var annabethURL = {
+  'student_id': 456,
+  'first_name': 'Annabeth',
+  'last_name': 'Chase',
+  'dob': '07/12/1993'
+};
+
 var annabeth = {
   'student_id': 456,
   'first_name': 'Annabeth',
   'last_name': 'Chase',
   'dob': new Date(93, 6, 12)
+};
+
+var daveURL = {
+  'student_id': 789,
+  'first_name': 'Dave',
+  'last_name': 'Strider',
+  'dob': '12/03/1995'
 };
 
 var dave = {
@@ -63,11 +76,62 @@ describe('Students', function() {
         done();
       });
     });
+
+    it('should be able to get a student using first, last name and birthday',
+    function() {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          // NOTE: In the URL, this will be a string. Convert to date object.
+          dob: '08/18/1993'
+        }
+      };
+
+      var promise = students.getStudents(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual([percy], data);
+      });
+    });
+
+    it('should get all the students for a given site',
+    function() {
+      var req = {
+        query: {
+          site_id: 111
+        }
+      };
+
+      var promise = students.getStudents(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([percy], data); // Percy is in site 111, not Annabeth
+      });
+    });
+
+    it('should get all the students for a given roster/program',
+    function() {
+      var req = {
+        query: {
+          site_id: 5
+        }
+      };
+
+      var promise = students.getStudents(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([annabeth], data); // Annabeth's in program 5
+      });
+    });
   });
 
   describe('postStudent(req)', function() {
     it('should add a new student to the database', function() {
-      var req = {data: dave};
+      var req = {data: daveURL};
       var studentCount;
       // Get the contents of the database before calling addStudent
       getAllStudents()
@@ -92,10 +156,13 @@ describe('Students', function() {
 
     it('should return an error and not post if the student already exists',
     function() {
-      var req = {data: annabeth};
+      var req = {annabethURL};
 
       // Assert that an error is thrown when trying to add student already in DB
-      assert.throw(function() {students.postStudent(req)}, Error);
+      assert.throw(function() {
+        students.postStudent(req);
+      },
+      Error);
       // Assert that the error message is correct
       var promise = students.postStudent(req);
       promise.then(function(result) {
@@ -110,12 +177,15 @@ describe('Students', function() {
       var req = {
         data: {
           first_name: 'Korra',
-          dob: new Date(94, 11, 18)
+          dob: '11/18/1994'
         }
       };
 
       // Assert that an error is thrown when last name is missing
-      assert.throw(function() {students.postStudent(req)}, Error);
+      assert.throw(function() {
+        students.postStudent(req);
+      },
+      Error);
       // Assert that the error message is correct
       var promise = students.postStudent(req);
       promise.then(function(result) {
@@ -136,7 +206,9 @@ describe('Students', function() {
       };
 
       // Assert that an error is thrown when fields are missing
-      assert.throw(function() {students.postStudent(req)}, Error);
+      assert.throw(function() {
+        students.postStudent(req);
+      }, Error);
       // Assert that the error message is correct
       var promise = students.postStudent(req);
       promise.then(function(result) {
@@ -152,15 +224,17 @@ describe('Students', function() {
       var req = {
         data: {
           last_name: 'Lupin',
-          dob: new Date(65, 11, 18)
+          dob: '03/10/1960'
         }
       };
 
       // Assert that an error is thrown when fields are missing
-      assert.throw(function() {students.postStudent(req)}, Error);
+      assert.throw(function() {
+        students.postStudent(req);
+      }, Error);
       // Assert that the error message is correct
-      var promise = students.postStudent()
-      .then(function(result) {
+      var promise = students.postStudent();
+      promise.then(function(result) {
         assert.equal(result.message,
         // TODO(jacquelineali): for future JIRA, log which fields are missing
         'Unable to add student due to missing fields');
@@ -194,10 +268,12 @@ describe('Students', function() {
           // The student_id is contained in the request
           student_id: 617
         }
-      }
+      };
 
       // Assert that an error is thrown when nonexistent ID is given
-      assert.throw(function() {students.getStudent(req)}, Error);
+      assert.throw(function() {
+        students.getStudent(req);
+      }, Error);
       // Assert that the error message is correct
       var promise = students.getStudent(req);
       promise.then(function(result) {
@@ -208,16 +284,18 @@ describe('Students', function() {
     });
 
     it('should return an error when given a student_id of invalid type',
-    function () {
+    function() {
       var req = {
         params: {
           // The student_id is contained in the request
           student_id: 'superbad'
         }
-      }
+      };
 
       // Assert that an error is thrown when an invalid ID type is given
-      assert.throw(function() {students.getStudent(req)}, Error);
+      assert.throw(function() {
+        students.getStudent(req);
+      }, Error);
       // Assert that the error message is correct
       var promise = students.getStudent(req);
       promise.then(function(result) {
@@ -228,7 +306,6 @@ describe('Students', function() {
     });
   });
 
-  // Test updateStudent(req)
   describe('updateStudent(req)', function() {
     it('should update the information for a given student', function() {
       var req = {
@@ -283,7 +360,9 @@ describe('Students', function() {
       };
 
       // Assert that an error is thrown when a nonexistent student is given
-      assert.throw(function() {students.updateStudent(req)}, Error);
+      assert.throw(function() {
+        students.updateStudent(req);
+      }, Error);
       // Assert that the error message is correct
       var promise = students.updateStudent(req);
       promise.then(function(result) {
@@ -291,9 +370,6 @@ describe('Students', function() {
         'Unable to update student because they have not yet been added');
         done();
       });
-
-
-
     });
   });
 
@@ -323,25 +399,33 @@ describe('Students', function() {
         .then(function(data) {
           // Check that the number of students decreased by one
           assert.lengthOf(data, studentCount - 1);
+          // Check that the data is not equal to the old DB state
+          assert.notDeepEqual(oldDB, data);
           // Check that the correct student is no longer present
           assert.deepEqual([annabeth], data);
           done();
         });
-      });
     });
 
-    it('should _do what_ on attempt to delete student that doesn\'t exist',
+    it('should return an error on attempt to delete nonexistent student',
     function() {
+      var req = {
+        params: {
+          student_id: 617
+        }
+      };
 
+      // Assert that an error is thrown when deleting nonexistent student
+      assert.throw(function() {
+        students.deleteStudent(req);
+      }, Error);
+      // Assert that the error message is correct
+      var promise = students.deleteStudent(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
+        'Cannot delete student because they don\'t exist');
+        done();
+      });
     });
   });
 });
-
-/* TODO: Test the following functions
-
-Get all students for a site
-
-Get students in given roster/program
-
-Get student with given first and last name and birthdate
-*/
