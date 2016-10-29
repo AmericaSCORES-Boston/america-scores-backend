@@ -1,4 +1,10 @@
 language: node_js
 node_js:
-  - "6"
-script: npm test
+  - '6'
+script:
+  - npm run eslint -- --failTaskOnError
+  - npm run test -- --failTaskOnError
+before_script:
+  - npm install
+after_success:
+  - ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js')
