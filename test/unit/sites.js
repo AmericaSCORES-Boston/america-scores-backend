@@ -38,7 +38,9 @@ describe('utils', function() {
       };
       var promise = sites.getSites({
         req: {
-          coach_id: 1
+          query: {
+            coach_id: 1
+          }
         }
       });
 
@@ -95,27 +97,27 @@ describe('utils', function() {
       });
 
       promise.then(function(data) {
-        assert.equal([{
+        assert.equal({
           site_id: 12345,
           site_name: 'single',
           site_address: 'single Boston, MA'
-        }], data[0]);
+        }, data[0]);
         done();
       });
     });
 
-    it('updated a site', function(done) {
+    it('updates a site', function(done) {
       site.getSite({
         params: {
           site_id: 54321
         }
       })
       .then(function(data) {
-        assert.equal([{
+        assert.equal({
           site_id: 54321,
           site_name: 'old name',
           site_address: 'old address'
-        }], data[0]);
+        }, data[0]);
 
         return sites.updateSite({
           params: {
@@ -137,11 +139,11 @@ describe('utils', function() {
         });
       })
       .then(function(data) {
-        assert.equal([{
+        assert.equal({
           site_id: 54321,
           site_name: 'new name',
           site_address: 'new address'
-        }], data[0]);
+        }, data[0]);
         done();
       });
     });
@@ -153,11 +155,11 @@ describe('utils', function() {
         }
       })
       .then(function(data) {
-        assert.equal([{
+        assert.equal({
           site_id: 55555,
           site_name: 'to delete',
           site_address: 'Earth'
-        }], data[0]);
+        }, data[0]);
 
         return site.deleteSite({
           params: {
