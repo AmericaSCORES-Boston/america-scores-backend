@@ -6,7 +6,7 @@ const sites = require('../../routes/sites');
 
 describe('utils', function() {
   describe('sites', function() {
-    it('gets all sites', function(done) {
+    xit('gets all sites', function(done) {
       var fakeData1 = {
         site_id: 0,
         site_name: 'fakeSiteName',
@@ -25,7 +25,7 @@ describe('utils', function() {
       });
     });
 
-    it('gets all sites for a given coach', function(done) {
+    xit('gets all sites for a given coach', function(done) {
       var fakeData1 = {
         site_id: 1,
         site_name: 'for the coach',
@@ -50,7 +50,7 @@ describe('utils', function() {
       });
     });
 
-    it('create a site', function(done) {
+    xit('create a site', function(done) {
       var fakeData1 = {
         site_id: 88888,
         site_name: 'fakeSiteName',
@@ -89,7 +89,7 @@ describe('utils', function() {
       });
     });
 
-    it('get a site', function(done) {
+    xit('get a site', function(done) {
       var promise = sites.getSite({
         params: {
           site_id: 12345
@@ -106,7 +106,7 @@ describe('utils', function() {
       });
     });
 
-    it('updates a site', function(done) {
+    xit('updates a site', function(done) {
       site.getSite({
         params: {
           site_id: 54321
@@ -148,7 +148,7 @@ describe('utils', function() {
       });
     });
 
-    it('delete a site', function(done) {
+    xit('delete a site', function(done) {
       sites.getSite({
         params: {
           site_id: 55555
