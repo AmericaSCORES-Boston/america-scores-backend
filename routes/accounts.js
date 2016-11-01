@@ -1,21 +1,22 @@
-function getAccounts(req){
-  //returns promise
+function getAccounts(req) {
+  // returns promise
 }
 
-function getAccount(req){
-  //returns promise
+function getAccount(req) {
+  // returns promise
 }
 
-function addAccount(req){
-  //returns promise
+function addAccount(req) {
+  // returns promise
 }
 
-function updateAccount(req){
-  //returns promise
+function updateAccount(req) {
+  // returns promise
 }
 
-function deleteAccount(req){
-  //returns promise
+function deleteAccount(req) {
+  // returns promise
 }
 
-module.exports(getAccounts, getAccount, addAccount, updateAccount, deleteAccount);
+module.exports(
+  getAccounts, getAccount, addAccount, updateAccount, deleteAccount);
