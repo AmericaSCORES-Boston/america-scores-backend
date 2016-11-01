@@ -4,13 +4,13 @@
   "description": "The backend for the America SCORES data collection app.",
   "main": "index.js",
   "scripts": {
-    "test": "gulp test",
+    "test": "gulp test --failTaskOnError",
     "eslint": "gulp eslint",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.ccs.neu.edu/CS4500-AmericaSCORES/backend.git"
+    "url": "https://github.com/CS4500-AmericaSCORES/america-scores-backend"
   },
   "author": "",
   "license": "ISC",
