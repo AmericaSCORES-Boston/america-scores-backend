@@ -1,6 +1,6 @@
 'use strict';
 
-const pool = require('../config/config').pool;
+// const pool = require('../config/config').pool;
 
 function getSites(req) {
 
