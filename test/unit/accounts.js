@@ -16,7 +16,7 @@ var first = {
   lastName: 'last1',
   email: '1@email.com',
   type: 'coach'
-}
+};
 
 var second = {
   id: 2,
@@ -24,7 +24,7 @@ var second = {
   lastName: 'last2',
   email: '2@email.com',
   type: 'admin'
-}
+};
 
 var updateSecondReq = {
   data: {
@@ -34,7 +34,7 @@ var updateSecondReq = {
     email: 'updated@email.com',
     type: 'coach'
   }
-}
+};
 
 var updateSecondResp = {
   id: 2,
@@ -42,7 +42,7 @@ var updateSecondResp = {
   lastName: 'UpdatedLast',
   email: 'updated@email.com',
   type: 'coach'
-}
+};
 
 var newAccountReq = {
   data: {
@@ -51,26 +51,26 @@ var newAccountReq = {
     email: '3@email.com',
     type: 'staff'
   }
-}
+};
 
 var newAccountResp = {
-  id: 3
+  id: 3,
   firstName: 'first3',
   lastName: 'last3',
   email: '3@email.com',
   type: 'staff'
-}
+};
 
 // bad put request data
 var noIDPutReq = {
   data: {
-    id: ,
+    id: '',
     firstName: 'first',
     lastName: 'last',
     email: 'something@rob.com',
     type: 'staff'
   }
-}
+};
 
 var noFNamePutReq = {
   data: {
@@ -80,7 +80,7 @@ var noFNamePutReq = {
     email: 'something@rob.com',
     type: 'staff'
   }
-}
+};
 
 var noLNamePutReq = {
   data: {
@@ -90,7 +90,7 @@ var noLNamePutReq = {
     email: 'something@rob.com',
     type: 'staff'
   }
-}
+};
 
 var noEmailPutReq = {
   data: {
@@ -100,7 +100,7 @@ var noEmailPutReq = {
     email: '',
     type: 'staff'
   }
-}
+};
 
 var noTypePutReq = {
   data: {
@@ -110,7 +110,7 @@ var noTypePutReq = {
     email: 'some@thing.com',
     type: ''
   }
-}
+};
 
 var badEMailPutReq = {
   data: {
@@ -120,7 +120,7 @@ var badEMailPutReq = {
     email: 'something.com',
     type: 'staff'
   }
-}
+};
 
 var badTypePutReq = {
   data: {
@@ -130,7 +130,7 @@ var badTypePutReq = {
     email: 'something.com',
     type: 'foo'
   }
-}
+};
 
 var badIDPutReq = {
   data: {
@@ -140,9 +140,9 @@ var badIDPutReq = {
     email: 'something@rob.com',
     type: 'staff'
   }
-}
+};
 
-//TODO Verify how we are handling id assignments. Is this test okay?
+// TODO Verify how we are handling id assignments. Is this test okay?
 var idDNEPutReq = {
   data: {
     id: 999999999,
@@ -151,7 +151,7 @@ var idDNEPutReq = {
     email: 'something@rob.com',
     type: 'staff'
   }
-}
+};
 
 var malFormedDataPutReq = {
   data: {
@@ -162,7 +162,7 @@ var malFormedDataPutReq = {
     type: 'staff',
     extra: 'thing'
   }
-}
+};
 
 // bad post request data
 var noFNameReq = {
@@ -172,7 +172,7 @@ var noFNameReq = {
     email: 'something@rob.com',
     type: 'staff'
   }
-}
+};
 
 var noLNameReq = {
   data: {
@@ -181,7 +181,7 @@ var noLNameReq = {
     email: 'something@rob.com',
     type: 'staff'
   }
-}
+};
 
 var noEmailReq = {
   data: {
@@ -190,7 +190,7 @@ var noEmailReq = {
     email: '',
     type: 'staff'
   }
-}
+};
 
 var noTypeReq = {
   data: {
@@ -199,7 +199,7 @@ var noTypeReq = {
     email: 'some@thing.com',
     type: ''
   }
-}
+};
 
 var badEMailReq = {
   data: {
@@ -208,7 +208,7 @@ var badEMailReq = {
     email: 'something.com',
     type: 'staff'
   }
-}
+};
 
 var badTypeReq = {
   data: {
@@ -217,7 +217,7 @@ var badTypeReq = {
     email: 'something.com',
     type: 'foo'
   }
-}
+};
 
 var malFormedDataReq = {
   data: {
@@ -227,7 +227,7 @@ var malFormedDataReq = {
     type: 'staff',
     extra: 'thing'
   }
-}
+};
 
 // Accounts testing block
 describe('Accounts', function() {
@@ -248,7 +248,8 @@ describe('Accounts', function() {
         });
       });
 
-      // it('it should get all programs for a specific account', function(done) {
+      // it('it should get all programs for a specific account',
+      //  function(done) {
       //   var promise = accounts.getAccounts({
       //     params: {
       //       prog_id: 1
@@ -286,7 +287,6 @@ describe('Accounts', function() {
       //     done();
       //   });
       // });
-
     });
 
   describe('/GET account', function() {
@@ -341,6 +341,7 @@ describe('Accounts', function() {
       assert.throw(accounts.updateAccount(noFNamePutReq));
       assert.throw(accounts.updateAccount(noLNamePutReq));
       assert.throw(accounts.updateAccount(noEmailPutReq));
+      assert.throw(accounts.updateAccount(noTypePutReq));
       assert.throw(accounts.updateAccount(noIDPutReq));
 
       // malformed data
@@ -364,7 +365,7 @@ describe('Accounts', function() {
         return accounts.postAccount(req);
       }).then(function(data) {
         // get number of accounts after update
-        return accounts.getAccounts({}});
+        return accounts.getAccounts({});
       }).then(function(data) {
         // verify new row was added
         assert.lengthOf(data, accCount + 1);
@@ -389,7 +390,8 @@ describe('Accounts', function() {
       assert.throws(accounts.addAccount(malFormedDataReq));
     });
 
-    it('it should throw error for trying to add an account that already exists', function(done) {
+    it('it should throw error for trying to add an account that already exists',
+    function(done) {
       accounts.addAccount(newAccountReq).then(function(data) {
         assert.throws(accounts.addAccount(newAccountReq));
         done();
