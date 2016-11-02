@@ -1,6 +1,6 @@
 const pool = require('../config/config').pool;
 
-// Get all stats ever 
+// Get all stats ever
 function getStats(req) {
   return pool.query('SELECT * FROM stats')
     .then(function(rows) {
