@@ -2,8 +2,10 @@
 
 const gulp = require('gulp');
 const eslint = require('gulp-eslint');
+const Promise = require('bluebird');
 const yargs = require('yargs');
 const mocha = require('gulp-mocha');
+const getConnection = require('./config/config').getConnection;
 
 gulp.task('eslint', () => {
   var stream = gulp.src(['**/*.js', '!node_modules/**', '!coverage/**'])
@@ -34,4 +36,14 @@ gulp.task('test', () => {
     stream = stream.on('error', process.exit.bind(process, 0));
   }
   return stream;
+});
+
+gulp.task('seed', () => {
+  Promise.using(getConnection(), (connection) => {
+      return connection.queryAsync('SELECT * FROM Site')
+    })
+    .then(function(rows) {
+      console.log(rows);
+      console.log('test');
+    });
 });

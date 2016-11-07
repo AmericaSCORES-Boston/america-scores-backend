@@ -7,6 +7,7 @@
     "test": "gulp test",
     "eslint": "gulp eslint",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
+    "seed": "gulp seed",
     "start": "forever start app.js",
     "stop": "forever stop app.js"
   },
