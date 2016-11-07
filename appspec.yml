@@ -30,6 +30,9 @@ hooks:
   ApplicationStop:
     - location: /scripts/stop-server.sh
       timeout: 60
+  AfterInstall:
+    - location: /scripts/setup-server.sh
+      timeout: 60
 # During the ApplicationInstall deployment lifecycle event, run the commands
 #   in the script specified in "location".
   ApplicationStart:
