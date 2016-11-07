@@ -12,7 +12,7 @@ after_success:
 
 before_deploy:
   - zip -r latest config/ database/ routes/ scripts/ app.js appspec.yml package.json
-  - mkdir to_deploy
+  - mkdir -p to_deploy
   - mv latest.zip to_deploy/
 
 deploy:
