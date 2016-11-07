@@ -1,10 +1,39 @@
 language: node_js
+
 node_js:
   - '6'
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y zip
+
 script:
   - npm run eslint -- --failTaskOnError
   - npm run test -- --failTaskOnError
-before_script:
-  - npm install
+
 after_success:
   - ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js')
+
+before_deploy:
+  - zip -r latest *
+  - mkdir dist
+  - mv latest.zip dist/
+
+deploy:
+  - provider: s3
+    access_key_id: $AMSCORES_AWS_KEY_ID
+    secret_access_key: $AMSCORES_AWS_KEY_SECRET
+    local_dir: dist
+    skip_cleanup: true
+    on:
+      branch: develop
+    bucket: amscores-deploy-dev
+  - provider: codedeploy
+    access_key_id: $AMSCORES_AWS_KEY_ID
+    secret_access_key: $AMSCORES_AWS_KEY_SECRET
+    bucket: "amscores-deploy-dev"
+    key: latest.zip
+    application: AmScoresBackend
+    deployment_group: Development
+    on:
+      branch: develop

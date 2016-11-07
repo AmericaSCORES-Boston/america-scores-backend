@@ -6,7 +6,9 @@
   "scripts": {
     "test": "gulp test --failTaskOnError",
     "eslint": "gulp eslint",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html"
+    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
+    "start": "node app.js",
+    "stop": "pkill --signal SIGINT -f \"node app.js\""
   },
   "repository": {
     "type": "git",
