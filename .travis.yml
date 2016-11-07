@@ -11,7 +11,7 @@ after_success:
   - ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js')
 
 before_deploy:
-  - zip -r latest *
+  - zip -r latest config/ database/ routes/ scripts/ app.js appspec.yml package.json
   - mkdir to_deploy
   - mv latest.zip to_deploy/
 
@@ -29,6 +29,7 @@ deploy:
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     bucket: "amscores-deploy-dev"
     key: latest.zip
+    bundle_type: zip
     application: AmScoresBackend
     deployment_group: Development
     on:
