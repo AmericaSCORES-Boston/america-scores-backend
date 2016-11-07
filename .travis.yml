@@ -36,3 +36,4 @@ deploy:
     deployment_group: Development
     on:
       branch: develop
+    wait-until-deployed: true
