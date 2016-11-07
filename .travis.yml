@@ -19,7 +19,7 @@ deploy:
   - provider: s3
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
-    region: us-east-2
+    region: us-west-2
     local_dir: to_deploy
     skip_cleanup: true
     on:
