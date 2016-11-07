@@ -3,10 +3,6 @@ language: node_js
 node_js:
   - '6'
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y zip
-
 script:
   - npm run eslint -- --failTaskOnError
   - npm run test -- --failTaskOnError
@@ -16,14 +12,14 @@ after_success:
 
 before_deploy:
   - zip -r latest *
-  - mkdir dist
-  - mv latest.zip dist/
+  - mkdir to_deploy
+  - mv latest.zip to_deploy/
 
 deploy:
   - provider: s3
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
-    local_dir: dist
+    local_dir: to_deploy
     skip_cleanup: true
     on:
       branch: develop
