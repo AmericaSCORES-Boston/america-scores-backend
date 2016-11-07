@@ -28,7 +28,7 @@ deploy:
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
-    region: us-east-2
+    region: us-east-1
     bucket: "amscores-deploy-dev"
     key: latest.zip
     bundle_type: zip
