@@ -4,7 +4,6 @@ require('dotenv').config();
 
 const mysql = require('mysql');
 const Connection = require('mysql/lib/Connection');
-const Pool = require('mysql/lib/Pool');
 const Promise = require('bluebird');
 
 Promise.promisifyAll([
