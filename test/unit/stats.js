@@ -170,7 +170,7 @@ describe('utils', function() {
         assert.length(data, 4);
       })
       .then(function(data) {
-        stats.postStats({
+        return stats.postStats({
           req: {
             stat_student_id: 2,
             stat_event_id: 2,
@@ -178,7 +178,7 @@ describe('utils', function() {
             stat_height: 54,
             state_pacer: 382,
           }
-        })
+        });
       })
       .then(function(data) {
         assert.length(data, 5);
@@ -223,6 +223,7 @@ describe('utils', function() {
             stat_id: 1,
           }
         })
+        return newStats;
       })
       .then(function(data) {
         assert.deepEqual(newStats.stat_weight, 999);
