@@ -41,9 +41,8 @@ gulp.task('test', () => {
 gulp.task('seed', () => {
   Promise.using(getConnection(), (connection) => {
       return connection.queryAsync('SELECT * FROM Site')
-    })
-    .then(function(rows) {
-      console.log(rows);
-      console.log('test');
+        .then(function () {
+          return connection.queryAsync('INSERT INTO Site');
+        });
     });
 });

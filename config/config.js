@@ -27,7 +27,6 @@ const getConnection = () => {
       return connection;
     })
     .disposer((connection) => {
-      console.log(connection);
       return connection.releaseAsync();
     });
 };
