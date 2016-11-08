@@ -60,6 +60,7 @@ gulp.task('seed', () => {
       'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")',           // 7
       'INSERT INTO Site (site_name, site_address) VALUES("singe", "single Boston, MA")',               // 8
       'INSERT INTO Site (site_name, site_address) VALUES("old name", "old address")',                  // 9
+
       'INSERT INTO Student (first_name, last_name, dob) VALUES ("Percy", "Jackson", DATE("1993-07-18"))',  // 1
       'INSERT INTO Student (first_name, last_name, dob) VALUES ("Annabeth", "Chase", DATE("1993-06-12"))', // 2
       'INSERT INTO Student (first_name, last_name, dob) VALUES ("Brian", "Smith", DATE("1993-04-12"))', // 3
