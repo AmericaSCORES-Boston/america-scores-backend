@@ -40,7 +40,7 @@ gulp.task('test', () => {
 
 gulp.task('seed', () => {
   Promise.using(createConnection(), (connection) => {
-    const commands = [
+    const querys = [
       'SET FOREIGN_KEY_CHECKS = 0',
       'TRUNCATE Acct',
       'TRUNCATE AcctToProgram',
@@ -51,19 +51,28 @@ gulp.task('seed', () => {
       'TRUNCATE Student',
       'TRUNCATE StudentToProgram',
       'SET FOREIGN_KEY_CHECKS = 1',
-      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 1
-      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 2
-      'INSERT INTO Site (site_name, site_address) VALUES("for the coach", "123 Boston, MA")', // 3
-      'INSERT INTO Site (site_name, site_address) VALUES("also for the coach", "123 Boston, MA")', // 4
-      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 5
-      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 6
-      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 7
-      'INSERT INTO Site (site_name, site_address) VALUES("singe", "single Boston, MA")', // 8
-      'INSERT INTO Site (site_name, site_address) VALUES("old name", "old address")' // 9
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")',           // 1
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")',           // 2
+      'INSERT INTO Site (site_name, site_address) VALUES("for the coach", "123 Boston, MA")',          // 3
+      'INSERT INTO Site (site_name, site_address) VALUES("also for the coach", "123 Boston, MA")',     // 4
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")',           // 5
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")',           // 6
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")',           // 7
+      'INSERT INTO Site (site_name, site_address) VALUES("singe", "single Boston, MA")',               // 8
+      'INSERT INTO Site (site_name, site_address) VALUES("old name", "old address")',                  // 9
+      'INSERT INTO Student (first_name, last_name, dob) VALUES ("Percy", "Jackson", DATE("1993-07-18"))',  // 1
+      'INSERT INTO Student (first_name, last_name, dob) VALUES ("Annabeth", "Chase", DATE("1993-06-12"))', // 2
+      'INSERT INTO Student (first_name, last_name, dob) VALUES ("Brian", "Smith", DATE("1993-04-12"))', // 3
+
+      'INSERT INTO Program (site_id, program_name) VALUES(1, "test program")', // 1
+      'INSERT INTO Program (site_id, program_name) VALUES(2, "test program 2")', // 2
+
+      'INSERT INTO StudentToProgram (student_id, program_id) VALUES (2, 1)',  // 1
+      'INSERT INTO StudentToProgram (student_id, program_id) VALUES (3, 2)'  // 2
     ];
 
-    return Promise.map(commands, function(command) {
-      return connection.queryAsync(command);
+    return Promise.map(querys, (query) => {
+      return connection.queryAsync(query);
     });
   });
 });

@@ -21,42 +21,49 @@ function getAllStudents() {
 
 // Create example students for expected results
 var percy = {
-  'student_id': 123,
+  'student_id': 1,
   'first_name': 'Percy',
   'last_name': 'Jackson',
   'dob': new Date(93, 7, 18)
 };
 
 var perseus = {
-  'student_id': 123,
+  'student_id': 1,
   'first_name': 'Perseus',
   'last_name': 'Jackson',
   'dob': new Date(93, 7, 18)
 };
 
 var annabethURL = {
-  'student_id': 456,
+  'student_id': 2,
   'first_name': 'Annabeth',
   'last_name': 'Chase',
   'dob': '07/12/1993'
 };
 
 var annabeth = {
-  'student_id': 456,
+  'student_id': 2,
   'first_name': 'Annabeth',
   'last_name': 'Chase',
   'dob': new Date(93, 6, 12)
 };
 
+var brian = {
+  'student_id': 3,
+  'first_name': 'Brian',
+  'last_name': 'Smith',
+  'dob': new Date(93, 4, 12)
+};
+
 var daveURL = {
-  'student_id': 789,
+  'student_id': 4,
   'first_name': 'Dave',
   'last_name': 'Strider',
   'dob': '12/03/1995'
 };
 
 var dave = {
-  'student_id': 789,
+  'student_id': 4,
   'first_name': 'Dave',
   'last_name': 'Strider',
   'dob': new Date(95, 11, 3)
@@ -100,7 +107,7 @@ describe('Students', function() {
     function() {
       var req = {
         query: {
-          site_id: 111
+          site_id: 2
         }
       };
 
@@ -108,7 +115,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([percy], data); // Percy is in site 111, not Annabeth
+        assert.deepEqual([brian], data); // Percy is in site 111, not Annabeth
       });
     });
 
@@ -116,7 +123,7 @@ describe('Students', function() {
     function() {
       var req = {
         query: {
-          site_id: 5
+          program_id: 1
         }
       };
 
@@ -248,7 +255,7 @@ describe('Students', function() {
       var req = {
         params: {
           // The student_id is contained in the request
-          student_id: 789
+          student_id: 4
         }
       };
 
@@ -310,7 +317,7 @@ describe('Students', function() {
     xit('should update the information for a given student', function() {
       var req = {
         params: {
-          student_id: 123
+          student_id: 1
         },
         data: {
           updateValues: {
@@ -333,6 +340,8 @@ describe('Students', function() {
         })
         .then(function() {
           // Get the DB after the update
+          // NOTE TODO, I THINK YOU SOULD JUST CHECK THE STATUS OF THE PERSON CHANGED AS YOUR OTHER TESTS
+          // ADD STUDENTS TO THE DB AND TEST MAY BE RAN I DIFFERENT ORDERS
           return getAllStudents();
         })
         .then(function(data) {
@@ -377,7 +386,7 @@ describe('Students', function() {
     xit('should delete a given student from the database', function() {
       var req = {
         params: {
-          student_id: 456
+          student_id: 1
         }
       };
 
@@ -402,6 +411,7 @@ describe('Students', function() {
           // Check that the data is not equal to the old DB state
           assert.notDeepEqual(oldDB, data);
           // Check that the correct student is no longer present
+          // NOTE TODO, again change this to try and get the student that was removed
           assert.deepEqual([annabeth], data);
           done();
         });
