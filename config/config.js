@@ -8,11 +8,10 @@ const Pool = require('mysql/lib/Pool');
 const Promise = require('bluebird');
 
 Promise.promisifyAll([
-  Connection,
-  Pool
+  Connection
 ]);
 
-const pool = mysql.createPool({
+const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -20,17 +19,17 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT
 });
 
-const getConnection = () => {
-  return pool
-    .getConnectionAsync()
-    .then((connection) => {
+const createConnection = () => {
+  return connection
+    .connectAsync()
+    .then((result) => {
       return connection;
     })
-    .disposer((connection) => {
-      return connection.releaseAsync();
+    .disposer(() => {
+      return connection.endAsync();
     });
 };
 
 module.exports = {
-  getConnection
+  createConnection
 };

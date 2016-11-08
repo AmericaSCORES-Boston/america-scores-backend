@@ -8,12 +8,12 @@ describe('utils', function() {
   describe('sites', function() {
     xit('gets all sites', function(done) {
       var fakeData1 = {
-        site_id: 0,
+        site_id: 1,
         site_name: 'fakeSiteName',
         site_address: '123 Boston, MA'
       };
       var fakeData2 = {
-        site_id: 22222,
+        site_id: 2,
         site_name: 'fakeSiteName',
         site_address: '123 Boston, MA'
       };
@@ -27,12 +27,12 @@ describe('utils', function() {
 
     xit('gets all sites for a given coach', function(done) {
       var fakeData1 = {
-        site_id: 1,
+        site_id: 3,
         site_name: 'for the coach',
         site_address: '123 Boston, MA'
       };
       var fakeData2 = {
-        site_id: 2,
+        site_id: 4,
         site_name: 'also for the coach',
         site_address: '123 Boston, MA'
       };
@@ -52,17 +52,17 @@ describe('utils', function() {
 
     xit('create a site', function(done) {
       var fakeData1 = {
-        site_id: 88888,
+        site_id: 5,
         site_name: 'fakeSiteName',
         site_address: '123 Boston, MA'
       };
       var fakeData2 = {
-        site_id: 99999,
+        site_id: 6,
         site_name: 'fakeSiteName',
         site_address: '123 Boston, MA'
       };
       var newData = {
-        site_id: 77777,
+        site_id: 10,
         site_name: 'newSiteName',
         site_address: 'new Boston, MA'
       };
@@ -92,13 +92,13 @@ describe('utils', function() {
     xit('get a site', function(done) {
       var promise = sites.getSite({
         params: {
-          site_id: 12345
+          site_id: 8
         }
       });
 
       promise.then(function(data) {
         assert.equal({
-          site_id: 12345,
+          site_id: 8,
           site_name: 'single',
           site_address: 'single Boston, MA'
         }, data[0]);
@@ -109,19 +109,19 @@ describe('utils', function() {
     xit('updates a site', function(done) {
       site.getSite({
         params: {
-          site_id: 54321
+          site_id: 9
         }
       })
       .then(function(data) {
         assert.equal({
-          site_id: 54321,
+          site_id: 9,
           site_name: 'old name',
           site_address: 'old address'
         }, data[0]);
 
         return sites.updateSite({
           params: {
-            site_id: 54321
+            site_id: 9
           },
           data: {
             updateValues: {
@@ -134,7 +134,7 @@ describe('utils', function() {
       .then(function() {
         return site.getSite({
           params: {
-            site_id: 54321
+            site_id: 9
           }
         });
       })
@@ -151,26 +151,26 @@ describe('utils', function() {
     xit('delete a site', function(done) {
       sites.getSite({
         params: {
-          site_id: 55555
+          site_id: 10
         }
       })
       .then(function(data) {
         assert.equal({
-          site_id: 55555,
+          site_id: 10,
           site_name: 'to delete',
           site_address: 'Earth'
         }, data[0]);
 
         return site.deleteSite({
           params: {
-            site_id: 55555
+            site_id: 10
           }
         });
       })
       .then(function() {
         return site.getSite({
           params: {
-            site_id: 55555
+            site_id: 10
           }
         });
       })

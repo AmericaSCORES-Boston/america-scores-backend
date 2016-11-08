@@ -5,7 +5,7 @@ const eslint = require('gulp-eslint');
 const Promise = require('bluebird');
 const yargs = require('yargs');
 const mocha = require('gulp-mocha');
-const getConnection = require('./config/config').getConnection;
+const createConnection = require('./config/config').createConnection;
 
 gulp.task('eslint', () => {
   var stream = gulp.src(['**/*.js', '!node_modules/**', '!coverage/**'])
@@ -39,10 +39,31 @@ gulp.task('test', () => {
 });
 
 gulp.task('seed', () => {
-  Promise.using(getConnection(), (connection) => {
-      return connection.queryAsync('SELECT * FROM Site')
-        .then(function () {
-          return connection.queryAsync('INSERT INTO Site');
-        });
+  Promise.using(createConnection(), (connection) => {
+    const commands = [
+      'SET FOREIGN_KEY_CHECKS = 0',
+      'TRUNCATE Acct',
+      'TRUNCATE AcctToProgram',
+      'TRUNCATE Event',
+      'TRUNCATE Measurement',
+      'TRUNCATE Program',
+      'TRUNCATE Site',
+      'TRUNCATE Student',
+      'TRUNCATE StudentToProgram',
+      'SET FOREIGN_KEY_CHECKS = 1',
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 1
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 2
+      'INSERT INTO Site (site_name, site_address) VALUES("for the coach", "123 Boston, MA")', // 3
+      'INSERT INTO Site (site_name, site_address) VALUES("also for the coach", "123 Boston, MA")', // 4
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 5
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 6
+      'INSERT INTO Site (site_name, site_address) VALUES("fakeSiteName", "123 Boston, MA")', // 7
+      'INSERT INTO Site (site_name, site_address) VALUES("singe", "single Boston, MA")', // 8
+      'INSERT INTO Site (site_name, site_address) VALUES("old name", "old address")' // 9
+    ];
+
+    return Promise.map(commands, function(command) {
+      return connection.queryAsync(command);
     });
+  });
 });
