@@ -3,9 +3,18 @@ language: node_js
 node_js:
   - '6'
 
+before_script:
+  - mysql -e 'create database america_scores;'
+
 script:
+  - mysql -u travis america_scores < database/dbcreate.sql
+  - ./scripts/travis-mysql.sh
   - npm run eslint -- --failTaskOnError
+  - npm run seed
   - npm run test -- --failTaskOnError
+
+services:
+  - mysql
 
 after_success:
   - ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js')
