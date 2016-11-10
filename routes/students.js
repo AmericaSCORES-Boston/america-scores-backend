@@ -1,8 +1,12 @@
-var connection = require('../config/config').createConnection;
+var createConnection = require('../config/config').createConnection;
 
 function getStudents(req) {
-  connection.then()
-  return(connection.query('SELECT * FROM Students'));
+  return Promise.using(createConnection(), (connection) => {
+    return connection.queryAsync('SELECT * FROM Student')
+    .then(function(rows) {
+      return rows;
+    });
+  });
 }
 
 function getStudent(req) {
