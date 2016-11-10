@@ -1,4 +1,6 @@
-var createConnection = require('../config/config').createConnection;
+const Promise = require('bluebird');
+const createConnection = require('../config/config').createConnection;
+
 
 function getStudents(req) {
   return Promise.using(createConnection(), (connection) => {
