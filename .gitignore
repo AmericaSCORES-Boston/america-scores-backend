@@ -31,3 +31,5 @@ node_modules
 
 # Vagrant
 .vagrant
+
+config/creds.js
