@@ -74,7 +74,7 @@ var dave = {
 // Students testing block
 describe('Students', function() {
   describe('getStudents(req)', function() {
-    xit('should get all the students in the database', function() {
+    it('should get all the students in the database', function() {
       // GET all doesn't need anything from the request, so pass in empty
       var promise = students.getStudents({});
 
@@ -85,7 +85,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should be able to get a student using first, last name and birthday',
+    it('should be able to get a student using first, last name and birthday',
     function() {
       var req = {
         query: {
@@ -125,6 +125,7 @@ describe('Students', function() {
       var req = {
         params: {
           program_id: 1
+        }
       };
 
       var promise = students.getStudents(req);
