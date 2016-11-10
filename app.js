@@ -17,7 +17,7 @@ const server = net.createServer(function(socket) {
       socket.end(err);
     }
 
-    socket.end(JSON.stringify(rows));
+    socket.end(JSON.stringify(rows) + '\n');
   });
 });
 

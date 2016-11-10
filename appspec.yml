@@ -12,7 +12,7 @@ os: linux
 #   from multiple sources or to multiple destinations.
 files:
   - source: /
-    destination: /amscores/dev
+    destination: /amscores/backend
 # For deployments to Amazon Linux, Ubuntu Server, or RHEL instances,
 #   you can specify a "permissions"
 #   section here that describes special permissions to apply to the files
