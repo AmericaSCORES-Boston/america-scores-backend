@@ -136,20 +136,20 @@ describe('Students', function() {
     });
   });
 
-  describe('postStudent(req)', function() {
+  describe('createStudent(req)', function() {
     xit('should add a new student to the database', function() {
       var req = {data: daveURL};
       var studentCount;
-      // Get the contents of the database before calling addStudent
+      // Get the contents of the database before calling createStudent
       getAllStudents()
         .then(function(data) {
           // Count the number of students
           studentCount = data.length;
           // Call the function to be tested
-          return students.postStudent(req);
+          return students.createStudent(req);
         })
         .then(function() {
-          // Get the contents of the database after calling postStudent
+          // Get the contents of the database after calling createStudent
           return getAllStudents();
         })
         .then(function(data) {
@@ -167,11 +167,11 @@ describe('Students', function() {
 
       // Assert that an error is thrown when trying to add student already in DB
       assert.throw(function() {
-        students.postStudent(req);
+        students.createStudent(req);
       },
       Error);
       // Assert that the error message is correct
-      var promise = students.postStudent(req);
+      var promise = students.createStudent(req);
       promise.then(function(result) {
         assert.equal(result.message,
         'Unable to add student because they already exist in the database');
@@ -190,11 +190,11 @@ describe('Students', function() {
 
       // Assert that an error is thrown when last name is missing
       assert.throw(function() {
-        students.postStudent(req);
+        students.createStudent(req);
       },
       Error);
       // Assert that the error message is correct
-      var promise = students.postStudent(req);
+      var promise = students.createStudent(req);
       promise.then(function(result) {
         assert.equal(result.message,
         // TODO(jacquelineali): for future JIRA, log which field is missing
@@ -214,10 +214,10 @@ describe('Students', function() {
 
       // Assert that an error is thrown when fields are missing
       assert.throw(function() {
-        students.postStudent(req);
+        students.createStudent(req);
       }, Error);
       // Assert that the error message is correct
-      var promise = students.postStudent(req);
+      var promise = students.createStudent(req);
       promise.then(function(result) {
         assert.equal(result.message,
         // TODO(jacquelineali): for future JIRA, log which fields are missing
@@ -237,10 +237,10 @@ describe('Students', function() {
 
       // Assert that an error is thrown when fields are missing
       assert.throw(function() {
-        students.postStudent(req);
+        students.createStudent(req);
       }, Error);
       // Assert that the error message is correct
-      var promise = students.postStudent();
+      var promise = students.createStudent();
       promise.then(function(result) {
         assert.equal(result.message,
         // TODO(jacquelineali): for future JIRA, log which fields are missing
