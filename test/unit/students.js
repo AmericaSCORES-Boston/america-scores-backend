@@ -1,3 +1,6 @@
+// TODO Errors reserved for exceptional cases: searching for student that doesn’t
+//  exist happens often. Just send empty object UPDATE TESTS
+
 // Set the env to test
 process.env.NODE_ENV = 'test';
 
@@ -20,6 +23,7 @@ function getAllStudents() {
 }
 
 // Create example students for expected results
+// TODO Update student ID values to match what's in the test DB
 var percy = {
   'student_id': 1,
   'first_name': 'Percy',
@@ -35,7 +39,6 @@ var perseus = {
 };
 
 var annabethURL = {
-  'student_id': 2,
   'first_name': 'Annabeth',
   'last_name': 'Chase',
   'dob': '07/12/1993'
@@ -56,7 +59,6 @@ var brian = {
 };
 
 var daveURL = {
-  'student_id': 4,
   'first_name': 'Dave',
   'last_name': 'Strider',
   'dob': '12/03/1995'
@@ -71,7 +73,6 @@ var dave = {
 
 // Students testing block
 describe('Students', function() {
-  // NOTE: Do I need a beforeeach?
   describe('getStudents(req)', function() {
     xit('should get all the students in the database', function() {
       // GET all doesn't need anything from the request, so pass in empty
@@ -106,7 +107,7 @@ describe('Students', function() {
     xit('should get all the students for a given site',
     function() {
       var req = {
-        query: {
+        params: {
           site_id: 2
         }
       };
@@ -115,15 +116,30 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([brian], data); // Percy is in site 111, not Annabeth
+        assert.deepEqual([brian], data);
       });
     });
 
     xit('should get all the students for a given roster/program',
     function() {
       var req = {
-        query: {
+        params: {
           program_id: 1
+      };
+
+      var promise = students.getStudents(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([annabeth], data);
+      });
+    });
+
+    xit('should get all the students associated with a given event',
+    function() {
+      var req = {
+        params: {
+          event_id: 5
         }
       };
 
@@ -131,7 +147,89 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data); // Annabeth's in program 5
+        assert.deepEqual([annabeth], data);
+      });
+    });
+
+    xit('should give an error if birthdate is not parseable to a date object',
+    function() {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          dob: '08/woof199!!!3'
+        }
+      };
+
+      // Assert that an error is thrown when an invalid date is given
+      assert.throw(function() {
+        students.getStudents(req);
+      }, Error);
+      // Assert that the error message is correct
+      var promise = students.getStudents(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
+        'Failed to get student due to invalid birthdate. Try mm/dd/yyyy.');
+        done();
+      });
+    });
+  });
+
+  describe('getStudent(req)', function() {
+    xit('should get an existing student by id', function() {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 1
+        }
+      };
+
+      var promise = students.getStudent(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual([percy], data);
+        done();
+      });
+    });
+
+    xit('should return nothing when given a student id that\'s not in the DB',
+    function() {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 617
+        }
+      };
+
+      var promise = students.getStudent(req);
+
+      promise.then(function(data) {
+        // Check that we received an empty array
+        assert.deepEqual([], data);
+        done();
+      });
+    });
+
+    xit('should return an error when given a student id of invalid type',
+    function() {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 'superbad'
+        }
+      };
+
+      // Assert that an error is thrown when an invalid ID type is given
+      assert.throw(function() {
+        students.getStudent(req);
+      }, Error);
+      // Assert that the error message is correct
+      var promise = students.getStudent(req);
+      promise.then(function(result) {
+        assert.equal(result.message,
+        'Failed to get student. Invalid student_id type: must be an integer');
+        done();
       });
     });
   });
@@ -154,7 +252,7 @@ describe('Students', function() {
         })
         .then(function(data) {
           // Verify that the number of students in the DB increased by one
-          assert.length(data, studentCount + 1);
+          assert.lengthOf(data, studentCount + 1);
           // Verify that the correct student data was added
           assert.deepEqual([percy, annabeth, dave], data);
           done();
@@ -179,7 +277,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should not post a student if the request is missing a last_name',
+    xit('should not post a student if the request is missing a last name',
     function() {
       var req = {
         data: {
@@ -226,7 +324,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should not post a student if the request is missing a first_name',
+    xit('should not post a student if the request is missing a first name',
     function() {
       var req = {
         data: {
@@ -248,66 +346,26 @@ describe('Students', function() {
         done();
       });
     });
-  });
 
-  describe('getStudent(req)', function() {
-    xit('should get an existing student by student_id', function() {
-      var req = {
-        params: {
-          // The student_id is contained in the request
-          student_id: 4
-        }
-      };
-
-      var promise = students.getStudent(req);
-
-      promise.then(function(data) {
-        // Check that we received the correct student
-        assert.deepEqual([dave], data);
-        done();
-      });
-    });
-
-    xit('should return an error when given a student_id that\'s not in the DB',
+    xit('should not post a student if a field is repeated in the request',
     function() {
       var req = {
-        params: {
-          // The student_id is contained in the request
-          student_id: 617
+        data: {
+          last_name: 'Lupin',
+          last_name: 'Werewolf',
+          dob: '03/10/1960'
         }
       };
 
-      // Assert that an error is thrown when nonexistent ID is given
+      // Assert that an error is thrown when a field is repeated
       assert.throw(function() {
-        students.getStudent(req);
+        students.createStudent(req);
       }, Error);
       // Assert that the error message is correct
-      var promise = students.getStudent(req);
-      promise.then(function(result) {
-          assert.equal(result.message,
-          'Failed to get: The given student id is not in the database');
-          done();
-        });
-    });
-
-    xit('should return an error when given a student_id of invalid type',
-    function() {
-      var req = {
-        params: {
-          // The student_id is contained in the request
-          student_id: 'superbad'
-        }
-      };
-
-      // Assert that an error is thrown when an invalid ID type is given
-      assert.throw(function() {
-        students.getStudent(req);
-      }, Error);
-      // Assert that the error message is correct
-      var promise = students.getStudent(req);
+      var promise = students.createStudent();
       promise.then(function(result) {
         assert.equal(result.message,
-        'Failed to get student. Invalid student_id type: must be an integer');
+        'Unable to add student due to a repeated field');
         done();
       });
     });
@@ -340,7 +398,7 @@ describe('Students', function() {
         })
         .then(function() {
           // Get the DB after the update
-          // NOTE TODO, I THINK YOU SOULD JUST CHECK THE STATUS OF THE PERSON CHANGED AS YOUR OTHER TESTS
+          // NOTE TODO (tomped), I THINK YOU SOULD JUST CHECK THE STATUS OF THE PERSON CHANGED AS YOUR OTHER TESTS
           // ADD STUDENTS TO THE DB AND TEST MAY BE RAN I DIFFERENT ORDERS
           return getAllStudents();
         })
