@@ -66,7 +66,7 @@ var dave = {
 describe('Students', function() {
   // NOTE: Do I need a beforeeach?
   describe('getStudents(req)', function() {
-    it('should get all the students in the database', function() {
+    xit('should get all the students in the database', function() {
       // GET all doesn't need anything from the request, so pass in empty
       var promise = students.getStudents({});
 
@@ -77,7 +77,7 @@ describe('Students', function() {
       });
     });
 
-    it('should be able to get a student using first, last name and birthday',
+    xit('should be able to get a student using first, last name and birthday',
     function() {
       var req = {
         query: {
@@ -96,7 +96,7 @@ describe('Students', function() {
       });
     });
 
-    it('should get all the students for a given site',
+    xit('should get all the students for a given site',
     function() {
       var req = {
         query: {
@@ -112,7 +112,7 @@ describe('Students', function() {
       });
     });
 
-    it('should get all the students for a given roster/program',
+    xit('should get all the students for a given roster/program',
     function() {
       var req = {
         query: {
@@ -130,7 +130,7 @@ describe('Students', function() {
   });
 
   describe('postStudent(req)', function() {
-    it('should add a new student to the database', function() {
+    xit('should add a new student to the database', function() {
       var req = {data: daveURL};
       var studentCount;
       // Get the contents of the database before calling addStudent
@@ -154,7 +154,7 @@ describe('Students', function() {
         });
     });
 
-    it('should return an error and not post if the student already exists',
+    xit('should return an error and not post if the student already exists',
     function() {
       var req = {annabethURL};
 
@@ -172,7 +172,7 @@ describe('Students', function() {
       });
     });
 
-    it('should not post a student if the request is missing a last_name',
+    xit('should not post a student if the request is missing a last_name',
     function() {
       var req = {
         data: {
@@ -196,7 +196,7 @@ describe('Students', function() {
       });
     });
 
-    it('should not post a student if the request is missing a birthdate',
+    xit('should not post a student if the request is missing a birthdate',
     function() {
       var req = {
         data: {
@@ -219,7 +219,7 @@ describe('Students', function() {
       });
     });
 
-    it('should not post a student if the request is missing a first_name',
+    xit('should not post a student if the request is missing a first_name',
     function() {
       var req = {
         data: {
@@ -244,7 +244,7 @@ describe('Students', function() {
   });
 
   describe('getStudent(req)', function() {
-    it('should get an existing student by student_id', function() {
+    xit('should get an existing student by student_id', function() {
       var req = {
         params: {
           // The student_id is contained in the request
@@ -261,7 +261,7 @@ describe('Students', function() {
       });
     });
 
-    it('should return an error when given a student_id that\'s not in the DB',
+    xit('should return an error when given a student_id that\'s not in the DB',
     function() {
       var req = {
         params: {
@@ -283,7 +283,7 @@ describe('Students', function() {
         });
     });
 
-    it('should return an error when given a student_id of invalid type',
+    xit('should return an error when given a student_id of invalid type',
     function() {
       var req = {
         params: {
@@ -307,7 +307,7 @@ describe('Students', function() {
   });
 
   describe('updateStudent(req)', function() {
-    it('should update the information for a given student', function() {
+    xit('should update the information for a given student', function() {
       var req = {
         params: {
           student_id: 123
@@ -346,7 +346,7 @@ describe('Students', function() {
         });
     });
 
-    it('should return an error for attempts to update nonexistent student',
+    xit('should return an error for attempts to update nonexistent student',
     function() {
       var req = {
         params: {
@@ -374,7 +374,7 @@ describe('Students', function() {
   });
 
   describe('deleteStudent(req)', function() {
-    it('should delete a given student from the database', function() {
+    xit('should delete a given student from the database', function() {
       var req = {
         params: {
           student_id: 456
@@ -407,7 +407,7 @@ describe('Students', function() {
         });
     });
 
-    it('should return an error on attempt to delete nonexistent student',
+    xit('should return an error on attempt to delete nonexistent student',
     function() {
       var req = {
         params: {

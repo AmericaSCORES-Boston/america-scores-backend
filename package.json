@@ -4,9 +4,11 @@
   "description": "The backend for the America SCORES data collection app.",
   "main": "index.js",
   "scripts": {
-    "test": "gulp test --failTaskOnError",
+    "test": "gulp test",
     "eslint": "gulp eslint",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html"
+    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
+    "start": "forever start app.js",
+    "stop": "forever stop app.js"
   },
   "repository": {
     "type": "git",
@@ -20,8 +22,10 @@
     "debug": "~2.2.0",
     "dotenv": "^2.0.0",
     "express": "^4.14.0",
+    "forever": "^0.15.3",
     "morgan": "~1.7.0",
-    "mysql": "^2.11.1"
+    "mysql": "^2.11.1",
+    "net": "^1.0.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
