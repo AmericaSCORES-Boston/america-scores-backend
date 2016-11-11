@@ -1,6 +1,6 @@
 'use strict';
 
-const creds = require('/amscores/config/creds.js');
+const creds = require('./creds');
 
 module.exports = {
   development: {
