@@ -5,6 +5,8 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "Development" ]; then
     npm stop
 
     shopt -s extglob
-    rm -rf -- !(config/creds.js)
+    rm -rf -- !(config)
+    cd config
+    rm -rf -- !(creds.js)
   fi
 fi
