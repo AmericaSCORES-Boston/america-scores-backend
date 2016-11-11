@@ -55,7 +55,7 @@ var brian = {
   'student_id': 3,
   'first_name': 'Brian',
   'last_name': 'Smith',
-  'dob': new Date(93, 4, 12)
+  'dob': new Date(93, 3, 12)
 };
 
 var daveURL = {
@@ -80,7 +80,6 @@ describe('Students', function() {
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
-        console.log(data);
         assert.deepEqual([percy, annabeth, brian], data);
         done();
       });
