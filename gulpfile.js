@@ -64,8 +64,8 @@ gulp.task('seed', () => {
       'INSERT INTO Site (site_name, site_address) VALUES("site a", "370 Marsh Rd, MA")',
       'INSERT INTO Site (site_name, site_address) VALUES("site b", "144 Atwater St, CA")',
 
-      'INSERT INTO Student (first_name, last_name, dob) VALUES ("Percy", "Jackson", DATE("1993-07-18"))',
-      'INSERT INTO Student (first_name, last_name, dob) VALUES ("Annabeth", "Chase", DATE("1993-06-12"))',
+      'INSERT INTO Student (first_name, last_name, dob) VALUES ("Percy", "Jackson", DATE("1993-08-18"))',
+      'INSERT INTO Student (first_name, last_name, dob) VALUES ("Annabeth", "Chase", DATE("1993-07-12"))',
       'INSERT INTO Student (first_name, last_name, dob) VALUES ("Brian", "Smith", DATE("1993-04-12"))',
       'INSERT INTO Student (first_name, last_name, dob) VALUES ("Pam", "Ho", DATE("1993-04-12"))',
 
