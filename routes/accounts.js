@@ -1,3 +1,5 @@
+//TODO standardize post->create to match other routes
+
 function getAccounts(req) {
   // returns promise
 }
