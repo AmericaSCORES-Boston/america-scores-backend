@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coveralls": "^2.11.15",
     "eslint": "^3.8.1",
     "eslint-config-google": "^0.7.0",
     "gulp": "^3.9.1",
