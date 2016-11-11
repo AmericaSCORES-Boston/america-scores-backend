@@ -28,3 +28,8 @@ node_modules
 
 # For environment variables
 .env
+
+# Vagrant
+.vagrant
+
+config/creds.js

@@ -1,7 +1,14 @@
-var net = require('net');
+const net = require('net');
 
-var server = net.createServer(function(socket) {
-    socket.end('Hello!\n');
+const env = process.env.NODE_ENV || 'development';
+const config = require('./config/config.js')[env];
+
+const query = require('./lib/utils.js').query;
+
+const server = net.createServer(function(socket) {
+  query('SHOW TABLES;').then(function(data) {
+    socket.end(JSON.stringify(data) + '\n');
+  });
 });
 
-server.listen(7777);
+server.listen(config.server.port);
