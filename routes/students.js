@@ -26,40 +26,54 @@ function getStudents(req) {
           propertyValue: req.query.dob
         });
       }
-  } else if (req.params && req.params.program_id) {
-    var program_id = req.params.program_id;
-    // Check if the program_id is an integer > 0
-    if (isPositiveInteger(String(program_id))) {
-      // Check if the program_id is in the Program table
-      return isInDatabase(program_id, 'Program', 'program_id')
+  } else if (req.params && (req.params.program_id || req.params.site_id)) {
+
+    if (req.params.program_id) {
+      var id = req.params.program_id;
+      var table = 'Program';
+      var field = 'program_id';
+      var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+      '(SELECT student_id FROM StudentToProgram ' +
+      'WHERE program_id=' + id + ')';
+    } else if (req.params.site_id) {
+      var id = req.params.site_id;
+      var table = 'Site';
+      var field = 'site_id';
+      var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+      '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
+      '(SELECT program_id FROM Program WHERE site_id=' + id + '))';
+    }
+
+    // Check if the id is an integer > 0
+    if (isPositiveInteger(String(id))) {
+      // Check if the id is in the related table
+      return isInDatabase(id, table, field)
       .then(function(count) {
         if (count > 0) {
-          return query('SELECT * FROM Student WHERE student_id IN ' +
-          '(SELECT student_id FROM StudentToProgram ' +
-          'WHERE program_id=' + program_id + ')');
+          return query(queryString);
         } else {
-          // Given program does not exist, give error.
+          // Given id does not exist, give error.
           return Promise.reject({
             name: 'ArgumentNotFoundError',
             status: 404,
-            message: 'Could not fetch students: The given program does not' +
-            ' exist in the database',
-            propertyName: 'program_id',
-            propertyValue: program_id
+            message: 'Could not fetch students: The given ' + field +
+            ' does not exist in the database',
+            propertyName: field,
+            propertyValue: id
           });
         }
       }).then(function(data) {
         return data;
       });
     } else {
-      // Program id is not a number or is negative (invalid)
+      // id is not a number or is negative (invalid)
       return Promise.reject({
         name: 'InvalidArgumentError',
         status: 400,
-        message: 'Given program_id is of invalid format (e.g. not an integer' +
-        ' or negative)',
-        propertyName: 'program_id',
-        propertyValue: program_id
+        message: 'Given ' + field + ' is of invalid format (e.g. not an' +
+        ' integer or negative)',
+        propertyName: field,
+        propertyValue: id
       });
     }
   } else {

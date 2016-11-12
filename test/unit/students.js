@@ -98,7 +98,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should get all the students for a given site',
+    it('should get all the students for a given site',
     function(done) {
       var req = {
         params: {
@@ -111,6 +111,90 @@ describe('Students', function() {
       promise.then(function(data) {
         // Check that we received the correct students
         assert.deepEqual([brian], data);
+        done();
+      });
+    });
+
+    it('should give an error if the site_id is negative',
+    function(done) {
+      var req = {
+        params: {
+          site_id: -4
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given site_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the site_id is not an integer',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 'ADogNamedSpy'
+        }
+      };
+
+      var req2 = {
+        params: {
+          site_id: 3.1
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given site_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
+        assert.equal(err.status, 400);
+      });
+
+      promise = students.getStudents(req2);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given site_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req2.params.site_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the site_id is not in the database',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 1234
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Could not fetch students: The given site_id does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
+        assert.equal(err.status, 404);
         done();
       });
     });
@@ -205,7 +289,7 @@ describe('Students', function() {
       var promise = students.getStudents(req);
       promise.catch(function(err) {
         assert.equal(err.message,
-        'Could not fetch students: The given program does not exist in the' +
+        'Could not fetch students: The given program_id does not exist in the' +
         ' database');
 
         assert.equal(err.name, 'ArgumentNotFoundError');
