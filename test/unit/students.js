@@ -1,25 +1,19 @@
-// TODO Errors reserved for exceptional cases: searching for student that doesn’t
-//  exist happens often. Just send empty object UPDATE TESTS
-
 // Set the env to test
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = 'development';
 
 // Require the testing dependencies
 var chai = require('chai');
 var assert = chai.assert;
 
+// Require query function for getAllStudents check
+const query = require('../../lib/utils').query;
+
 // The file to be tested
 var students = require('../../routes/students');
 
-// Get DB connection for use in asserts
-// TODO: Replace calls to getStudents in unrelated tests with actual queries
-// to the test DB using a DB connection (SELECT * FROM Student)
-
-// A function for getting all the student data in the database
-// TODO: Replace this with the SQL call mentioned above so that we don't depend
-// on a function written by you in every test
+// Get contents of Students table in DB for use in asserts
 function getAllStudents() {
-  return students.getStudents({});
+  return query('SELECT * FROM Student');
 }
 
 // Create example students for expected results
@@ -41,7 +35,7 @@ var perseus = {
 var annabethURL = {
   'first_name': 'Annabeth',
   'last_name': 'Chase',
-  'dob': '07/12/1993'
+  'dob': '1993-07-12'
 };
 
 var annabeth = {
@@ -61,7 +55,7 @@ var brian = {
 var daveURL = {
   'first_name': 'Dave',
   'last_name': 'Strider',
-  'dob': '12/03/1995'
+  'dob': '1995-12-03'
 };
 
 var dave = {
@@ -85,14 +79,13 @@ describe('Students', function() {
       });
     });
 
-    xit('should be able to get a student using first, last name and birthday',
+    it('should be able to get a student using first, last name and birthday',
     function(done) {
       var req = {
         query: {
           first_name: 'Percy',
           last_name: 'Jackson',
-          // NOTE: In the URL, this will be a string. Convert to date object.
-          dob: '08/18/1993'
+          dob: '1993-08-18'
         }
       };
 
@@ -100,7 +93,6 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct student
-        console.log(data);
         assert.deepEqual([percy], data);
         done();
       });
@@ -157,7 +149,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should give an error if birthdate is not parseable to a date object',
+    it('should give an error if birthdate is not parseable to a date object',
     function(done) {
       var req = {
         query: {
@@ -167,15 +159,39 @@ describe('Students', function() {
         }
       };
 
-      // Assert that an error is thrown when an invalid date is given
-      assert.throw(function() {
-        students.getStudents(req);
-      }, Error);
-      // Assert that the error message is correct
       var promise = students.getStudents(req);
-      promise.then(function(result) {
-        assert.equal(result.message,
-        'Failed to get student due to invalid birthdate. Try mm/dd/yyyy.');
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'dob');
+        assert.equal(err.propertyValue, req.query.dob);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if birthdate is in an unexpected date format ' +
+    '(e.g. MM-DD-YYYY instead of YYYY-MM-DD)',
+    function(done) {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          dob: '08-18-1993'
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'dob');
+        assert.equal(err.propertyValue, req.query.dob);
+        assert.equal(err.status, 400);
         done();
       });
     });
