@@ -68,7 +68,7 @@ var dave = {
 // Students testing block
 describe('Students', function() {
   describe('getStudents(req)', function() {
-    xit('should get all the students in the database', function(done) {
+    it('should get all the students in the database', function(done) {
       // GET all doesn't need anything from the request, so pass in empty
       var promise = students.getStudents({});
 
@@ -79,7 +79,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should be able to get a student using first, last name and birthday',
+    it('should be able to get a student using first, last name and birthday',
     function(done) {
       var req = {
         query: {
@@ -126,14 +126,13 @@ describe('Students', function() {
       var promise = students.getStudents(req);
 
       promise.then(function(data) {
-        console.log(data);
         // Check that we received the correct students
         assert.deepEqual([annabeth], data);
         done();
       });
     });
 
-    xit('should give an error if the program_id is negative',
+    it('should give an error if the program_id is negative',
     function(done) {
       var req = {
         params: {
@@ -155,7 +154,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should give an error if the program_id is not an integer',
+    it('should give an error if the program_id is not an integer',
     function(done) {
       var req = {
         params: {
@@ -195,7 +194,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should give an error if the program_id is not in the database',
+    it('should give an error if the program_id is not in the database',
     function(done) {
       var req = {
         params: {
