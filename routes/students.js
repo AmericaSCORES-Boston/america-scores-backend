@@ -17,17 +17,11 @@ function getStudents(req) {
         + ' AND \'' + birthday + ' 23:59:59\'');
       } else {
         // Date of birth format is incorrect, send error
-        return Promise.reject({
-          name: 'InvalidArgumentError',
-          status: 400,
-          message: 'Failed to get student due to invalid birthdate.' +
-          ' Try yyyy-mm-dd.',
-          propertyName: 'dob',
-          propertyValue: req.query.dob
-        });
+        var message = 'Failed to get student due to invalid birthdate.' +
+        ' Try yyyy-mm-dd.';
+        return createInvalidArgumentError(birthday, 'dob', message);
       }
   } else if (req.params && (req.params.program_id || req.params.site_id)) {
-
     if (req.params.program_id) {
       var id = req.params.program_id;
       var table = 'Program';
@@ -45,36 +39,22 @@ function getStudents(req) {
     }
 
     // Check if the id is an integer > 0
-    if (isPositiveInteger(String(id))) {
+    if (isPositiveInteger(id)) {
       // Check if the id is in the related table
-      return isInDatabase(id, table, field)
+      return countInDB(id, table, field)
       .then(function(count) {
         if (count > 0) {
           return query(queryString);
         } else {
           // Given id does not exist, give error.
-          return Promise.reject({
-            name: 'ArgumentNotFoundError',
-            status: 404,
-            message: 'Could not fetch students: The given ' + field +
-            ' does not exist in the database',
-            propertyName: field,
-            propertyValue: id
-          });
+          return createArgumentNotFoundError(id, field);
         }
       }).then(function(data) {
         return data;
       });
     } else {
       // id is not a number or is negative (invalid)
-      return Promise.reject({
-        name: 'InvalidArgumentError',
-        status: 400,
-        message: 'Given ' + field + ' is of invalid format (e.g. not an' +
-        ' integer or negative)',
-        propertyName: field,
-        propertyValue: id
-      });
+      return createInvalidArgumentError(id, field);
     }
   } else {
     return query('SELECT * FROM Student');
@@ -82,6 +62,28 @@ function getStudents(req) {
 }
 
 function getStudent(req) {
+  var id = req.params.student_id;
+  var field = 'student_id';
+
+  // Check if student is a positive integer
+  if (isPositiveInteger(id)) {
+    // Check if the student is in the database
+    return countInDB(id, 'Student', field)
+    .then(function(count) {
+      if (count > 0) {
+        // The id is in the database. Fetch the student
+        return query('SELECT * FROM Student WHERE student_id=' + id);
+      } else {
+        return createArgumentNotFoundError(id, field);
+      }
+    })
+  } else {
+    // Error for invalid id format
+    // id is not a number or is negative (invalid)
+    return createInvalidArgumentError(id, field);
+  }
+
+
 
 }
 
@@ -108,13 +110,38 @@ function isValidDate(date) {
 function isPositiveInteger(str) {
   var intRegex = /^\d+$/;
 
-  return str.match(intRegex) != null;
+  return String(str).match(intRegex) != null;
 }
 
-function isInDatabase(id, table, field) {
+function countInDB(id, table, field) {
   return query('SELECT COUNT(*) FROM ' + table + ' WHERE ' + field + '=' + id)
   .then(function(data) {
     return data[0]['COUNT(*)'];
+  });
+}
+
+function createInvalidArgumentError(id, field, message) {
+  var defaultIdError = 'Given ' + field + ' is of invalid format (e.g. not' +
+  ' an integer or negative)';
+  message = (typeof message === 'undefined') ? defaultIdError : message;
+  return Promise.reject({
+    name: 'InvalidArgumentError',
+    status: 400,
+    message: message,
+    propertyName: field,
+    propertyValue: id
+  });
+}
+
+function createArgumentNotFoundError(id, field) {
+  // Given id does not exist, give error.
+  return Promise.reject({
+    name: 'ArgumentNotFoundError',
+    status: 404,
+    message: 'Could not fetch students: The given ' + field +
+    ' does not exist in the database',
+    propertyName: field,
+    propertyValue: id
   });
 }
 

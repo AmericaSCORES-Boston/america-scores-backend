@@ -17,7 +17,6 @@ function getAllStudents() {
 }
 
 // Create example students for expected results
-// TODO Update student ID values to match what's in the test DB
 var percy = {
   'student_id': 1,
   'first_name': 'Percy',
@@ -59,11 +58,18 @@ var daveURL = {
 };
 
 var dave = {
-  'student_id': 4,
+  'student_id': 5,
   'first_name': 'Dave',
   'last_name': 'Strider',
   'dob': new Date(95, 11, 3)
 };
+
+var pam = {
+  'student_id': 4,
+  'first_name': 'Pam',
+  'last_name': 'Ho',
+  'dob': new Date(93, 3, 12)
+}
 
 // Students testing block
 describe('Students', function() {
@@ -74,7 +80,7 @@ describe('Students', function() {
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
-        assert.deepEqual([percy, annabeth, brian], data);
+        assert.deepEqual([percy, annabeth, brian, pam], data);
         done();
       });
     });
@@ -366,7 +372,7 @@ describe('Students', function() {
   });
 
   describe('getStudent(req)', function() {
-    xit('should get an existing student by id', function() {
+    it('should get an existing student by id', function(done) {
       var req = {
         params: {
           // The student_id is contained in the request
@@ -383,8 +389,73 @@ describe('Students', function() {
       });
     });
 
-    xit('should return nothing when given a student id that\'s not in the DB',
-    function() {
+    it('should give an error if the student_id is negative',
+    function(done) {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: -2
+        }
+      };
+
+      var promise = students.getStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given student_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req.params.student_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the student_id is not an integer',
+    function(done) {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 'superbad'
+        }
+      };
+
+      var req2= {
+        params: {
+          // The student_id is contained in the request
+          student_id: 867.5309
+        }
+      };
+
+      var promise = students.getStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given student_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req.params.student_id);
+        assert.equal(err.status, 400);
+      });
+
+      promise = students.getStudent(req2);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given student_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req2.params.student_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the student_id is not in the database',
+    function(done) {
       var req = {
         params: {
           // The student_id is contained in the request
@@ -393,39 +464,22 @@ describe('Students', function() {
       };
 
       var promise = students.getStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Could not fetch students: The given student_id does not exist' +
+        ' in the database');
 
-      promise.then(function(data) {
-        // Check that we received an empty array
-        assert.deepEqual([], data);
-        done();
-      });
-    });
-
-    xit('should return an error when given a student id of invalid type',
-    function() {
-      var req = {
-        params: {
-          // The student_id is contained in the request
-          student_id: 'superbad'
-        }
-      };
-
-      // Assert that an error is thrown when an invalid ID type is given
-      assert.throw(function() {
-        students.getStudent(req);
-      }, Error);
-      // Assert that the error message is correct
-      var promise = students.getStudent(req);
-      promise.then(function(result) {
-        assert.equal(result.message,
-        'Failed to get student. Invalid student_id type: must be an integer');
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req.params.student_id);
+        assert.equal(err.status, 404);
         done();
       });
     });
   });
 
   describe('createStudent(req)', function() {
-    xit('should add a new student to the database', function() {
+    xit('should add a new student to the database', function(done) {
       var req = {data: daveURL};
       var studentCount;
       // Get the contents of the database before calling createStudent
@@ -444,13 +498,13 @@ describe('Students', function() {
           // Verify that the number of students in the DB increased by one
           assert.lengthOf(data, studentCount + 1);
           // Verify that the correct student data was added
-          assert.deepEqual([percy, annabeth, dave], data);
+          assert.deepEqual([percy, annabeth, brian, pam, dave], data);
           done();
         });
     });
 
     xit('should return an error and not post if the student already exists',
-    function() {
+    function(done) {
       var req = {annabethURL};
 
       // Assert that an error is thrown when trying to add student already in DB
@@ -468,7 +522,7 @@ describe('Students', function() {
     });
 
     xit('should not post a student if the request is missing a last name',
-    function() {
+    function(done) {
       var req = {
         data: {
           first_name: 'Korra',
@@ -492,7 +546,7 @@ describe('Students', function() {
     });
 
     xit('should not post a student if the request is missing a birthdate',
-    function() {
+    function(done) {
       var req = {
         data: {
           first_name: 'Asami',
@@ -515,7 +569,7 @@ describe('Students', function() {
     });
 
     xit('should not post a student if the request is missing a first name',
-    function() {
+    function(done) {
       var req = {
         data: {
           last_name: 'Lupin',
@@ -538,7 +592,7 @@ describe('Students', function() {
     });
 
     xit('should not post a student if a field is repeated in the request',
-    function() {
+    function(done) {
       var req = {
         data: {
           last_name: 'Lupin',
@@ -562,7 +616,7 @@ describe('Students', function() {
   });
 
   describe('updateStudent(req)', function() {
-    xit('should update the information for a given student', function() {
+    xit('should update the information for a given student', function(done) {
       var req = {
         params: {
           student_id: 1
@@ -604,7 +658,7 @@ describe('Students', function() {
     });
 
     xit('should return an error for attempts to update nonexistent student',
-    function() {
+    function(done) {
       var req = {
         params: {
           student_id: 777
@@ -631,7 +685,7 @@ describe('Students', function() {
   });
 
   describe('deleteStudent(req)', function() {
-    xit('should delete a given student from the database', function() {
+    xit('should delete a given student from the database', function(done) {
       var req = {
         params: {
           student_id: 1
@@ -666,7 +720,7 @@ describe('Students', function() {
     });
 
     xit('should return an error on attempt to delete nonexistent student',
-    function() {
+    function(done) {
       var req = {
         params: {
           student_id: 617
