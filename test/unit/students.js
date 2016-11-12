@@ -80,6 +80,7 @@ describe('Students', function() {
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
+        console.log(data);
         assert.deepEqual([percy, annabeth, brian, pam], data);
         done();
       });
