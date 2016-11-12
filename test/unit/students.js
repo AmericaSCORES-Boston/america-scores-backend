@@ -115,7 +115,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should get all the students for a given roster/program',
+    xit('should get all the students for a given program',
     function(done) {
       var req = {
         params: {
@@ -128,6 +128,90 @@ describe('Students', function() {
       promise.then(function(data) {
         // Check that we received the correct students
         assert.deepEqual([annabeth], data);
+        done();
+      });
+    });
+
+    it('should give an error if the program_id is negative',
+    function(done) {
+      var req = {
+        params: {
+          program_id: -4
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given program_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req.params.program_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the program_id is not an integer',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 'SuperbadInput'
+        }
+      };
+
+      var req2 = {
+        params: {
+          program_id: 1.22
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given program_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req.params.program_id);
+        assert.equal(err.status, 400);
+      });
+
+      promise = students.getStudents(req2);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given program_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req2.params.program_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the program_id is not in the database',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 4231
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Could not fetch students: The given program does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req.params.program_id);
+        assert.equal(err.status, 404);
         done();
       });
     });
