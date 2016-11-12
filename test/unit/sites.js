@@ -61,12 +61,12 @@ const site11 = {
   site_address: '144 Atwater St, CA'
 };
 
-describe('utils', function() {
+describe('Sites', function() {
   beforeEach(function() {
     return utils.seed();
   });
 
-  describe('sites', function() {
+  describe('getSites(req)', function() {
     it('gets all sites', function(done) {
       var promise = sites.getSites({});
 
@@ -101,7 +101,9 @@ describe('utils', function() {
         done();
       });
     });
+  });
 
+  describe('createSite(req)', function() {
     it('create a site', function(done) {
       var newData = {
         site_name: 'newSiteName',
@@ -173,7 +175,9 @@ describe('utils', function() {
         done();
       });
     });
+  });
 
+  describe('getSite(req)', function() {
     it('get a site', function(done) {
       var promise = sites.getSite({
         params: {
@@ -199,7 +203,9 @@ describe('utils', function() {
         done();
       });
     });
+  });
 
+  describe('updateSite(req)', function() {
     it('updates a site', function(done) {
       sites.getSite({
         params: {
@@ -254,7 +260,9 @@ describe('utils', function() {
         done();
       });
     });
+  });
 
+  describe('deleteSite(req)', function() {
     it('delete a site', function(done) {
       sites.getSite({
         params: {
