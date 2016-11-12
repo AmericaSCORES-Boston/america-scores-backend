@@ -260,6 +260,22 @@ describe('Sites', function() {
         done();
       });
     });
+
+    it('updates a site that does not exist', function(done) {
+      sites.updateSite({
+        params: {
+          site_id: 92342
+        },
+        body: {
+          site_name: 'new name',
+          site_address: 'new address'
+        }
+      })
+      .then(function(data) {
+        assert.equal(0, data.affectedRows);
+        done();
+      });
+    });
   });
 
   describe('deleteSite(req)', function() {
