@@ -21,7 +21,8 @@ function getStudents(req) {
         ' Try yyyy-mm-dd.';
         return createInvalidArgumentError(birthday, 'dob', message);
       }
-  } else if (req.params && (req.params.program_id || req.params.site_id)) {
+  } else if (req.params && (req.params.program_id || req.params.site_id ||
+    req.params.event_id)) {
     if (req.params.program_id) {
       var id = req.params.program_id;
       var table = 'Program';
@@ -36,6 +37,13 @@ function getStudents(req) {
       var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
       '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
       '(SELECT program_id FROM Program WHERE site_id=' + id + '))';
+    } else if (req.params.event_id) {
+      var id = req.params.event_id;
+      var table = 'Event';
+      var field = 'event_id';
+      var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+      '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
+      '(SELECT program_id FROM EVENT WHERE event_id=' + id + '))';
     }
 
     // Check if the id is an integer > 0
@@ -76,15 +84,12 @@ function getStudent(req) {
       } else {
         return createArgumentNotFoundError(id, field);
       }
-    })
+    });
   } else {
     // Error for invalid id format
     // id is not a number or is negative (invalid)
     return createInvalidArgumentError(id, field);
   }
-
-
-
 }
 
 function createStudent(req) {

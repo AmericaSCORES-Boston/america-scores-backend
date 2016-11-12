@@ -69,7 +69,7 @@ var pam = {
   'first_name': 'Pam',
   'last_name': 'Ho',
   'dob': new Date(93, 3, 12)
-}
+};
 
 // Students testing block
 describe('Students', function() {
@@ -306,11 +306,11 @@ describe('Students', function() {
       });
     });
 
-    xit('should get all the students associated with a given event',
+    it('should get all the students associated with a given event',
     function(done) {
       var req = {
         params: {
-          event_id: 5
+          event_id: 4
         }
       };
 
@@ -319,6 +319,90 @@ describe('Students', function() {
       promise.then(function(data) {
         // Check that we received the correct students
         assert.deepEqual([annabeth], data);
+        done();
+      });
+    });
+
+    it('should give an error if the event_id is negative',
+    function(done) {
+      var req = {
+        params: {
+          event_id: -4
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the event_id is not an integer',
+    function(done) {
+      var req = {
+        params: {
+          event_id: 'SuperbadInput'
+        }
+      };
+
+      var req2 = {
+        params: {
+          event_id: 5.6
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 400);
+      });
+
+      promise = students.getStudents(req2);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req2.params.event_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the event_id is not in the database',
+    function(done) {
+      var req = {
+        params: {
+          event_id: 423
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Could not fetch students: The given event_id does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 404);
         done();
       });
     });
