@@ -43,7 +43,7 @@ function getStudents(req) {
       var field = 'event_id';
       var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
       '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-      '(SELECT program_id FROM EVENT WHERE event_id=' + id + '))';
+      '(SELECT program_id FROM Event WHERE event_id=' + id + '))';
     }
 
     // Check if the id is an integer > 0
