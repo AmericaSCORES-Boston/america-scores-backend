@@ -7,8 +7,9 @@
     "test": "gulp test",
     "eslint": "gulp eslint",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
-    "start": "forever start app.js",
-    "stop": "forever stop app.js"
+    "seed": "gulp seed",
+    "start": "pm2 start app.js -n amscores_backend",
+    "stop": "pm2 delete amscores_backend"
   },
   "repository": {
     "type": "git",
@@ -20,15 +21,14 @@
     "bluebird": "^3.4.6",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
-    "dotenv": "^2.0.0",
     "express": "^4.14.0",
-    "forever": "^0.15.3",
     "morgan": "~1.7.0",
     "mysql": "^2.11.1",
     "net": "^1.0.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coveralls": "^2.11.15",
     "eslint": "^3.8.1",
     "eslint-config-google": "^0.7.0",
     "gulp": "^3.9.1",

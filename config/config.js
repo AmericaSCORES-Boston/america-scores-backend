@@ -1,6 +1,6 @@
 'use strict';
 
-const creds = require('/amscores/config/creds.js');
+const creds = require('./creds');
 
 module.exports = {
   development: {
@@ -14,7 +14,7 @@ module.exports = {
 
     server: {
       host: '127.0.0.1',
-      port: '7777'
+      port: '8888'
     }
   },
 
@@ -29,7 +29,7 @@ module.exports = {
 
     server: {
       host: '127.0.0.1',
-      port: '7778'
+      port: '8888'
     }
   }
 };
