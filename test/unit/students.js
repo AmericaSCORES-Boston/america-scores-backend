@@ -306,7 +306,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should get all the students associated with a given event',
+    it('should get all the students associated with a given event',
     function(done) {
       var req = {
         params: {

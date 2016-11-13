@@ -93,7 +93,7 @@ function getStudent(req) {
 }
 
 function createStudent(req) {
-  //return query('INSERT INTO Student')
+  // return query('INSERT INTO Student')
 }
 
 function updateStudent(req) {
