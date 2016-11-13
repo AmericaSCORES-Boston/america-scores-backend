@@ -17,3 +17,6 @@ apt-get install -y nginx
 
 ## Upgrade all packages
 apt-get upgrade -y
+
+## Install PM2
+npm install pm2 -g
