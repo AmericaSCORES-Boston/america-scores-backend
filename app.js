@@ -20,11 +20,11 @@ var accounts = require('./routes/accounts');
 //     app.use(morgan('combined')); //'combined' outputs the Apache style LOGs
 // }
 
-//parse application/json and look for raw text                                        
-app.use(bodyParser.json());                                     
-app.use(bodyParser.urlencoded({extended: true}));               
-app.use(bodyParser.text());                                    
-app.use(bodyParser.json({ type: 'application/json'}));  
+//parse application/json and look for raw text
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.text());
+app.use(bodyParser.json({ type: 'application/json'}));
 
 app.get("/", function(req, res) {
 	res.json({message : "Uh."});
@@ -44,7 +44,7 @@ app.route("/students")
     .get(function(req, res, next) {
     	makeResponse(res, students.getStudents(req));
     });
-    	
+
 app.route("/students/:student_id")
     .get(function(req, res, next) {
     	makeResponse(res, students.getStudent(req));
@@ -126,10 +126,10 @@ app.route("/stats")
 app.route("/stats/:stat_id")
     .get(function(req, res, next) {
     	makeResponse(res, stats.getStat(req));
-    });
+    })
     .put(function(req, res, next) {
     	makeResponse(res, stats.updateStat(req));
-    });
+    })
     .delete(function(req, res, next) {
     	makeResponse(res, stats.deleteStat(req));
     });
@@ -138,7 +138,7 @@ app.route("/stats/:stat_id")
 app.route("/sites")
     .get(function(req, res, next) {
     	makeResponse(res, sites.getSites(req));
-    });
+    })
     .post(function(req, res, next) {
     	makeResponse(res, sites.createSites(req));
     });
@@ -146,18 +146,18 @@ app.route("/sites")
 app.route("/sites/:site_id")
     .get(function(req, res, next) {
     	makeResponse(res, sites.getSite(req));
-    });
+    })
     .put(function(req, res, next) {
     	makeResponse(res, sites.updateSites(req));
-    });
+    })
     .delete(function(req, res, next) {
     	makeResponse(res, sites.deleteSite(req));
     });
-    
+
 app.route("/sites/:site_id/programs")
 	.get(function(req, res, next) {
     	makeResponse(res, programs.getPrograms(req));
-    });
+    })
 	.post(function(req, res, next) {
     	makeResponse(res, programs.createProgram(req));
     });
@@ -191,10 +191,10 @@ app.route("/events")
 app.route("/events/:event_id")
 	.get(function(req, res, next) {
     	makeResponse(res, events.getEvent(req));
-    });
+    })
     .put(function(req, res, next) {
     	makeResponse(res, events.updateEvent(req));
-    });
+    })
     .delete(function(req, res, next) {
     	makeResponse(res, events.deleteEvent(req));
     });
@@ -218,7 +218,7 @@ app.route("/events/:event_id/students/:student_id/stats")
 app.route("/accounts")
 	.get(function(req, res, next) {
     	makeResponse(res, accounts.getAccounts(req));
-    });
+    })
     .post(function(req, res, next) {
     	makeResponse(res, accounts.createAccount(req));
     });
@@ -226,7 +226,7 @@ app.route("/accounts")
 app.route("/accounts/:account_id")
 	.put(function(req, res, next) {
     	makeResponse(res, accounts.updateAccount(req));
-    });
+    })
     .delete(function(req, res, next) {
     	makeResponse(res, accounts.deleteAccount(req));
     });
