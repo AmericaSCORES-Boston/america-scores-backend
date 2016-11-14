@@ -8,7 +8,7 @@ function getStudents(req) {
   if (req.query && req.query.first_name && req.query.last_name &&
     req.query.dob) {
       var birthday = req.query.dob;
-      if (isValidDate(String(birthday))) {
+      if (isValidDate(birthday)) {
         // If the date is in yyyy-mm-dd format, get the student
         return query('SELECT * FROM Student WHERE first_name=\'' +
         req.query.first_name +
@@ -93,37 +93,71 @@ function getStudent(req) {
 }
 
 function createStudent(req) {
-  // return query('INSERT INTO Student')
-
   // Check that request has all necessary fields
   if (req.body && req.body.first_name && req.body.last_name &&
     req.body.dob && req.params && req.params.program_id) {
-      // TODO CHECK VALIDITY OF PARAMETERS before checking if stud exists
+      // Ensure that the given birthdate is valid
+      if (!isValidDate(req.body.dob)) {
+        return createInvalidArgumentError(req.body.dob, 'dob',
+        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+      }
 
-      // Also check program below.
-      var promise = getStudents({
-        query: {
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
-          dob: req.body.dob
-        }
-      });
+      // Ensure that the program_id is the valid type (positive integer)
+      if (!isPositiveInteger(req.params.program_id)) {
+        return createInvalidArgumentError(req.params.program_id, 'program_id');
+      }
 
-      return promise.then(function(data) {
-        if (data.length == 0) {
-          // Student does not exist in DB yet
-          return query('INSERT INTO Student (first_name, last_name, dob)' +
-          ' VALUES ("' + req.body.first_name + '", "' + req.body.last_name +
-          '", DATE("' + req.body.dob + '"))');
-        } else {
-          // Student already exists
-          return Promise.reject({
-            name: 'DatabaseConflictError',
-            status: 409,
-            message: 'Unable to create student: the student is already in ' +
-            'the database',
+      // Check if the given program_id exists in the database
+      return countInDB(req.params.program_id, 'Program', 'program_id')
+      .then(function(count) {
+        if (count > 0) {
+          // The program_id is valid, add the student to the database
+          var promise = getStudents({
+            query: {
+              first_name: req.body.first_name,
+              last_name: req.body.last_name,
+              dob: req.body.dob
+            }
           });
+
+          return promise.then(function(data) {
+            if (data.length == 0) {
+              // Student does not exist in DB yet, so add them to Student table
+              return query('INSERT INTO Student (first_name, last_name, dob)' +
+              ' VALUES ("' + req.body.first_name + '", "' + req.body.last_name +
+              '", DATE("' + req.body.dob + '"))')
+              .then(function() {
+                return getStudents({
+                  query: {
+                    first_name: req.body.first_name,
+                    last_name: req.body.last_name,
+                    dob: req.body.dob
+                  }
+                });
+              })
+              .then(function(data) {
+                // Then, link student to the program in StudentToProgram table
+                return query('INSERT INTO StudentToProgram ' +
+                '(student_id, program_id) VALUES (' +
+                data[0].student_id + ', ' + req.params.program_id + ')');
+              });
+            } else {
+              // Student already exists
+              return Promise.reject({
+                name: 'DatabaseConflictError',
+                status: 409,
+                message: 'Unable to create student: the student is already in ' +
+                'the database',
+              });
+            }
+          });
+        } else {
+          // Given program_id does not exist, give error.
+          return createArgumentNotFoundError(req.params.program_id,
+            'program_id');
         }
+      }).then(function(data) {
+        return data;
       });
   } else {
     // Missing necessary fields, throw error
@@ -146,6 +180,7 @@ function deleteStudent(req) {
 }
 
 function isValidDate(date) {
+  date = String(date);
   var dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
 
   return date.match(dateRegEx) != null &&
@@ -184,7 +219,7 @@ function createArgumentNotFoundError(id, field) {
   return Promise.reject({
     name: 'ArgumentNotFoundError',
     status: 404,
-    message: 'Could not fetch students: The given ' + field +
+    message: 'Invalid request: The given ' + field +
     ' does not exist in the database',
     propertyName: field,
     propertyValue: id

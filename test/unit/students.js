@@ -112,6 +112,53 @@ describe('Students', function() {
       });
     });
 
+    it('should give an error if birthdate is not parseable to a date object',
+    function(done) {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          dob: '08/woof199!!!3'
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'dob');
+        assert.equal(err.propertyValue, req.query.dob);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if birthdate is in an unexpected date format ' +
+    '(e.g. MM-DD-YYYY instead of YYYY-MM-DD)',
+    function(done) {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          dob: '08-18-1993'
+        }
+      };
+
+      var promise = students.getStudents(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'dob');
+        assert.equal(err.propertyValue, req.query.dob);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
     it('should get all the students for a given site',
     function(done) {
       var req = {
@@ -202,7 +249,7 @@ describe('Students', function() {
       var promise = students.getStudents(req);
       promise.catch(function(err) {
         assert.equal(err.message,
-        'Could not fetch students: The given site_id does not exist in the' +
+        'Invalid request: The given site_id does not exist in the' +
         ' database');
 
         assert.equal(err.name, 'ArgumentNotFoundError');
@@ -303,7 +350,7 @@ describe('Students', function() {
       var promise = students.getStudents(req);
       promise.catch(function(err) {
         assert.equal(err.message,
-        'Could not fetch students: The given program_id does not exist in the' +
+        'Invalid request: The given program_id does not exist in the' +
         ' database');
 
         assert.equal(err.name, 'ArgumentNotFoundError');
@@ -404,60 +451,13 @@ describe('Students', function() {
       var promise = students.getStudents(req);
       promise.catch(function(err) {
         assert.equal(err.message,
-        'Could not fetch students: The given event_id does not exist in the' +
+        'Invalid request: The given event_id does not exist in the' +
         ' database');
 
         assert.equal(err.name, 'ArgumentNotFoundError');
         assert.equal(err.propertyName, 'event_id');
         assert.equal(err.propertyValue, req.params.event_id);
         assert.equal(err.status, 404);
-        done();
-      });
-    });
-
-    it('should give an error if birthdate is not parseable to a date object',
-    function(done) {
-      var req = {
-        query: {
-          first_name: 'Percy',
-          last_name: 'Jackson',
-          dob: '08/woof199!!!3'
-        }
-      };
-
-      var promise = students.getStudents(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'dob');
-        assert.equal(err.propertyValue, req.query.dob);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
-    it('should give an error if birthdate is in an unexpected date format ' +
-    '(e.g. MM-DD-YYYY instead of YYYY-MM-DD)',
-    function(done) {
-      var req = {
-        query: {
-          first_name: 'Percy',
-          last_name: 'Jackson',
-          dob: '08-18-1993'
-        }
-      };
-
-      var promise = students.getStudents(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'dob');
-        assert.equal(err.propertyValue, req.query.dob);
-        assert.equal(err.status, 400);
         done();
       });
     });
@@ -558,7 +558,7 @@ describe('Students', function() {
       var promise = students.getStudent(req);
       promise.catch(function(err) {
         assert.equal(err.message,
-        'Could not fetch students: The given student_id does not exist' +
+        'Invalid request: The given student_id does not exist' +
         ' in the database');
 
         assert.equal(err.name, 'ArgumentNotFoundError');
@@ -572,6 +572,7 @@ describe('Students', function() {
 
   describe('createStudent(req)', function() {
     it('should add a new student to the database', function(done) {
+      // TODO verify that student was also added to StudentToProgram
       var req = {
         params: {
           program_id: 2
@@ -597,6 +598,14 @@ describe('Students', function() {
           assert.lengthOf(data, studentCount + 1);
           // Verify that the correct student data was added
           assert.deepEqual([percy, annabeth, brian, pam, dave], data);
+
+          return query('SELECT program_id FROM StudentToProgram ' +
+          'WHERE student_id=5');
+        })
+        .then(function(data) {
+          assert.deepEqual(data, [{
+            program_id: req.params.program_id
+          }]);
           done();
         });
     });
@@ -764,12 +773,158 @@ describe('Students', function() {
       });
     });
 
-    xit('should not post if the program_id is invalid', function(done) {
+    it('should not post if the program_id not a positive integer',
+    function(done) {
+      var req = {
+        params: {
+          program_id: -2
+        },
+        body: {
+          first_name: 'Hermione',
+          last_name: 'Granger',
+          dob: '1979-09-19'
+        }
+      };
 
+      var req2 = {
+        params: {
+          program_id: 'badInput'
+        },
+        body: {
+          first_name: 'Hermione',
+          last_name: 'Granger',
+          dob: '1979-09-19'
+        }
+      };
+
+      var req3 = {
+        params: {
+          program_id: 1.5
+        },
+        body: {
+          first_name: 'Hermione',
+          last_name: 'Granger',
+          dob: '1979-09-19'
+        }
+      };
+
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given program_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req.params.program_id);
+        assert.equal(err.status, 400);
+      });
+
+
+      students.createStudent(req2)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given program_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req2.params.program_id);
+        assert.equal(err.status, 400);
+      });
+
+      students.createStudent(req3)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given program_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req3.params.program_id);
+        assert.equal(err.status, 400);
+        done();
+      });
     });
 
-    // Test if each field is of valid typeo
-    // Test if program_id exists in the database
+    it('should not post a student if the program_id is not in the database',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1234
+        },
+        body: {
+          first_name: 'Hermione',
+          last_name: 'Granger',
+          dob: '1979-09-19'
+        }
+      };
+
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Invalid request: The given program_id does not exist' +
+        ' in the database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req.params.program_id);
+        assert.equal(err.status, 404);
+        done();
+      });
+    });
+
+    it('should not post if birthdate is not parseable to a date object',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: {
+          first_name: 'Hermione',
+          last_name: 'Granger',
+          dob: 'NotADate'
+        }
+      };
+
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'dob');
+        assert.equal(err.propertyValue, req.body.dob);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should not post if birthdate is in an unexpected date format ' +
+    '(e.g. MM-DD-YYYY instead of YYYY-MM-DD)', function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: {
+          first_name: 'Hermione',
+          last_name: 'Granger',
+          dob: '10-05-1945'
+        }
+      };
+
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'dob');
+        assert.equal(err.propertyValue, req.body.dob);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
   });
 
   describe('updateStudent(req)', function() {
