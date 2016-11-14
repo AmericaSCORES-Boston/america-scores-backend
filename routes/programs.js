@@ -7,9 +7,9 @@ function getPrograms(req) {
   if (req.params.site_id && Object.keys(req.params).length == 1) {
     return query('SELECT * FROM Program WHERE site_id = ' + req.params.site_id);
   }
-  if (req.params.student.id && Object.keys(req.params).length == 1) {
-    return query('');
-  }
+  // if (req.params.student.id && Object.keys(req.params).length == 1) {
+  //   return query('');
+  // }
 }
 
 function getProgram(req) {
@@ -19,7 +19,7 @@ function getProgram(req) {
 }
 
 function createProgram(req) {
-  return query('INSERT INTO Program (site_id, program_name) VALUES(' + req.params.program_id + ', ' + req.body.program_name + ')');
+  // return query('INSERT INTO Program (site_id, program_name) VALUES(' + req.params.program_id + ', ' + req.body.program_name + ')');
 }
 
 function updateProgram(req) {
