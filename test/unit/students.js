@@ -1,4 +1,4 @@
-// Set the env to test
+// Set the env to development
 process.env.NODE_ENV = 'development';
 
 // Require the testing dependencies
