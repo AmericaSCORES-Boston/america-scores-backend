@@ -5,21 +5,21 @@ const chai = require('chai');
 const assert = chai.assert;
 
 
-const program1 = { program_id: 1, site_id: 1, program_name: 'test program' };
-const program2 = { program_id: 2, site_id: 2, program_name: 'test program 2' };
-const program3 = { program_id: 3, site_id: 10, program_name: 'test program 3' };
-const program4 = { program_id: 4, site_id: 11, program_name: 'test program 4' };
+const program1 = {program_id: 1, site_id: 1, program_name: 'test program'};
+const program2 = {program_id: 2, site_id: 2, program_name: 'test program 2'};
+const program3 = {program_id: 3, site_id: 10, program_name: 'test program 3'};
+const program4 = {program_id: 4, site_id: 11, program_name: 'test program 4'};
 var allPrograms = [program1, program2, program3, program4];
 
 var programsDeleted = [program2, program3, program4];
-const newProgram = { program_id: 5, site_id: 5, program_name: 'new test program' };
+const newProgram = {program_id: 5, site_id: 5, program_name: 'new test program'};
 var programsNew = [program1, program2, program3, program4, newProgram];
-const updatedProgram = { program_id: 1, site_id: 1, program_name: 'updated program' };
+const updatedProgram = {program_id: 1, site_id: 1, program_name: 'updated program'};
 
 describe('GET', function(done) {
   it('/programs', function(done) {
     var req = {
-      params : {
+      params: {
       },
     };
     var promise = programs.getPrograms(req);
@@ -30,8 +30,8 @@ describe('GET', function(done) {
   });
   it('/programs/:program_id', function(done) {
     var req = {
-      params : {
-        program_id : 1
+      params: {
+        program_id: 1
       },
     };
     var promise = programs.getProgram(req);
@@ -42,8 +42,8 @@ describe('GET', function(done) {
   });
   it('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
-      params : {
-        program_id : -1
+      params: {
+        program_id: -1
       },
     };
     var promise = programs.getProgram(req);
@@ -54,8 +54,8 @@ describe('GET', function(done) {
   });
   xit('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
-      params : {
-        program_id : "id"
+      params: {
+        program_id: 'id'
       },
     };
     var promise = programs.getProgram(req);
@@ -66,8 +66,8 @@ describe('GET', function(done) {
   });
   it('/programs/:program_id (nonexistent program_id)', function(done) {
     var req = {
-      params : {
-        program_id : 9999
+      params: {
+        program_id: 9999
       },
     };
     var promise = programs.getProgram(req);
@@ -78,8 +78,8 @@ describe('GET', function(done) {
   });
   it('/sites/:site_id/programs', function(done) {
     var req = {
-      params : {
-        site_id : 1
+      params: {
+        site_id: 1
       },
     };
     var promise = programs.getPrograms(req);
@@ -90,8 +90,8 @@ describe('GET', function(done) {
   });
   xit('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
-      params : {
-        site_id : -1
+      params: {
+        site_id: -1
       },
     };
     var promise = programs.getPrograms(req);
@@ -102,8 +102,8 @@ describe('GET', function(done) {
   });
   xit('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
-      params : {
-        site_id : "id"
+      params: {
+        site_id: 'id'
       },
     };
     var promise = programs.getPrograms(req);
@@ -114,8 +114,8 @@ describe('GET', function(done) {
   });
   xit('/sites/:site_id/programs (nonexistent site_id)', function(done) {
     var req = {
-      params : {
-        site_id : 9999
+      params: {
+        site_id: 9999
       },
     };
     var promise = programs.getPrograms(req);
@@ -126,8 +126,8 @@ describe('GET', function(done) {
   });
   xit('/students/:student_id/programs', function(done) {
     var req = {
-      params : {
-        student_id : 2
+      params: {
+        student_id: 2
       },
     };
     var promise = programs.getPrograms(req);
@@ -138,8 +138,8 @@ describe('GET', function(done) {
   });
   xit('/students/:student_id/programs (invalid student_id)', function(done) {
     var req = {
-      params : {
-        student_id : -1
+      params: {
+        student_id: -1
       },
     };
     var promise = programs.getPrograms(req);
@@ -150,8 +150,8 @@ describe('GET', function(done) {
   });
   xit('/students/:student_id/programs (invalid student_id)', function(done) {
     var req = {
-      params : {
-        student_id : "id"
+      params: {
+        student_id: 'id'
       },
     };
     var promise = programs.getPrograms(req);
@@ -162,8 +162,8 @@ describe('GET', function(done) {
   });
   xit('/students/:student_id/programs (nonexistent student_id)', function(done) {
     var req = {
-      params : {
-        student_id : 9999
+      params: {
+        student_id: 9999
       },
     };
     var promise = programs.getPrograms(req);
@@ -174,8 +174,8 @@ describe('GET', function(done) {
   });
   xit('/accounts/:account_id/programs', function(done) {
     var req = {
-      params : {
-        account_id : 7
+      params: {
+        account_id: 7
       },
     };
     var promise = programs.getPrograms(req);
@@ -186,8 +186,8 @@ describe('GET', function(done) {
   });
   xit('/accounts/:account_id/programs (invalid account_id)', function(done) {
     var req = {
-      params : {
-        account_id : -1
+      params: {
+        account_id: -1
       },
     };
     var promise = programs.getPrograms(req);
@@ -198,8 +198,8 @@ describe('GET', function(done) {
   });
   xit('/accounts/:account_id/programs (invalid account_id)', function(done) {
     var req = {
-      params : {
-        account_id : "id"
+      params: {
+        account_id: 'id'
       },
     };
     var promise = programs.getPrograms(req);
@@ -210,8 +210,8 @@ describe('GET', function(done) {
   });
   xit('/accounts/:account_id/programs (nonexistent account_id)', function(done) {
     var req = {
-      params : {
-        account_id : 9999
+      params: {
+        account_id: 9999
       },
     };
     var promise = programs.getPrograms(req);
@@ -227,31 +227,31 @@ describe('POST', function() {
     seed().then(function(done) {
       done();
     });
-  })
+  });
   xit('/sites/:site_id/programs', function(done) {
     var req = {
-      params : {
+      params: {
         site_id: 5,
       },
-      body : {
-        name : 'new test program'
+      body: {
+        name: 'new test program'
       }
     };
     var promise = programs.createProgram(req);
     promise.then(function(data) {
       assert.deepEqual(programsNew, programs.getPrograms({}).then(function(data) {
         return data;
-      }))
+      }));
       assert.deepEqual([newProgram], data);
     });
   });
   xit('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
-      params : {
+      params: {
         site_id: -1,
       },
-      body : {
-        name : 'new test program'
+      body: {
+        name: 'new test program'
       }
     };
     var promise = programs.createProgram(req);
@@ -266,11 +266,11 @@ describe('POST', function() {
   });
   xit('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
-      params : {
-        site_id: "id",
+      params: {
+        site_id: 'id',
       },
-      body : {
-        name : 'new test program'
+      body: {
+        name: 'new test program'
       }
     };
     var promise = programs.createProgram(req);
@@ -285,10 +285,10 @@ describe('POST', function() {
   });
   xit('/sites/:site_id/programs (invalid body)', function(done) {
     var req = {
-      params : {
-        site_id: "id",
+      params: {
+        site_id: 'id',
       },
-      body : {
+      body: {
       }
     };
     var promise = programs.createProgram(req);
@@ -303,11 +303,11 @@ describe('POST', function() {
   });
   xit('/sites/:site_id/programs (nonexistent site_id)', function(done) {
     var req = {
-      params : {
+      params: {
         site_id: 9999
       },
-      body : {
-        name : 'new test program'
+      body: {
+        name: 'new test program'
       }
     };
     var promise = programs.createProgram(req);
@@ -327,32 +327,32 @@ describe('PUT', function() {
     seed().then(function(done) {
       done();
     });
-  })
+  });
   xit('/programs/:program_id', function(done) {
     var req = {
-      params : {
+      params: {
         program_id: 1,
       },
-      body : {
-        name : 'updatedProgram'
+      body: {
+        name: 'updatedProgram'
       }
     };
     var promise = programs.updateProgram(req);
     promise.then(function(data) {
       assert.deepEqual([updatedProgram], data);
-      programs.getProgram({params : {program_id : 1}}).then(function (data) {
+      programs.getProgram({params: {program_id: 1}}).then(function(data) {
         assert.equal(data.name, req.body.name);
-      })
+      });
       done();
     });
   });
   xit('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
-      params : {
+      params: {
         program_id: -1,
       },
-      body : {
-        name : 'updatedProgram'
+      body: {
+        name: 'updatedProgram'
       }
     };
     var promise = programs.updateProgram(req);
@@ -367,11 +367,11 @@ describe('PUT', function() {
   });
   xit('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
-      params : {
-        program_id: "id",
+      params: {
+        program_id: 'id',
       },
-      body : {
-        name : 'updatedProgram'
+      body: {
+        name: 'updatedProgram'
       }
     };
     var promise = programs.updateProgram(req);
@@ -386,10 +386,10 @@ describe('PUT', function() {
   });
   xit('/programs/:program_id (invalid body)', function(done) {
     var req = {
-      params : {
+      params: {
         program_id: 1,
       },
-      body : {
+      body: {
       }
     };
     var promise = programs.updateProgram(req);
@@ -404,11 +404,11 @@ describe('PUT', function() {
   });
   xit('/programs/:program_id (nonexistent program_id)', function(done) {
     var req = {
-      params : {
+      params: {
         program_id: 9999,
       },
-      body : {
-        name : 'updatedProgram'
+      body: {
+        name: 'updatedProgram'
       }
     };
     var promise = programs.updateProgram(req);
@@ -428,25 +428,25 @@ describe('DELETE', function() {
     seed().then(function(done) {
       done();
     });
-  })
+  });
   xit('/programs/:program_id', function(done) {
     var req = {
-      params : {
-        program_id : 1,
+      params: {
+        program_id: 1,
       },
     };
     var promise = programs.deleteProgram(req);
     promise.then(function(data) {
       assert.deepEqual([program1], data);
-      programs.getPrograms({}).then(function (data) {
-        assert.deepEqual(programsDelete, data);
+      programs.getPrograms({}).then(function(data) {
+        assert.deepEqual(programsDeleted, data);
       });
       done();
     });
   });
   xit('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
-      params : {
+      params: {
         program_id: -1,
       },
     };
@@ -462,8 +462,8 @@ describe('DELETE', function() {
   });
   xit('/programs/:program_id (invalid progam_id)', function(done) {
     var req = {
-      params : {
-        program_id: "id",
+      params: {
+        program_id: 'id',
       },
     };
     var promise = programs.deleteProgram(req);
@@ -478,7 +478,7 @@ describe('DELETE', function() {
   });
   xit('/programs/:program_id (nonexistent program_id)', function(done) {
     var req = {
-      params : {
+      params: {
         program_id: 9999,
       },
     };

@@ -1,5 +1,4 @@
 const query = require('../lib/utils').query;
-const Promise = require('bluebird');
 
 function getPrograms(req) {
   if (Object.keys(req.params).length == 0) {
