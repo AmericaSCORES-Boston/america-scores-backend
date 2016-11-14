@@ -94,6 +94,47 @@ function getStudent(req) {
 
 function createStudent(req) {
   // return query('INSERT INTO Student')
+
+  // Check that request has all necessary fields
+  if (req.body && req.body.first_name && req.body.last_name &&
+    req.body.dob && req.params && req.params.program_id) {
+      // TODO CHECK VALIDITY OF PARAMETERS before checking if stud exists
+
+      // Also check program below.
+      var promise = getStudents({
+        query: {
+          first_name: req.body.first_name,
+          last_name: req.body.last_name,
+          dob: req.body.dob
+        }
+      });
+
+      return promise.then(function(data) {
+        if (data.length == 0) {
+          // Student does not exist in DB yet
+          return query('INSERT INTO Student (first_name, last_name, dob)' +
+          ' VALUES ("' + req.body.first_name + '", "' + req.body.last_name +
+          '", DATE("' + req.body.dob + '"))');
+        } else {
+          // Student already exists
+          return Promise.reject({
+            name: 'DatabaseConflictError',
+            status: 409,
+            message: 'Unable to create student: the student is already in ' +
+            'the database',
+          });
+        }
+      });
+  } else {
+    // Missing necessary fields, throw error
+    return Promise.reject({
+      name: 'MissingFieldError',
+      status: 400,
+      message: 'Request must have body and params sections. Within params, a ' +
+      'valid program_id must be given. Within body, a valid first_name, ' +
+      'last_name, and birthdate (dob) must be given.'
+    });
+  }
 }
 
 function updateStudent(req) {

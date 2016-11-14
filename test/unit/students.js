@@ -8,6 +8,9 @@ var assert = chai.assert;
 // Require query function for getAllStudents check
 const query = require('../../lib/utils').query;
 
+// Require seed to reset database before each test
+const seed = require('../../lib/utils').seed;
+
 // The file to be tested
 var students = require('../../routes/students');
 
@@ -70,6 +73,11 @@ var pam = {
   'last_name': 'Ho',
   'dob': new Date(93, 3, 12)
 };
+
+// ADD BEFORE EACH TO reseed
+beforeEach(function() {
+  return seed();
+});
 
 // Students testing block
 describe('Students', function() {
@@ -563,8 +571,14 @@ describe('Students', function() {
   });
 
   describe('createStudent(req)', function() {
-    xit('should add a new student to the database', function(done) {
-      var req = {data: daveURL};
+    it('should add a new student to the database', function(done) {
+      var req = {
+        params: {
+          program_id: 2
+        },
+        body: daveURL
+      };
+
       var studentCount;
       // Get the contents of the database before calling createStudent
       getAllStudents()
@@ -587,116 +601,175 @@ describe('Students', function() {
         });
     });
 
-    xit('should return an error and not post if the student already exists',
+    it('should return an error and not post if the student already exists',
     function(done) {
-      var req = {annabethURL};
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: annabethURL
+      };
 
-      // Assert that an error is thrown when trying to add student already in DB
-      assert.throw(function() {
-        students.createStudent(req);
-      },
-      Error);
-      // Assert that the error message is correct
       var promise = students.createStudent(req);
-      promise.then(function(result) {
-        assert.equal(result.message,
-        'Unable to add student because they already exist in the database');
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Unable to create student: the student is already in ' +
+          'the database');
+
+        assert.equal(err.name, 'DatabaseConflictError');
+        assert.equal(err.status, 409);
         done();
       });
     });
 
-    xit('should not post a student if the request is missing a last name',
-    function(done) {
+    it('should not post if request is missing a body', function(done) {
       var req = {
-        data: {
-          first_name: 'Korra',
-          dob: '11/18/1994'
+        params: {
+          program_id: 1
         }
       };
 
-      // Assert that an error is thrown when last name is missing
-      assert.throw(function() {
-        students.createStudent(req);
-      },
-      Error);
-      // Assert that the error message is correct
       var promise = students.createStudent(req);
-      promise.then(function(result) {
-        assert.equal(result.message,
-        // TODO(jacquelineali): for future JIRA, log which field is missing
-        'Unable to add student due to missing fields');
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid program_id must be given. Within body, a valid first_name, ' +
+          'last_name, and birthdate (dob) must be given.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
         done();
       });
     });
 
-    xit('should not post a student if the request is missing a birthdate',
+    it('should not post if request is missing params section', function(done) {
+      var req = {
+        body: {
+          first_name: 'Asami',
+          last_name: 'Sato',
+          dob: '1994-05-23'
+        }
+      };
+
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid program_id must be given. Within body, a valid first_name, ' +
+          'last_name, and birthdate (dob) must be given.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should not post if request is missing a program_id', function(done) {
+      var req = {
+        params: {
+
+        },
+        body: {
+          first_name: 'Asami',
+          last_name: 'Sato',
+          dob: '1994-05-23'
+        }
+      };
+
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid program_id must be given. Within body, a valid first_name, ' +
+          'last_name, and birthdate (dob) must be given.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should not post a student if request is missing a last name',
     function(done) {
       var req = {
-        data: {
+        params: {
+          program_id: 1
+        },
+        body: {
+          first_name: 'Korra',
+          dob: '1994-11-18'
+        }
+      };
+
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid program_id must be given. Within body, a valid first_name, ' +
+          'last_name, and birthdate (dob) must be given.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should not post a student if request is missing a birthdate',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: {
           first_name: 'Asami',
           last_name: 'Sato'
         }
       };
 
-      // Assert that an error is thrown when fields are missing
-      assert.throw(function() {
-        students.createStudent(req);
-      }, Error);
-      // Assert that the error message is correct
       var promise = students.createStudent(req);
-      promise.then(function(result) {
-        assert.equal(result.message,
-        // TODO(jacquelineali): for future JIRA, log which fields are missing
-        'Unable to add student due to missing fields');
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid program_id must be given. Within body, a valid first_name, ' +
+          'last_name, and birthdate (dob) must be given.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
         done();
       });
     });
 
-    xit('should not post a student if the request is missing a first name',
+    it('should not post a student if the request is missing a first name',
     function(done) {
       var req = {
-        data: {
+        params: {
+          program_id: 2
+        },
+        body: {
           last_name: 'Lupin',
-          dob: '03/10/1960'
+          dob: '1965-02-13'
         }
       };
 
-      // Assert that an error is thrown when fields are missing
-      assert.throw(function() {
-        students.createStudent(req);
-      }, Error);
-      // Assert that the error message is correct
-      var promise = students.createStudent();
-      promise.then(function(result) {
-        assert.equal(result.message,
-        // TODO(jacquelineali): for future JIRA, log which fields are missing
-        'Unable to add student due to missing fields');
+      var promise = students.createStudent(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid program_id must be given. Within body, a valid first_name, ' +
+          'last_name, and birthdate (dob) must be given.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
         done();
       });
     });
 
-    xit('should not post a student if a field is repeated in the request',
-    function(done) {
-      var req = {
-        data: {
-          last_name: 'Lupin',
-          last_name: 'Werewolf',
-          dob: '03/10/1960'
-        }
-      };
+    xit('should not post if the program_id is invalid', function(done) {
 
-      // Assert that an error is thrown when a field is repeated
-      assert.throw(function() {
-        students.createStudent(req);
-      }, Error);
-      // Assert that the error message is correct
-      var promise = students.createStudent();
-      promise.then(function(result) {
-        assert.equal(result.message,
-        'Unable to add student due to a repeated field');
-        done();
-      });
     });
+
+    // Test if each field is of valid typeo
+    // Test if program_id exists in the database
   });
 
   describe('updateStudent(req)', function() {
