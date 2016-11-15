@@ -725,7 +725,6 @@ describe('stats', function() {
   });
 
   describe('deleteStat(req)', function() {
-
     // delete existing stats
     xit('should delete stats in the database', function(done) {
       var req = {
