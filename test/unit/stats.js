@@ -87,6 +87,11 @@ var fakeStat8 = {
   pacer: 6
 };
 
+// Add before each to reset database between tests
+beforeEach(function() {
+  return seed();
+});
+
 describe('stats', function() {
   describe('getStats(req)', function() {
     xit('should get all the stats in the database', function(done) {
