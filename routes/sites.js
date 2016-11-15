@@ -4,14 +4,14 @@ const Promise = require('bluebird');
 const query = require('../lib/utils').query;
 
 /**
- * Gets all sites.
+ * Gets all sites matching filter, or all sites if no filter is present.
  *
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
 function getSites(req) {
-  if (req.query && req.query.coach_id) {
-    return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ' + req.query.coach_id);
+  if (req.query && req.query.acct_id) {
+    return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ' + req.query.acct_id);
   }
 
   return query('SELECT * FROM Site');
@@ -23,7 +23,7 @@ function getSites(req) {
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
-function postSite(req) {
+function createSite(req) {
   if (!req.body || !req.body.site_name || !req.body.site_address) {
     return Promise.reject({
       status: 406,
@@ -31,7 +31,17 @@ function postSite(req) {
     });
   }
 
-  return query('INSERT INTO Site (site_name, site_address) VALUES ("' + req.body.site_name + '", "' + req.body.site_address + '")');
+  return query('SELECT * FROM Site WHERE site_name = "' + req.body.site_name + '" AND site_address = "' + req.body.site_address + '"')
+    .then(function(rows) {
+      if (rows.length > 0) {
+        return Promise.reject({
+          status: 409,
+          message: 'Unable to create site: the site is already in the database'
+        });
+      }
+
+      return query('INSERT INTO Site (site_name, site_address) VALUES ("' + req.body.site_name + '", "' + req.body.site_address + '")');
+    });
 }
 
 /**
@@ -82,5 +92,5 @@ function deleteSite(req) {
 }
 
 module.exports = {
-  getSites, postSite, getSite, updateSite, deleteSite
+  getSites, createSite, getSite, updateSite, deleteSite
 };

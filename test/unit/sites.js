@@ -79,7 +79,7 @@ describe('Sites', function() {
     it('gets all sites for a given coach', function(done) {
       var promise = sites.getSites({
         query: {
-          coach_id: 1
+          acct_id: 1
         }
       });
 
@@ -89,10 +89,10 @@ describe('Sites', function() {
       });
     });
 
-    it('gets all sites for a given coach that does not exsit', function(done) {
+    it('it should return no sites if the given coach does not exist', function(done) {
       var promise = sites.getSites({
         query: {
-          coach_id: 100
+          acct_id: 100
         }
       });
 
@@ -113,11 +113,8 @@ describe('Sites', function() {
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
 
-        return sites.postSite({
-          body: {
-            site_name: newData.site_name,
-            site_address: newData.site_address
-          }
+        return sites.createSite({
+          body: newData
         });
       })
       .then(function() {
@@ -133,45 +130,66 @@ describe('Sites', function() {
       });
     });
 
-    it('does not create a site because body was missing', function(done) {
-      sites.postSite({}).then(function() {
-        return sites.getSites({});
+    it('does not create site because a site with the given name and address already exists', function(done) {
+      sites.createSite({
+        body: {
+          site_name: 'singe',
+          site_address: 'single Boston, MA'
+        }
       })
       .catch(function(err) {
+        assert.equal(err.status, 409);
+        assert.equal(err.message, 'Unable to create site: the site is already in the database');
+        return sites.getSites({});
+      })
+      .then(function(data) {
+        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        done();
+      });
+    });
+
+    it('does not create a site because body was missing', function(done) {
+      sites.createSite({}).catch(function(err) {
         assert.equal(err.status, 406);
         assert.equal(err.message, 'Must provide site\'s name, and address');
+        return sites.getSites({});
+      })
+      .then(function(data) {
+        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
         done();
       });
     });
 
     it('does not create a site because the site_name was missing', function(done) {
-      sites.postSite({
+      sites.createSite({
         body: {
           site_address: 'address'
         }
       })
-      .then(function() {
-        return sites.getSites({});
-      })
       .catch(function(err) {
         assert.equal(err.status, 406);
         assert.equal(err.message, 'Must provide site\'s name, and address');
+        return sites.getSites({});
+      })
+      .then(function(data) {
+        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
         done();
       });
     });
 
     it('does not create a site because site_address was missing', function(done) {
-      sites.postSite({
+      sites.createSite({
         body: {
           site_name: 'name'
         }
       })
-      .then(function() {
-        return sites.getSites({});
-      })
       .catch(function(err) {
         assert.equal(err.status, 406);
         assert.equal(err.message, 'Must provide site\'s name, and address');
+        return sites.getSites({});
+      })
+      .then(function(data) {
+        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
         done();
       });
     });
@@ -191,7 +209,7 @@ describe('Sites', function() {
       });
     });
 
-    it('gets a site that does not exist', function(done) {
+    it('returns an empty array when getting a site that does not exist', function(done) {
       var promise = sites.getSite({
         params: {
           site_id: 124
@@ -261,7 +279,7 @@ describe('Sites', function() {
       });
     });
 
-    it('updates a site that does not exist', function(done) {
+    it('It does nothing when asked to update a site that doesn\'t exist', function(done) {
       sites.updateSite({
         params: {
           site_id: 92342
@@ -307,7 +325,7 @@ describe('Sites', function() {
       });
     });
 
-    it('deletes a site that does not exist', function(done) {
+    it('does nothing when told to delete a site that doesni\'t exist', function(done) {
       sites.getSites({}).then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
 
