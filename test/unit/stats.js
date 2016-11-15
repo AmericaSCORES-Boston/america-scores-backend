@@ -317,7 +317,7 @@ describe('stats', function() {
         done();
       });
     });
-    
+
     xit('should give an error if the stat_id is not in the database',
     function(done) {
       var req = {
@@ -790,7 +790,5 @@ describe('stats', function() {
         done();
       });
     });
-
   });
-  
 });
