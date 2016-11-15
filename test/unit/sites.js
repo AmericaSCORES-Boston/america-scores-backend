@@ -325,7 +325,7 @@ describe('Sites', function() {
       });
     });
 
-    it('does nothing when told to delete a site that doesni\'t exist', function(done) {
+    it('does nothing when told to delete a site that doesn\'t exist', function(done) {
       sites.getSites({}).then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
 
