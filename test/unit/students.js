@@ -1,3 +1,4 @@
+// TODO update error tests to check that the DB is unchanged
 // Set the env to development
 process.env.NODE_ENV = 'development';
 
@@ -18,6 +19,12 @@ var students = require('../../routes/students');
 function getAllStudents() {
   return query('SELECT * FROM Student');
 }
+
+// Save memory of old database
+var oldDB;
+var studentCount;
+var oldPrograms;
+var programMatchCount;
 
 // Create example students for expected results
 var percy = {
@@ -43,6 +50,13 @@ var annabethURL = {
 var annabeth = {
   'student_id': 2,
   'first_name': 'Annabeth',
+  'last_name': 'Chase',
+  'dob': new Date(93, 6, 12)
+};
+
+var magnus = {
+  'student_id': 2,
+  'first_name': 'Magnus',
   'last_name': 'Chase',
   'dob': new Date(93, 6, 12)
 };
@@ -77,6 +91,23 @@ var pam = {
 // ADD BEFORE EACH TO reseed
 beforeEach(function() {
   return seed();
+});
+
+// Get the original state of the database
+before(function() {
+  getAllStudents()
+  .then(function(data) {
+    // Remember the Student table
+    oldDB = data;
+    studentCount = data.length;
+
+    return query('SELECT * FROM StudentToProgram');
+  })
+  .then(function(data) {
+    // Remember the StudentToProgram table
+    oldPrograms = data;
+    programMatchCount = data.length;
+  });
 });
 
 // Students testing block
@@ -118,7 +149,7 @@ describe('Students', function() {
         query: {
           first_name: 'Percy',
           last_name: 'Jackson',
-          dob: '08/woof199!!!3'
+          dob: '1992-34-54'
         }
       };
 
@@ -580,34 +611,28 @@ describe('Students', function() {
         body: daveURL
       };
 
-      var studentCount;
-      // Get the contents of the database before calling createStudent
-      getAllStudents()
-        .then(function(data) {
-          // Count the number of students
-          studentCount = data.length;
-          // Call the function to be tested
-          return students.createStudent(req);
-        })
-        .then(function() {
-          // Get the contents of the database after calling createStudent
-          return getAllStudents();
-        })
-        .then(function(data) {
-          // Verify that the number of students in the DB increased by one
-          assert.lengthOf(data, studentCount + 1);
-          // Verify that the correct student data was added
-          assert.deepEqual([percy, annabeth, brian, pam, dave], data);
+      students.createStudent(req)
+      .then(function() {
+        // Get the contents of the database after calling createStudent
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Verify that the number of students in the DB increased by one
+        assert.lengthOf(data, studentCount + 1);
+        // Verify that the correct student data was added
+        assert.deepEqual([percy, annabeth, brian, pam, dave], data);
+        // Verify the old data wasn't received
+        assert.notDeepEqual(oldDB, data);
 
-          return query('SELECT program_id FROM StudentToProgram ' +
-          'WHERE student_id=5');
-        })
-        .then(function(data) {
-          assert.deepEqual(data, [{
-            program_id: req.params.program_id
-          }]);
-          done();
-        });
+        return query('SELECT program_id FROM StudentToProgram ' +
+        'WHERE student_id=5');
+      })
+      .then(function(data) {
+        assert.deepEqual(data, [{
+          program_id: req.params.program_id
+        }]);
+        done();
+      });
     });
 
     it('should return an error and not post if the student already exists',
@@ -619,14 +644,21 @@ describe('Students', function() {
         body: annabethURL
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
           'Unable to create student: the student is already in ' +
           'the database');
 
         assert.equal(err.name, 'DatabaseConflictError');
         assert.equal(err.status, 409);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -638,8 +670,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
           'Request must have body and params sections. Within params, a ' +
           'valid program_id must be given. Within body, a valid first_name, ' +
@@ -647,6 +679,13 @@ describe('Students', function() {
 
         assert.equal(err.name, 'MissingFieldError');
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -660,8 +699,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
           'Request must have body and params sections. Within params, a ' +
           'valid program_id must be given. Within body, a valid first_name, ' +
@@ -669,6 +708,13 @@ describe('Students', function() {
 
         assert.equal(err.name, 'MissingFieldError');
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -685,8 +731,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
           'Request must have body and params sections. Within params, a ' +
           'valid program_id must be given. Within body, a valid first_name, ' +
@@ -694,6 +740,13 @@ describe('Students', function() {
 
         assert.equal(err.name, 'MissingFieldError');
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -710,8 +763,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
           'Request must have body and params sections. Within params, a ' +
           'valid program_id must be given. Within body, a valid first_name, ' +
@@ -719,6 +772,13 @@ describe('Students', function() {
 
         assert.equal(err.name, 'MissingFieldError');
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -735,8 +795,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
           'Request must have body and params sections. Within params, a ' +
           'valid program_id must be given. Within body, a valid first_name, ' +
@@ -744,6 +804,13 @@ describe('Students', function() {
 
         assert.equal(err.name, 'MissingFieldError');
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -760,8 +827,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
           'Request must have body and params sections. Within params, a ' +
           'valid program_id must be given. Within body, a valid first_name, ' +
@@ -769,6 +836,13 @@ describe('Students', function() {
 
         assert.equal(err.name, 'MissingFieldError');
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -808,8 +882,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
         'Given program_id is of invalid format (e.g. not an integer or' +
         ' negative)');
@@ -818,8 +892,14 @@ describe('Students', function() {
         assert.equal(err.propertyName, 'program_id');
         assert.equal(err.propertyValue, req.params.program_id);
         assert.equal(err.status, 400);
-      });
 
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+      });
 
       students.createStudent(req2)
       .catch(function(err) {
@@ -831,6 +911,13 @@ describe('Students', function() {
         assert.equal(err.propertyName, 'program_id');
         assert.equal(err.propertyValue, req2.params.program_id);
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
       });
 
       students.createStudent(req3)
@@ -843,6 +930,13 @@ describe('Students', function() {
         assert.equal(err.propertyName, 'program_id');
         assert.equal(err.propertyValue, req3.params.program_id);
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -860,8 +954,8 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
         'Invalid request: The given program_id does not exist' +
         ' in the database');
@@ -870,6 +964,13 @@ describe('Students', function() {
         assert.equal(err.propertyName, 'program_id');
         assert.equal(err.propertyValue, req.params.program_id);
         assert.equal(err.status, 404);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -887,15 +988,22 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
-        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+        'Failed due to invalid birthdate. Try yyyy-mm-dd.');
 
         assert.equal(err.name, 'InvalidArgumentError');
         assert.equal(err.propertyName, 'dob');
         assert.equal(err.propertyValue, req.body.dob);
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
@@ -913,84 +1021,507 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.createStudent(req);
-      promise.catch(function(err) {
+      students.createStudent(req)
+      .catch(function(err) {
         assert.equal(err.message,
-        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+        'Failed due to invalid birthdate. Try yyyy-mm-dd.');
 
         assert.equal(err.name, 'InvalidArgumentError');
         assert.equal(err.propertyName, 'dob');
         assert.equal(err.propertyValue, req.body.dob);
         assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
         done();
       });
     });
   });
 
   describe('updateStudent(req)', function() {
-    xit('should update the information for a given student', function(done) {
+    it('should update the first_name for a given student', function(done) {
       var req = {
         params: {
           student_id: 1
         },
-        data: {
-          updateValues: {
-            first_name: 'Perseus'
-          }
+        body: {
+          first_name: 'Perseus'
         }
       };
 
-      var studentCount;
-      var oldDB;
-      // Check the state of the object before the update
-      getAllStudents()
-        .then(function(data) {
-          // Remember the number of students and the state of data before update
-          studentCount = data.length;
-          oldDB = data;
-
-          // Call updateStudent
-          return students.updateStudent(req);
-        })
-        .then(function() {
-          // Get the DB after the update
-          // NOTE TODO (tomped), I THINK YOU SOULD JUST CHECK THE STATUS OF THE PERSON CHANGED AS YOUR OTHER TESTS
-          // ADD STUDENTS TO THE DB AND TEST MAY BE RAN I DIFFERENT ORDERS
-          return getAllStudents();
-        })
-        .then(function(data) {
-          // Assert that the number of students is the same as before
-          assert.lengthOf(data, studentCount);
-          // Assert that the old data and new data aren't the same
-          assert.notDeepEqual(oldDB, data);
-          // Assert that the new data reflects the update changes
-          assert.deepEqual([perseus, annabeth], data);
-          done();
-        });
+      students.updateStudent(req)
+      .then(function() {
+        // Get the DB after the update
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Assert that the number of students is the same as before
+        assert.lengthOf(data, studentCount);
+        // Assert that the old data and new data aren't the same
+        assert.notDeepEqual(oldDB, data);
+        // Assert that the new data reflects the update changes
+        assert.deepEqual([perseus, annabeth, brian, pam], data);
+        done();
+      });
     });
 
-    xit('should return an error for attempts to update nonexistent student',
+    it('should update the last_name for a given student', function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        },
+        body: {
+          last_name: 'Poseidonsson'
+        }
+      };
+
+      students.updateStudent(req)
+      .then(function() {
+        // Get the DB after the update
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Assert that the number of students is the same as before
+        assert.lengthOf(data, studentCount);
+        // Assert that the old data and new data aren't the same
+        assert.notDeepEqual(oldDB, data);
+        // Assert that the new data reflects the update changes
+        assert.deepEqual([{
+          'student_id': 1,
+          'first_name': 'Percy',
+          'last_name': 'Poseidonsson',
+          'dob': new Date(93, 7, 18)
+        }, annabeth, brian, pam], data);
+        done();
+      });
+    });
+
+    it('should update the birthdate for a given student', function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        },
+        body: {
+          dob: '1990-03-15'
+        }
+      };
+
+      students.updateStudent(req)
+      .then(function() {
+        // Get the DB after the update
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Assert that the number of students is the same as before
+        assert.lengthOf(data, studentCount);
+        // Assert that the old data and new data aren't the same
+        assert.notDeepEqual(oldDB, data);
+        // Assert that the new data reflects the update changes
+        assert.deepEqual([{
+          'student_id': 1,
+          'first_name': 'Percy',
+          'last_name': 'Jackson',
+          'dob': new Date(90, 2, 15)
+        }, annabeth, brian, pam], data);
+        done();
+      });
+    });
+
+    it('should update multiple fields for a given student', function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        },
+        body: {
+          first_name: 'Hazel',
+          last_name: 'Levesque',
+          dob: '1928-12-17'
+        }
+      };
+
+      students.updateStudent(req)
+      .then(function() {
+        // Get the DB after the update
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Assert that the number of students is the same as before
+        assert.lengthOf(data, studentCount);
+        // Assert that the old data and new data aren't the same
+        assert.notDeepEqual(oldDB, data);
+        // Assert that the new data reflects the update changes
+        assert.deepEqual([{
+          'student_id': 1,
+          'first_name': 'Hazel',
+          'last_name': 'Levesque',
+          'dob': new Date(28, 11, 17)
+        }, annabeth, brian, pam], data);
+        done();
+      });
+    });
+
+    it('should not update if request is missing a body', function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        }
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid student_id must be given. Body should contain updated ' +
+          'values for fields to be updated.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should not update if request is missing params section', function(done) {
+      var req = {
+        body: {
+          first_name: 'Stiles',
+          last_name: 'Stilinski'
+        }
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid student_id must be given. Body should contain updated ' +
+          'values for fields to be updated.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should not update if request is missing student_id', function(done) {
+      var req = {
+        params: {
+          program_id: 2
+        },
+        body: {
+          first_name: 'Stiles',
+          last_name: 'Stilinski'
+        }
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+          'Request must have body and params sections. Within params, a ' +
+          'valid student_id must be given. Body should contain updated ' +
+          'values for fields to be updated.');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should return an error if birthdate is not in valid format',
+    function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        },
+        body: {
+          dob: '1994-33-22'
+        }
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Failed due to invalid birthdate. Try yyyy-mm-dd.');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'dob');
+        assert.equal(err.propertyValue, req.body.dob);
+        assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should give an error if the student_id is not a positive integer',
+    function(done) {
+      var req = {
+        params: {
+          student_id: -2
+        },
+        body: {
+          dob: '1994-33-22'
+        }
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given student_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req.params.student_id);
+        assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should give an error if the student_id is not in the database',
     function(done) {
       var req = {
         params: {
           student_id: 777
         },
-        data: {
-          updateValues: {
-            first_name: 'Karkat'
-          }
+        body: {
+          first_name: 'Karkat'
         }
       };
 
-      // Assert that an error is thrown when a nonexistent student is given
-      assert.throw(function() {
-        students.updateStudent(req);
-      }, Error);
-      // Assert that the error message is correct
-      var promise = students.updateStudent(req);
-      promise.then(function(result) {
-        assert.equal(result.message,
-        'Unable to update student because they have not yet been added');
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Invalid request: The given student_id does not exist' +
+        ' in the database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req.params.student_id);
+        assert.equal(err.status, 404);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should update a student\'s program', function(done) {
+      var req = {
+        params: {
+          student_id: 2,
+          program_id: 3
+        },
+        body: { // NOTE: Do requests to JUST do programs still send a body?
+        }
+      };
+
+      students.updateStudent(req)
+      .then(function() {
+        // Get the DB after the update
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Assert that the number of students is the same as before
+        assert.lengthOf(data, studentCount);
+        // Assert that the old data and new student data are the same
+        assert.deepEqual(oldDB, data);
+
+        // Check that program was updated
+        return query('SELECT program_id FROM StudentToProgram ' +
+        'WHERE student_id=' + req.params.student_id);
+      })
+      .then(function(data) {
+        // Assert that the program_id is the same as the update request.
+        assert.deepEqual(data, [{program_id: req.params.program_id}]);
+        done();
+      });
+    });
+
+    it('should update a student\'s program and other fields', function(done) {
+      var req = {
+        params: {
+          student_id: 2,
+          program_id: 3
+        },
+        body: {
+          first_name: 'Magnus'
+        }
+      };
+
+      students.updateStudent(req)
+      .then(function() {
+        // Get the DB after the update
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Assert that the number of students is the same as before
+        assert.lengthOf(data, studentCount);
+        // Assert that the old data and new data aren't the same
+        assert.notDeepEqual(oldDB, data);
+        // Assert that the new data reflects the update changes
+        assert.deepEqual([percy, magnus, brian, pam], data);
+
+        // Check that program was updated
+        return query('SELECT program_id FROM StudentToProgram ' +
+        'WHERE student_id=' + req.params.student_id);
+      })
+      .then(function(data) {
+        // Assert that the program_id is the same as the update request.
+        assert.deepEqual(data, [{program_id: req.params.program_id}]);
+        done();
+      });
+    });
+
+    it('should give an error if the program_id is not a positive integer',
+    function(done) {
+      var req = {
+        params: {
+          student_id: 2,
+          program_id: -1
+        },
+        body: {
+          dob: '1994-07-22'
+        }
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given program_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req.params.program_id);
+        assert.equal(err.status, 400);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should give an error if the program_id is not in the database',
+    function(done) {
+      var req = {
+        params: {
+          student_id: 1,
+          program_id: 323
+        },
+        body: {
+          first_name: 'Karkat'
+        }
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Invalid request: The given program_id does not exist' +
+        ' in the database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'program_id');
+        assert.equal(err.propertyValue, req.params.program_id);
+        assert.equal(err.status, 404);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
         done();
       });
     });
@@ -998,37 +1529,28 @@ describe('Students', function() {
 
   describe('deleteStudent(req)', function() {
     xit('should delete a given student from the database', function(done) {
+      // TODO should delete references to them in StudentToProgram UPDATE TEST
       var req = {
         params: {
           student_id: 1
         }
       };
 
-      var studentCount;
-      var oldDB;
-      // Check the state of the object before the update
-      getAllStudents()
-        .then(function(data) {
-          // Remember the number of students and the state of data before update
-          studentCount = data.length;
-
-          // Call deleteStudent
-          return students.deleteStudent(req);
-        })
-        .then(function() {
-          // Get the current student data in the database
-          return getAllStudents();
-        })
-        .then(function(data) {
-          // Check that the number of students decreased by one
-          assert.lengthOf(data, studentCount - 1);
-          // Check that the data is not equal to the old DB state
-          assert.notDeepEqual(oldDB, data);
-          // Check that the correct student is no longer present
-          // NOTE TODO, again change this to try and get the student that was removed
-          assert.deepEqual([annabeth], data);
-          done();
-        });
+      students.deleteStudent(req)
+      .then(function() {
+        // Get the current student data in the database
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that the number of students decreased by one
+        assert.lengthOf(data, studentCount - 1);
+        // Check that the data is not equal to the old DB state
+        assert.notDeepEqual(oldDB, data);
+        // Check that the correct student is no longer present
+        // NOTE TODO, again change this to try and get the student that was removed
+        assert.deepEqual([annabeth, brian, pam], data);
+        done();
+      });
     });
 
     xit('should return an error on attempt to delete nonexistent student',

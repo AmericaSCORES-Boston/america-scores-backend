@@ -99,7 +99,7 @@ function createStudent(req) {
       // Ensure that the given birthdate is valid
       if (!isValidDate(req.body.dob)) {
         return createInvalidArgumentError(req.body.dob, 'dob',
-        'Failed to get student due to invalid birthdate. Try yyyy-mm-dd.');
+        'Failed due to invalid birthdate. Try yyyy-mm-dd.');
       }
 
       // Ensure that the program_id is the valid type (positive integer)
@@ -121,7 +121,7 @@ function createStudent(req) {
           });
 
           return promise.then(function(data) {
-            if (data.length == 0) {
+            if (data.length === 0) {
               // Student does not exist in DB yet, so add them to Student table
               return query('INSERT INTO Student (first_name, last_name, dob)' +
               ' VALUES ("' + req.body.first_name + '", "' + req.body.last_name +
@@ -172,7 +172,70 @@ function createStudent(req) {
 }
 
 function updateStudent(req) {
+  // Check that request has all necessary fields
+  if (req.params && req.params.student_id && req.body) {
+    // All required fields are present. Check that student_id is valid
+    if (!isPositiveInteger(req.params.student_id)) {
+      return createInvalidArgumentError(req.params.student_id, 'student_id');
+    }
 
+    // Check that date of birth, if present, is valid
+    if (req.body.dob && !isValidDate(req.body.dob)) {
+      return createInvalidArgumentError(req.body.dob, 'dob',
+      'Failed due to invalid birthdate. Try yyyy-mm-dd.');
+    }
+
+    // Check that program_id, if present, is valid
+    if (req.params.program_id && !isPositiveInteger(req.params.program_id)) {
+      return createInvalidArgumentError(req.params.program_id, 'program_id');
+    }
+
+    // Check if the given student_id exists in the database
+    return countInDB(req.params.student_id, 'Student', 'student_id')
+    .then(function(count) {
+      if (count > 0) {
+        // The student exists. Next, check if a program update was requested
+        if (!req.params.program_id) {
+          // No program update requested. Update students table.
+          return query(createUpdateQuery(req.body, req.params.student_id));
+        } else {
+          // Program update requested. Check if the new program exists.
+          return countInDB(req.params.program_id, 'Program', 'program_id')
+          .then(function(count) {
+            if (count > 0) {
+              // The program exists. Update the student's program
+              return query('UPDATE StudentToProgram SET program_id = ' +
+              req.params.program_id + ' WHERE student_id = ' +
+              req.params.student_id)
+              .then(function() {
+                // Check if any other fields need to be updated.
+                if (req.body.first_name || req.body.last_name || req.body.dob) {
+                  // Note: Line is repeated b/c partial updates aren't allowed
+                  return query(createUpdateQuery(req.body,
+                    req.params.student_id));
+                }
+              });
+            } else {
+              // The program does not exist
+              return createArgumentNotFoundError(req.params.program_id,
+                'program_id');
+            }
+          });
+        }
+      } else {
+        return createArgumentNotFoundError(req.params.student_id, 'student_id');
+      }
+    });
+  } else {
+    // Missing necessary fields, throw error
+    return Promise.reject({
+      name: 'MissingFieldError',
+      status: 400,
+      message: 'Request must have body and params sections. Within params, a ' +
+      'valid student_id must be given. Body should contain updated ' +
+      'values for fields to be updated.'
+    });
+  }
 }
 
 function deleteStudent(req) {
@@ -199,6 +262,25 @@ function countInDB(id, table, field) {
   .then(function(data) {
     return data[0]['COUNT(*)'];
   });
+}
+
+function createUpdateQuery(body, id) {
+  var changes = '';
+
+  // Create a string of changes based on what is in the body
+  for (var field in body) {
+    if (field === 'dob') {
+      changes = changes + field + ' = DATE("' + body[field] + '"), ';
+    } else {
+      changes = changes + field + ' = "' + body[field] + '", ';
+    }
+  }
+
+  // Drop the extra comma
+  changes = changes.substring(0, changes.length - 2);
+
+  // Construct and return the final update query string
+  return 'UPDATE Student SET ' + changes + 'WHERE student_id = ' + id;
 }
 
 function createInvalidArgumentError(id, field, message) {
