@@ -89,7 +89,7 @@ var fakeStat8 = {
 
 // Add before each to reset database between tests
 beforeEach(function() {
-  return seed();
+  return seed;
 });
 
 describe('stats', function() {
