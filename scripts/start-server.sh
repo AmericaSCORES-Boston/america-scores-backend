@@ -1,4 +1,2 @@
 #!/usr/bin/env bash
-cd /amscores/backend
-pm2 list | grep amscores_backend
-npm start
+pm2 start /amscores/backend/app.js -n amscores_backend
