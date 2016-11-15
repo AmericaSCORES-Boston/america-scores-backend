@@ -406,7 +406,7 @@ describe('stats', function() {
       })
       .catch(function(err) {
         assert.equal(err.message,
-        'Unable to add student because this set of stats already exists');  
+        'Unable to add student because this set of stats already exists');
         return stats.getStats({});
       })
       .then(function(data) {
@@ -625,7 +625,6 @@ describe('stats', function() {
         return stats.getStats({});
       })
       .then(function(data) {
-        
         assert.lengthOf(data, statCount);
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
