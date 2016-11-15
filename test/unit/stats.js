@@ -634,7 +634,7 @@ describe('stats', function() {
         param: {
           student_id: 1,
           event_id: 1,
-        }
+        },
         body: {
           weight: 5,
           pacer: 5,
