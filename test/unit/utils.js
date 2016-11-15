@@ -2,7 +2,6 @@
 
 const chai = require('chai');
 const assert = chai.assert;
-const sites = require('../../routes/sites');
 const utils = require('../../lib/utils');
 
 describe('utils', function() {
