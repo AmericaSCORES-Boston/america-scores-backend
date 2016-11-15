@@ -369,12 +369,12 @@ describe('stats', function() {
 
         return stats.createStat(req);
       })
-      .catch(function() {
+      .then(function() {
         return stats.getStats({});
       })
-      .catch(function(data) {
+      .then(function(data) {
         assert.lengthOf(data, statCount + 1);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
            fakeStat4, fakeStat5, fakeStat6, fakeStat7]);
         done();
       });
@@ -404,15 +404,15 @@ describe('stats', function() {
 
         return stats.createStat(req);
       })
-      .catch(function() {
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Unable to add student because this set of stats already exists');  
         return stats.getStats({});
       })
-      .catch(function(data) {
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
-        assert.equal(data.message,
-        'Unable to add student because this set of stats already exists');
         done();
       });
     });
@@ -437,15 +437,15 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -471,19 +471,18 @@ describe('stats', function() {
         return stats.createStats(req);
       })
       .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
     });
-
 
     // check error is thrown if required field 'student_id' is missing in request
     xit('attempting to post stats with missing params "student_id" will result in an error', function(done) {
@@ -508,15 +507,15 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -545,15 +544,15 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -582,15 +581,15 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -619,15 +618,16 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -656,15 +656,15 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -693,15 +693,15 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -730,15 +730,15 @@ describe('stats', function() {
 
         return stats.createStats(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
         assert.lengthOf(data, statCount);
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat3,
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
@@ -771,10 +771,10 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
-      .catch(function() {
+      .then(function() {
         return stats.getStats({});
       })
-      .catch(function(data) {
+      .then(function(data) {
         assert.lengthOf(data, statCount);
         assert.notDeepEqual(data, oldDB);
         assert.deepEqual(data, [fakeStat8, fakeStat2, fakeStat3,
@@ -808,15 +808,15 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, oldDB);
+      .catch(function(err) {
         assert.equal(err.message,
         'Can not update non-existing stats.');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        assert.lengthOf(data, statCount);
+        assert.deepEqual(data, oldDB);
         done();
       });
     });
@@ -826,7 +826,7 @@ describe('stats', function() {
     // delete existing stats
     xit('should delete stats in the database', function(done) {
       var req = {
-        body: {
+        param: {
           stat_id: 1
         }
       };
@@ -843,10 +843,10 @@ describe('stats', function() {
 
         return stats.deleteStat(req);
       })
-      .catch(function() {
+      .then(function() {
         return stats.getStats({});
       })
-      .catch(function(data) {
+      .then(function(data) {
         assert.lengthOf(data, statCount - 1);
         assert.notDeepEqual(data, oldDB);
         assert.deepEqual(data, [fakeStat2, fakeStat3,
@@ -858,7 +858,7 @@ describe('stats', function() {
     // delete non existing stats should error
     xit('should error delete non-existing stats', function(done) {
       var req = {
-        body: {
+        param: {
           stat_id: 99999,
         }
       };
@@ -875,15 +875,15 @@ describe('stats', function() {
 
         return stats.deleteStat(req);
       })
-      .catch(function() {
-        return stats.getStats({});
-      })
-      .catch(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, oldDB);
+      .catch(function(err) {
         assert.equal(err.message,
         'Can not delete non-existing stats.');
         assert.equal(err.status, 400);
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        assert.lengthOf(data, statCount);
+        assert.deepEqual(data, oldDB);
         done();
       });
     });
