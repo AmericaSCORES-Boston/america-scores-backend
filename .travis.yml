@@ -3,24 +3,33 @@ language: node_js
 node_js:
   - '6'
 
+before_script:
+  - mysql -e 'create database america_scores;'
+
 script:
+  - mysql -u travis america_scores < database/dbcreate.sql
+  - ./scripts/travis-mysql.sh
   - npm run eslint -- --failTaskOnError
+  - npm run seed
   - npm run test -- --failTaskOnError
 
+services:
+  - mysql
+
 after_success:
-  - ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js')
+  - ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha $(find test -name '*.js') -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
 
 before_deploy:
-  - zip -r latest config/ database/ routes/ scripts/ app.js appspec.yml package.json
-  - mkdir -p to_deploy
-  - mv latest.zip to_deploy/
+  - zip -r backend-latest config/config.js config/connection.js database/ lib/ routes/ scripts/ app.js appspec.yml package.json
+  - mkdir -p backend
+  - mv backend-latest.zip backend/
 
 deploy:
   - provider: s3
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     region: us-east-1
-    local_dir: to_deploy
+    local_dir: backend
     skip_cleanup: true
     on:
       branch: develop
@@ -30,7 +39,7 @@ deploy:
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     region: us-east-1
     bucket: "amscores-deploy-dev"
-    key: latest.zip
+    key: backend-latest.zip
     bundle_type: zip
     application: AmScoresBackend
     deployment_group: Development

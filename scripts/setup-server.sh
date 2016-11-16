@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-source /home/ec2-user/.bash_profile
+cd /amscores/backend
+mv ../creds.js config/
 
-if [ "$DEPLOYMENT_GROUP_NAME" == "Development" ]; then
-  cd /home/ec2-user/amscores/dev
-  npm install
-fi
+npm install

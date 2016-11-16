@@ -1,10 +1,5 @@
 var express = require('express');
-// var net = require('net');
-// we load the db location from the JSON files
-// var config = require('./config/config');
-// var morgan = require('morgan');
 var app = express();
-// var mysql = require('mysql');
 var port = 7777;
 
 // Routes
@@ -14,12 +9,6 @@ var programs = require('./routes/programs');
 var sites = require('./routes/sites');
 var events = require('./routes/events');
 var accounts = require('./routes/accounts');
-
-// //don't show the log when it is test
-// if(config.util.getEnv('NODE_ENV') !== 'test') {
-//     //use morgan to log at command line
-//     app.use(morgan('combined')); //'combined' outputs the Apache style LOGs
-// }
 
 // parse application/json and look for raw text
 app.use(bodyParser.json());
@@ -253,9 +242,3 @@ app.listen(port);
 console.log('Listening on port ' + port);
 
 module.exports = app; // for testing
-
-// var server = net.createServer(function(socket) {
-//     socket.end('Hello!\n');
-// });
-
-// server.listen(7777);
