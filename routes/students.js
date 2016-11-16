@@ -76,6 +76,15 @@ function getStudents(req) {
 }
 
 function getStudent(req) {
+  if (!req.params || !req.params.student_id) {
+    // Missing necessary fields, throw error
+    return Promise.reject({
+      name: 'MissingFieldError',
+      status: 400,
+      message: 'Request must have a params section with a valid student_id'
+    });
+  }
+
   var id = req.params.student_id;
   var field = 'student_id';
 
@@ -245,7 +254,37 @@ function updateStudent(req) {
 }
 
 function deleteStudent(req) {
-
+  if (req.params && req.params.student_id) {
+    if (isPositiveInteger(req.params.student_id)) {
+      return countInDB(req.params.student_id, 'Student', 'student_id')
+      .then(function(count) {
+        if (count > 0) {
+          return query('DELETE FROM Measurement WHERE student_id=' +
+          req.params.student_id)
+          .then(function() {
+            return query('DELETE FROM StudentToProgram WHERE student_id=' +
+            req.params.student_id);
+          })
+          .then(function() {
+            return query('DELETE FROM Student WHERE student_id=' +
+            req.params.student_id);
+          });
+        } else {
+          return createArgumentNotFoundError(req.params.student_id,
+            'student_id');
+        }
+      });
+    } else {
+      return createInvalidArgumentError(req.params.student_id, 'student_id');
+    }
+  } else {
+    // Missing necessary fields, throw error
+    return Promise.reject({
+      name: 'MissingFieldError',
+      status: 400,
+      message: 'Request must have a params section with a valid student_id'
+    });
+  }
 }
 
 function countInDB(id, table, field) {
