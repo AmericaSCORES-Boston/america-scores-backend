@@ -1,6 +1,3 @@
-// Set the env to development
-process.env.NODE_ENV = 'development';
-
 // Require the testing dependencies
 var chai = require('chai');
 var assert = chai.assert;
@@ -137,7 +134,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct student
-        assert.deepEqual([percy], data);
+        assert.deepEqual(data, [percy]);
         done();
       });
     });
