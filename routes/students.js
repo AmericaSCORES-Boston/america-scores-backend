@@ -70,8 +70,15 @@ function getStudents(req) {
       // id is not a number or is negative (invalid)
       return createInvalidArgumentError(id, field);
     }
-  } else {
+  } else if (!req.query && !req.params) {
     return query('SELECT * FROM Student');
+  } else {
+    return Promise.reject({
+      name: 'UnsupportedRequest',
+      status: 501,
+      message: 'The API does not support a request of this format. ' +
+      ' See the documentation for a list of options.'
+    });
   }
 }
 
@@ -161,8 +168,8 @@ function createStudent(req) {
               return Promise.reject({
                 name: 'DatabaseConflictError',
                 status: 409,
-                message: 'Unable to create student: the student is already in ' +
-                'the database',
+                message: 'Unable to create student: the student ' +
+                'is already in the database',
               });
             }
           });

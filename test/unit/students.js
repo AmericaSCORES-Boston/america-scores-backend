@@ -488,6 +488,26 @@ describe('Students', function() {
         done();
       });
     });
+
+    it('should give an error if the request is not an option listed in ' +
+     'the API documentation (unexpected format)', function(done) {
+       var req = {
+         query: {
+           first_name: 'Annabeth'
+         }
+       };
+
+       var promise = students.getStudents(req);
+       promise.catch(function(err) {
+         assert.equal(err.message,
+           'The API does not support a request of this format. ' +
+           ' See the documentation for a list of options.');
+
+         assert.equal(err.name, 'UnsupportedRequest');
+         assert.equal(err.status, 501);
+         done();
+       });
+     });
   });
 
   describe('getStudent(req)', function() {
