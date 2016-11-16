@@ -16,11 +16,7 @@ function getStudents(req) {
       var birthday = req.query.dob;
       if (isValidDate(birthday)) {
         // If the date is in yyyy-mm-dd format, get the student
-        return query('SELECT * FROM Student WHERE first_name=\'' +
-        req.query.first_name +
-        '\' AND last_name=\''+ req.query.last_name +
-        '\' AND dob BETWEEN \'' + birthday + ' 00:00:00\''
-        + ' AND \'' + birthday + ' 23:59:59\'');
+        return query('SELECT * FROM Student WHERE first_name="'+req.query.first_name +'" AND last_name="'+ req.query.last_name +'" AND dob BETWEEN "' + birthday + ' 00:00:00"'+' AND "' + birthday + ' 23:59:59"');
       } else {
         // Date of birth format is incorrect, send error
         var message = 'Failed to get student due to invalid birthdate.' +
@@ -102,7 +98,7 @@ function getStudent(req) {
     .then(function(count) {
       if (count > 0) {
         // The id is in the database. Fetch the student
-        return query('SELECT * FROM Student WHERE student_id=' + id);
+        return query('SELECT * FROM Student WHERE student_id=?', [id]);
       } else {
         return createArgumentNotFoundError(id, field);
       }
@@ -145,9 +141,8 @@ function createStudent(req) {
           return promise.then(function(data) {
             if (data.length === 0) {
               // Student does not exist in DB yet, so add them to Student table
-              return query('INSERT INTO Student (first_name, last_name, dob)' +
-              ' VALUES ("' + req.body.first_name + '", "' + req.body.last_name +
-              '", DATE("' + req.body.dob + '"))')
+              return query('INSERT INTO Student (first_name, last_name, dob) VALUES (?, ?, DATE(?))',
+                [req.body.first_name, req.body.last_name, req.body.dob])
               .then(function() {
                 return getStudents({
                   query: {
@@ -159,9 +154,8 @@ function createStudent(req) {
               })
               .then(function(data) {
                 // Then, link student to the program in StudentToProgram table
-                return query('INSERT INTO StudentToProgram ' +
-                '(student_id, program_id) VALUES (' +
-                data[0].student_id + ', ' + req.params.program_id + ')');
+                return query('INSERT INTO StudentToProgram (student_id, program_id) VALUES (?, ?)',
+                  [data[0].student_id, req.params.program_id]);
               });
             } else {
               // Student already exists
@@ -226,9 +220,8 @@ function updateStudent(req) {
           .then(function(count) {
             if (count > 0) {
               // The program exists. Update the student's program
-              return query('UPDATE StudentToProgram SET program_id = ' +
-              req.params.program_id + ' WHERE student_id = ' +
-              req.params.student_id)
+              return query('UPDATE StudentToProgram SET program_id = ? WHERE student_id = ?',
+                [req.params.program_id, req.params.student_id])
               .then(function() {
                 // Check if any other fields need to be updated.
                 if (req.body.first_name || req.body.last_name || req.body.dob) {
@@ -266,15 +259,12 @@ function deleteStudent(req) {
       return countInDB(req.params.student_id, 'Student', 'student_id')
       .then(function(count) {
         if (count > 0) {
-          return query('DELETE FROM Measurement WHERE student_id=' +
-          req.params.student_id)
+          return query('DELETE FROM Measurement WHERE student_id=?', [req.params.student_id])
           .then(function() {
-            return query('DELETE FROM StudentToProgram WHERE student_id=' +
-            req.params.student_id);
+            return query('DELETE FROM StudentToProgram WHERE student_id=?', [req.params.student_id]);
           })
           .then(function() {
-            return query('DELETE FROM Student WHERE student_id=' +
-            req.params.student_id);
+            return query('DELETE FROM Student WHERE student_id=?', [req.params.student_id]);
           });
         } else {
           return createArgumentNotFoundError(req.params.student_id,
