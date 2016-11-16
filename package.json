@@ -8,8 +8,8 @@
     "eslint": "gulp eslint",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
     "seed": "gulp seed",
-    "start": "forever start app.js",
-    "stop": "forever stop app.js"
+    "start": "pm2 start app.js -n amscores_backend",
+    "stop": "if [[ ! -z $(pm2 list | grep amscores_backend) ]]; then pm2 delete amscores_backend; fi"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,6 @@
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
     "express": "^4.14.0",
-    "forever": "^0.15.3",
     "morgan": "~1.7.0",
     "mysql": "^2.11.1",
     "net": "^1.0.2"

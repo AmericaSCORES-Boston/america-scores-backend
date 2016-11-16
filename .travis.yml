@@ -20,7 +20,7 @@ after_success:
   - ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha $(find test -name '*.js') -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
 
 before_deploy:
-  - zip -r backend-latest config/ database/ routes/ scripts/ app.js appspec.yml package.json
+  - zip -r backend-latest config/config.js config/connection.js database/ lib/ routes/ scripts/ app.js appspec.yml package.json
   - mkdir -p backend
   - mv backend-latest.zip backend/
 
