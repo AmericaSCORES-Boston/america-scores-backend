@@ -16,7 +16,9 @@ function getStudents(req) {
       var birthday = req.query.dob;
       if (isValidDate(birthday)) {
         // If the date is in yyyy-mm-dd format, get the student
-        return query('SELECT * FROM Student WHERE first_name="'+req.query.first_name +'" AND last_name="'+ req.query.last_name +'" AND dob BETWEEN "' + birthday + ' 00:00:00"'+' AND "' + birthday + ' 23:59:59"');
+        return query('SELECT * FROM Student WHERE first_name = ? ' +
+        'AND last_name = ? AND dob = DATE(?)',
+        [req.query.first_name, req.query.last_name, birthday]);
       } else {
         // Date of birth format is incorrect, send error
         var message = 'Failed to get student due to invalid birthdate.' +
@@ -31,21 +33,21 @@ function getStudents(req) {
       var field = 'program_id';
       var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
       '(SELECT student_id FROM StudentToProgram ' +
-      'WHERE program_id=' + id + ')';
+      'WHERE program_id = ?)';
     } else if (req.params.site_id) {
       var id = req.params.site_id;
       var table = 'Site';
       var field = 'site_id';
       var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
       '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-      '(SELECT program_id FROM Program WHERE site_id=' + id + '))';
+      '(SELECT program_id FROM Program WHERE site_id = ?))';
     } else if (req.params.event_id) {
       var id = req.params.event_id;
       var table = 'Event';
       var field = 'event_id';
       var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
       '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-      '(SELECT program_id FROM Event WHERE event_id=' + id + '))';
+      '(SELECT program_id FROM Event WHERE event_id = ?))';
     }
 
     // Check if the id is an integer > 0
@@ -54,7 +56,7 @@ function getStudents(req) {
       return countInDB(id, table, field)
       .then(function(count) {
         if (count > 0) {
-          return query(queryString);
+          return query(queryString, [id]);
         } else {
           // Given id does not exist, give error.
           return createArgumentNotFoundError(id, field);
@@ -66,15 +68,8 @@ function getStudents(req) {
       // id is not a number or is negative (invalid)
       return createInvalidArgumentError(id, field);
     }
-  } else if (!req.query && !req.params) {
-    return query('SELECT * FROM Student');
   } else {
-    return Promise.reject({
-      name: 'UnsupportedRequest',
-      status: 501,
-      message: 'The API does not support a request of this format. ' +
-      ' See the documentation for a list of options.'
-    });
+    return query('SELECT * FROM Student');
   }
 }
 
@@ -141,7 +136,8 @@ function createStudent(req) {
           return promise.then(function(data) {
             if (data.length === 0) {
               // Student does not exist in DB yet, so add them to Student table
-              return query('INSERT INTO Student (first_name, last_name, dob) VALUES (?, ?, DATE(?))',
+              return query('INSERT INTO Student (first_name, last_name, dob) ' +
+              'VALUES (?, ?, DATE(?))',
                 [req.body.first_name, req.body.last_name, req.body.dob])
               .then(function() {
                 return getStudents({
@@ -154,7 +150,8 @@ function createStudent(req) {
               })
               .then(function(data) {
                 // Then, link student to the program in StudentToProgram table
-                return query('INSERT INTO StudentToProgram (student_id, program_id) VALUES (?, ?)',
+                return query('INSERT INTO StudentToProgram ' +
+                '(student_id, program_id) VALUES (?, ?)',
                   [data[0].student_id, req.params.program_id]);
               });
             } else {
@@ -213,21 +210,25 @@ function updateStudent(req) {
         // The student exists. Next, check if a program update was requested
         if (!req.params.program_id) {
           // No program update requested. Update students table.
-          return query(createUpdateQuery(req.body, req.params.student_id));
+          var queryComponents = createUpdateQuery(req.body);
+          queryComponents[1].push(req.params.student_id);
+          return query(queryComponents[0], queryComponents[1]);
         } else {
           // Program update requested. Check if the new program exists.
           return countInDB(req.params.program_id, 'Program', 'program_id')
           .then(function(count) {
             if (count > 0) {
               // The program exists. Update the student's program
-              return query('UPDATE StudentToProgram SET program_id = ? WHERE student_id = ?',
-                [req.params.program_id, req.params.student_id])
+              return query('UPDATE StudentToProgram SET program_id = ? ' +
+              'WHERE student_id = ?', [req.params.program_id,
+                req.params.student_id])
               .then(function() {
                 // Check if any other fields need to be updated.
                 if (req.body.first_name || req.body.last_name || req.body.dob) {
                   // Note: Line is repeated b/c partial updates aren't allowed
-                  return query(createUpdateQuery(req.body,
-                    req.params.student_id));
+                  var queryComponents = createUpdateQuery(req.body);
+                  queryComponents[1].push(req.params.student_id);
+                  return query(queryComponents[0], queryComponents[1]);
                 }
               });
             } else {
@@ -259,12 +260,15 @@ function deleteStudent(req) {
       return countInDB(req.params.student_id, 'Student', 'student_id')
       .then(function(count) {
         if (count > 0) {
-          return query('DELETE FROM Measurement WHERE student_id=?', [req.params.student_id])
+          return query('DELETE FROM Measurement WHERE student_id=?',
+           [req.params.student_id])
           .then(function() {
-            return query('DELETE FROM StudentToProgram WHERE student_id=?', [req.params.student_id]);
+            return query('DELETE FROM StudentToProgram WHERE student_id=?',
+             [req.params.student_id]);
           })
           .then(function() {
-            return query('DELETE FROM Student WHERE student_id=?', [req.params.student_id]);
+            return query('DELETE FROM Student WHERE student_id=?',
+             [req.params.student_id]);
           });
         } else {
           return createArgumentNotFoundError(req.params.student_id,
@@ -285,29 +289,35 @@ function deleteStudent(req) {
 }
 
 function countInDB(id, table, field) {
-  return query('SELECT COUNT(*) FROM ' + table + ' WHERE ' + field + '=' + id)
+  return query('SELECT COUNT(*) FROM ' + table + ' WHERE ' + field + ' = ?',
+  [id])
   .then(function(data) {
     return data[0]['COUNT(*)'];
   });
 }
 
-function createUpdateQuery(body, id) {
+function createUpdateQuery(body) {
   var changes = '';
+  var fieldValues = [];
 
   // Create a string of changes based on what is in the body
   for (var field in body) {
     if (field === 'dob') {
-      changes = changes + field + ' = DATE("' + body[field] + '"), ';
+      changes = changes + field + ' = DATE(?), ';
     } else {
-      changes = changes + field + ' = "' + body[field] + '", ';
+      changes = changes + field + ' = ?, ';
     }
+
+    // Add to ordered list of field arguments
+    fieldValues.push(body[field]);
   }
 
   // Drop the extra comma
   changes = changes.substring(0, changes.length - 2);
 
   // Construct and return the final update query string
-  return 'UPDATE Student SET ' + changes + 'WHERE student_id = ' + id;
+  return ['UPDATE Student SET ' + changes + ' WHERE student_id = ?',
+   fieldValues];
 }
 
 function createInvalidArgumentError(id, field, message) {
