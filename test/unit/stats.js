@@ -1,4 +1,3 @@
-// TODO Add before each that reseeds the DB
 // Set the env to development
 process.env.NODE_ENV = 'development';
 
@@ -122,6 +121,22 @@ describe('stats', function() {
       });
     });
 
+    // test for site_id not in database
+    xit('should return empty array if the site_id is not in database',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 44555555
+        }
+      };
+
+      var promise = stats.getStats(req);
+      promise.then(function(data) {
+        assert.deepEqual(data, []);
+        done();
+      });
+    });
+
     xit('should give an error if the site_id is negative',
     function(done) {
       var req = {
@@ -136,10 +151,9 @@ describe('stats', function() {
         'Given site_id is of invalid format (e.g. not an integer or' +
         ' negative)');
 
-        // TODO Uncomment these if you're making comlex errors, Jonah.
-        // assert.equal(err.name, 'InvalidArgumentError');
-        // assert.equal(err.propertyName, 'site_id');
-        // assert.equal(err.propertyValue, req.params.site_id);
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
         assert.equal(err.status, 400);
         done();
       });
@@ -159,27 +173,9 @@ describe('stats', function() {
         assert.equal(err.message,
         'Given site_id is of invalid format (e.g. not an integer or' +
         ' negative)');
-        // assert.equal(err.name, 'InvalidArgumentError');
-        // assert.equal(err.propertyName, 'site_id');
-        // assert.equal(err.propertyValue, req.params.site_id);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
-    // test for site_id not in database
-    xit('should give an error if the site_id is not in database',
-    function(done) {
-      var req = {
-        params: {
-          site_id: 44555555
-        }
-      };
-
-      var promise = stats.getStats(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given site_id not found in database.');
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
         assert.equal(err.status, 400);
         done();
       });
@@ -201,6 +197,22 @@ describe('stats', function() {
       });
     });
 
+    // test for student_id not in database
+    xit('should return empty array if the student_id is not in the database',
+    function(done) {
+      var req = {
+        params: {
+          student_id: 48394234
+        }
+      };
+
+      var promise = stats.getStats(req);
+      promise.then(function(data) {
+        assert.deepEqual(data, []);
+        done();
+      });
+    });
+
     xit('should give an error if the student_id is negative',
     function(done) {
       var req = {
@@ -215,9 +227,9 @@ describe('stats', function() {
         'Given student_id is of invalid format (e.g. not an integer or' +
         ' negative)');
 
-        // assert.equal(err.name, 'InvalidArgumentError');
-        // assert.equal(err.propertyName, 'student_id');
-        // assert.equal(err.propertyValue, req.params.student_id);
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req.params.student_id);
         assert.equal(err.status, 400);
         done();
       });
@@ -237,27 +249,9 @@ describe('stats', function() {
         assert.equal(err.message,
         'Given student_id is of invalid format (e.g. not an integer or' +
         ' negative)');
-        // assert.equal(err.name, 'InvalidArgumentError');
-        // assert.equal(err.propertyName, 'student_id');
-        // assert.equal(err.propertyValue, req.params.student_id);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
-    // test for student_id not in database: what should it do?
-    xit('should give an error if the student_id is not in the database',
-    function(done) {
-      var req = {
-        params: {
-          student_id: 48394234
-        }
-      };
-
-      var promise = stats.getStats(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given student_id is not found in the database.');
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'student_id');
+        assert.equal(err.propertyValue, req.params.student_id);
         assert.equal(err.status, 400);
         done();
       });
@@ -296,9 +290,9 @@ describe('stats', function() {
         'Given stat_id is of invalid format (e.g. not an integer or' +
         ' negative)');
 
-        // assert.equal(err.name, 'InvalidArgumentError');
-        // assert.equal(err.propertyName, 'stat_id');
-        // assert.equal(err.propertyValue, req.params.stat_id);
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'stat_id');
+        assert.equal(err.propertyValue, req.params.stat_id);
         assert.equal(err.status, 400);
         done();
       });
@@ -318,9 +312,9 @@ describe('stats', function() {
         'Given stat_id is of invalid format (e.g. not an integer or' +
         ' negative)');
 
-        // assert.equal(err.name, 'InvalidArgumentError');
-        // assert.equal(err.propertyName, 'stat_id');
-        // assert.equal(err.propertyValue, req.params.stat_id);
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'stat_id');
+        assert.equal(err.propertyValue, req.params.stat_id);
         assert.equal(err.status, 400);
         done();
       });
@@ -338,7 +332,7 @@ describe('stats', function() {
       promise.catch(function(err) {
         assert.equal(err.message,
         'Given stat_id is not found in the database');
-        assert.equal(err.status, 400);
+        assert.equal(err.status, 404);
         done();
       });
     });
@@ -418,7 +412,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required component 'param' is missing in request
-    xit('attempting to post stats with missing param will result in an error', function(done) {
+    xit('attempting to post stats with missing param will result in an error',
+     function(done) {
       var req = {
         body: {
           height: 44,
@@ -452,7 +447,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required component 'param' is missing in request
-    xit('attempting to post stats with missing body will result in an error', function(done) {
+    xit('attempting to post stats with missing body will result in an error',
+    function(done) {
       var req = {
         param: {
           student_id: 2,
@@ -485,7 +481,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'student_id' is missing in request
-    xit('attempting to post stats with missing params "student_id" will result in an error', function(done) {
+    xit('attempting to post stats with missing params "student_id" will ' +
+    'result in an error', function(done) {
       var req = {
         param: {
           event_id: 2,
@@ -522,7 +519,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'event_id' is missing in request
-    xit('attempting to post stats with missing params "event_id" will result in an error', function(done) {
+    xit('attempting to post stats with missing params "event_id" will ' +
+    'result in an error', function(done) {
       var req = {
         param: {
           student_id: 2,
@@ -559,7 +557,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'pacer' is missing in request
-    xit('attempting to post stats with missing field "pacer" will result in an error', function(done) {
+    xit('attempting to post stats with missing field "pacer" will ' +
+    'result in an error', function(done) {
       var req = {
         param: {
           student_id: 1,
@@ -596,7 +595,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'weight' is missing in request
-    xit('attempting to post stats with missing field "weight" will result in an error', function(done) {
+    xit('attempting to post stats with missing field "weight" will ' +
+    'result in an error', function(done) {
       var req = {
         param: {
           student_id: 1,
@@ -633,7 +633,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'height' is missing in request
-    xit('attempting to post stats with missing field "height" will result in an error', function(done) {
+    xit('attempting to post stats with missing field "height" will ' +
+    'result in an error', function(done) {
       var req = {
         param: {
           student_id: 1,
@@ -670,7 +671,8 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'event_id' is missing in request
-    xit('attempting to post stats with missing field event_id will result in an error', function(done) {
+    xit('attempting to post stats with missing field event_id will ' +
+    'result in an error', function(done) {
       var req = {
         param: {
           student_id: 1,
@@ -706,8 +708,8 @@ describe('stats', function() {
       });
     });
 
-    // check error is thrown if required field 'student_id' is missing in request
-    xit('attempting to post stats with missing field student_id will result in an error', function(done) {
+    xit('attempting to post stats with missing field student_id will ' +
+    'result in an error', function(done) {
       var req = {
         param: {
           event_id: 1,
@@ -883,6 +885,28 @@ describe('stats', function() {
       .then(function(data) {
         assert.lengthOf(data, statCount);
         assert.deepEqual(data, oldDB);
+        done();
+      });
+    });
+
+    xit('should give an error if the stat_id is negative',
+    function(done) {
+      var req = {
+        params: {
+          site_id: -4
+        }
+      };
+
+      var promise = stats.deleteStat(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given stat_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'stat_id');
+        assert.equal(err.propertyValue, req.params.stat_id);
+        assert.equal(err.status, 400);
         done();
       });
     });
