@@ -66,9 +66,14 @@ app.route('/students/:student_id/events')
   .get(function(req, res, next) {
     makeResponse(res, events.getEvents(req));
   });
-    app.route('/students/:student_id/programs')
+app.route('/students/:student_id/programs')
   .get(function(req, res, next) {
     makeResponse(res, programs.getPrograms(req));
+  });
+
+app.route('/students/:student_id/programs/:program_id')
+  .put(function(req, res, next) {
+    makeResponse(res, programs.updateStudent(req));
   });
 
 // Programs
