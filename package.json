@@ -9,7 +9,7 @@
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
     "seed": "gulp seed",
     "start": "pm2 start app.js -n amscores_backend",
-    "stop": "pm2 delete amscores_backend"
+    "stop": "if [[ ! -z $(pm2 list | grep amscores_backend) ]]; then pm2 delete amscores_backend; fi"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.4.6",
+    "body-parser": "^1.15.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
     "express": "^4.14.0",
