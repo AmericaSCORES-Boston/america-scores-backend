@@ -1,30 +1,35 @@
 {
   "name": "america-scores-backend",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The backend for the America SCORES data collection app.",
   "main": "index.js",
   "scripts": {
     "test": "gulp test",
     "eslint": "gulp eslint",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html"
+    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
+    "seed": "gulp seed",
+    "start": "pm2 start app.js -n amscores_backend",
+    "stop": "if [[ ! -z $(pm2 list | grep amscores_backend) ]]; then pm2 delete amscores_backend; fi"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.ccs.neu.edu/CS4500-AmericaSCORES/backend.git"
+    "url": "https://github.com/CS4500-AmericaSCORES/america-scores-backend"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.4.6",
+    "body-parser": "^1.15.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
-    "dotenv": "^2.0.0",
     "express": "^4.14.0",
     "morgan": "~1.7.0",
-    "mysql": "^2.11.1"
+    "mysql": "^2.11.1",
+    "net": "^1.0.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coveralls": "^2.11.15",
     "eslint": "^3.8.1",
     "eslint-config-google": "^0.7.0",
     "gulp": "^3.9.1",
