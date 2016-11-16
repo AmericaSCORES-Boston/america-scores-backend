@@ -12,10 +12,8 @@ var students = require('./routes/students');
 var sites = require('./routes/sites');
 
 // parse application/json and look for raw text
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.text());
 app.use(bodyParser.json({type: 'application/json'}));
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/', function(req, res) {
   res.status(405);
