@@ -3,6 +3,12 @@
 const Promise = require('bluebird');
 const query = require('../lib/utils').query;
 
+// Require isPositiveInteger for argument checking
+const isPositiveInteger = require('../lib/utils').isPositiveInteger;
+
+// Require isValidDate for argument checking
+const isValidDate = require('../lib/utils').isValidDate;
+
 function getStudents(req) {
   // Get student by first name, last name, and date of birth
   if (req.query && req.query.first_name && req.query.last_name &&
@@ -240,21 +246,6 @@ function updateStudent(req) {
 
 function deleteStudent(req) {
 
-}
-
-function isValidDate(date) {
-  date = String(date);
-  var dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
-
-  return date.match(dateRegEx) != null &&
-  date.substring(5, 7) > 0 && date.substring(5, 7) < 13 &&
-  date.substring(8) > 0 && date.substring(8) < 31;
-}
-
-function isPositiveInteger(str) {
-  var intRegex = /^\d+$/;
-
-  return String(str).match(intRegex) != null;
 }
 
 function countInDB(id, table, field) {
