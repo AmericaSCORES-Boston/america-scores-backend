@@ -10,3 +10,6 @@ The backend for the America SCORES data collection system.
 > cd backend/
 > npm install
 ~~~~
+
+### Versioning
+This project uses [semantic versioning](http://semver.org/).
