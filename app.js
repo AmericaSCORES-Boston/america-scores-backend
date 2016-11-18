@@ -29,9 +29,19 @@ function makeResponse(res, promise) {
   });
 }
 
+app.get('/api/test', function(req, res) {
+  res.send('testing');
+});
+
+
+app.get('/test', function(req, res) {
+  res.send('no api test');
+});
+
 // Students
 app.route('/api/students')
   .get(function(req, res, next) {
+    console.log('in students');
     makeResponse(res, students.getStudents(req));
   });
 
