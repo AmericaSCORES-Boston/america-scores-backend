@@ -30,7 +30,7 @@ function makeResponse(res, promise) {
 }
 
 // Students
-app.route('/students')
+app.route('/api/students')
   .get(function(req, res, next) {
     makeResponse(res, students.getStudents(req));
   });
