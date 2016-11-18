@@ -29,21 +29,28 @@ function makeResponse(res, promise) {
   });
 }
 
-app.get('/api/test', function(req, res) {
-  res.send('testing');
-});
-
-
-app.get('/test', function(req, res) {
-  res.send('no api test');
-});
-
 // Students
-app.route('/api/students')
-  .get(function(req, res, next) {
-    console.log('in students');
-    makeResponse(res, students.getStudents(req));
-  });
+
+app.get('/studentsa', function(req, res) {
+  students.getStudents(req)
+    .then(function(data) {
+      res.send(data);
+    })
+    .catch(function(err) {
+      res.setStatus(505);
+      res.send(err);
+    });
+});
+
+app.get('/studentsb', function(req, res) {
+  makeResponse(res, students.getStudents(req));
+});
+
+//app.route('/api/students')
+//  .get(function(req, res, next) {
+//    console.log('in students');
+//    makeResponse(res, students.getStudents(req));
+//  });
 
 app.route('/students/:student_id')
   .get(function(req, res, next) {
