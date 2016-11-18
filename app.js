@@ -21,7 +21,7 @@ app.get('/', function(req, res) {
 });
 
 function makeResponse(res, promise) {
-  promise.then(function(data) {
+  return promise.then(function(data) {
     res.send(data);
   })
   .catch(function(err) {
