@@ -15,6 +15,35 @@ const isPositiveInteger = require('../lib/utils').isPositiveInteger;
 // Require isValidDate for argument checking
 const isValidDate = require('../lib/utils').isValidDate;
 
+function getStudents(req) {
+  // Get student by first name, last name, and date of birth
+  if (req.query.hasOwnProperty('first_name') &&
+  req.query.hasOwnProperty('last_name') && req.query.hasOwnProperty('dob')) {
+      var birthday = req.query.dob;
+      if (isValidDate(birthday)) {
+        // If the date is in yyyy-mm-dd format, get the student
+        return query('SELECT * FROM Student WHERE first_name = ? ' +
+        'AND last_name = ? AND dob = DATE(?)',
+        [req.query.first_name, req.query.last_name, birthday]);
+      } else {
+        // Date of birth format is incorrect, send error
+        var message = 'Failed to get student due to invalid birthdate.' +
+        ' Try yyyy-mm-dd.';
+        return createInvalidArgumentError(birthday, 'dob', message);
+      }
+  } else if (!req.query.hasOwnProperty('first_name') &&
+  !req.query.hasOwnProperty('last_name') && !req.query.hasOwnProperty('dob')) {
+    return query('SELECT * FROM Student');
+  } else {
+    return Promise.reject({
+      name: 'UnsupportedRequest',
+      status: 501,
+      message: 'The API does not support a request of this format. ' +
+      ' See the documentation for a list of options.'
+    });
+  }
+}
+
 // TODO: Delete this function and use the following one once programs is
 // implemented
 function getStudentsByProgram(req) {
@@ -157,34 +186,6 @@ function getStudentsBySite(req) {
   } else {
     // id is not a number or is negative (invalid)
     return createInvalidArgumentError(id, field);
-  }
-}
-
-function getStudents(req) {
-  // Get student by first name, last name, and date of birth
-  if (req.query && req.query.first_name && req.query.last_name &&
-    req.query.dob) {
-      var birthday = req.query.dob;
-      if (isValidDate(birthday)) {
-        // If the date is in yyyy-mm-dd format, get the student
-        return query('SELECT * FROM Student WHERE first_name = ? ' +
-        'AND last_name = ? AND dob = DATE(?)',
-        [req.query.first_name, req.query.last_name, birthday]);
-      } else {
-        // Date of birth format is incorrect, send error
-        var message = 'Failed to get student due to invalid birthdate.' +
-        ' Try yyyy-mm-dd.';
-        return createInvalidArgumentError(birthday, 'dob', message);
-      }
-  } else if (!req.query.first_name && !req.query.last_name && !req.query.dob){
-    return query('SELECT * FROM Student');
-  } else {
-    return Promise.reject({
-      name: 'UnsupportedRequest',
-      status: 501,
-      message: 'The API does not support a request of this format. ' +
-      ' See the documentation for a list of options.'
-    });
   }
 }
 

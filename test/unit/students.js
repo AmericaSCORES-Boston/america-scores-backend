@@ -109,9 +109,13 @@ before(function() {
 // Students testing block
 describe('Students', function() {
   describe('getStudents(req)', function() {
-    xit('should get all the students in the database', function(done) {
-      // GET all doesn't need anything from the request, so pass in empty
-      var promise = students.getStudents({});
+    it('should get all the students in the database', function(done) {
+      var promise = students.getStudents({
+        // Express has empty query, params, and body by default in req
+        query: {},
+        params: {},
+        body: {}
+      });
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
@@ -207,7 +211,7 @@ describe('Students', function() {
     });
   });
 
-  describe('getStudentsByProgram(req)', function () {
+  describe('getStudentsByProgram(req)', function() {
     it('should get all the students for a given program',
     function(done) {
       var req = {
