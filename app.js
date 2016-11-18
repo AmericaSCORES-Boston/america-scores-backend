@@ -46,7 +46,7 @@ app.get('/studentsb', function(req, res) {
   makeResponse(res, students.getStudents(req));
 });
 
-//app.route('/api/students')
+// app.route('/api/students')
 //  .get(function(req, res, next) {
 //    console.log('in students');
 //    makeResponse(res, students.getStudents(req));
