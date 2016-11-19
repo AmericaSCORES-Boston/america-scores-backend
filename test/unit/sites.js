@@ -7,58 +7,58 @@ const utils = require('../../lib/utils');
 
 const site1 = {
   site_id: 1,
-    site_name: 'fakeSiteName',
-    site_address: '123 Boston, MA'
+    site_name: 'Lin-Manuel Elementary',
+    site_address: '1155 Tremont Street, Roxbury Crossing, MA'
 };
 const site2 = {
   site_id: 2,
-  site_name: 'fakeSiteName',
-  site_address: '123 Boston, MA'
+  site_name: 'Yawkey Boys and Girls Club',
+  site_address: '115 Warren St, Roxbury, MA'
 };
 const site3 = {
   site_id: 3,
-  site_name: 'for the coach',
-  site_address: '123 Boston, MA'
+  site_name: 'Hamilton Elementary',
+  site_address: '625 Columbus Avenue, Boston, MA'
 };
 const site4 = {
   site_id: 4,
-  site_name: 'also for the coach',
-  site_address: '123 Boston, MA'
+  site_name: 'Lafayette Middle School',
+  site_address: '111 Huntington Avenue, Boston, MA'
 };
 const site5 = {
   site_id: 5,
-  site_name: 'fakeSiteName',
-  site_address: '123 Boston, MA'
+  site_name: 'Washington Intermediate School',
+  site_address: '1776 Beacon Street, Boston, MA'
 };
 const site6 = {
   site_id: 6,
-  site_name: 'fakeSiteName',
-  site_address: '123 Boston, MA'
+  site_name: 'Schuyler High School',
+  site_address: '232 Boylston Street, Boston, MA'
 };
 const site7 = {
   site_id: 7,
-  site_name: 'fakeSiteName',
-  site_address: '123 Boston, MA'
+  site_name: 'Jefferson Elementary',
+  site_address: '72 Kneeland Street, Boston, MA'
 };
 const site8 = {
   site_id: 8,
-  site_name: 'singe',
-  site_address: 'single Boston, MA'
+  site_name: 'Clear Brook High School',
+  site_address: '451 Charles Street, Boston, MA'
 };
 const site9 = {
   site_id: 9,
-  site_name: 'old name',
-  site_address: 'old address'
+  site_name: 'Amelia Earheart Elementary',
+  site_address: '371 Clarendon Street, Boston, MA'
 };
 const site10 = {
   site_id: 10,
-  site_name: 'site a',
-  site_address: '370 Marsh Rd, MA'
+  site_name: 'Philip Elementary',
+  site_address: '843 Massachusetts Avenue, Boston, MA'
 };
 const site11 = {
   site_id: 11,
-  site_name: 'site b',
-  site_address: '144 Atwater St, CA'
+  site_name: 'YMCA',
+  site_address: '230 Huntington Avenue, Boston, MA'
 };
 
 describe('Sites', function() {
@@ -133,8 +133,8 @@ describe('Sites', function() {
     it('does not create site because a site with the given name and address already exists', function(done) {
       sites.createSite({
         body: {
-          site_name: 'singe',
-          site_address: 'single Boston, MA'
+          site_name: 'Schuyler High School',
+          site_address: '232 Boylston Street, Boston, MA'
         }
       })
       .catch(function(err) {
