@@ -1,6 +1,3 @@
-// Set the env to development
-process.env.NODE_ENV = 'development';
-
 // Require the testing dependencies
 var chai = require('chai');
 var assert = chai.assert;
