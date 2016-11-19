@@ -63,12 +63,27 @@ app.route('/students/:student_id')
     makeResponse(res, students.updateStudent(req));
   });
 
+app.route('/students/:student_id/programs/:program_id')
+  .put(function(req, res, next) {
+    makeResponse(res, students.updateStudent(req));
+  });
+
 app.route('/programs/:program_id/students')
   .get(function(req, res, next) {
-    makeResponse(res, students.getStudents(req));
+    makeResponse(res, students.getStudentsByProgram(req));
   })
   .post(function(req, res, next) {
     makeResponse(res, students.createStudent(req));
+  });
+
+app.route('/sites/:site_id/students')
+  .get(function(req, res, next) {
+    makeResponse(res, students.getStudentsBySite(req));
+  });
+
+app.route('/events/:event_id/students')
+  .get(function(req, res, next) {
+    makeResponse(res, students.getStudentsByEvent(req));
   });
 
 // Sites
@@ -89,16 +104,6 @@ app.route('/sites/:site_id')
   })
   .delete(function(req, res, next) {
     makeResponse(res, sites.deleteSite(req));
-  });
-
-app.route('/sites/:site_id/students')
-  .get(function(req, res, next) {
-    makeResponse(res, students.getStudents(req));
-  });
-
-app.route('/events/:event_id/students')
-  .get(function(req, res, next) {
-    makeResponse(res, students.getStudents(req));
   });
 
 app.listen(config.server.port);
