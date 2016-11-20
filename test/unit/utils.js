@@ -48,4 +48,13 @@ describe('utils', function() {
       assert.isFalse(utils.isPositiveInteger(-2));
     });
   });
+
+  describe('QueryError(name, status, message)', function() {
+    it('should create a query error using the given arguments', function() {
+      var err = new utils.QueryError('InvalidArgumentError', 400, 'ID type error');
+      assert.equal(err.name, 'InvalidArgumentError');
+      assert.equal(err.status, 400);
+      assert.equal(err.message, 'ID type error');
+    });
+  });
 });
