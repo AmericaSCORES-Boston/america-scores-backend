@@ -226,7 +226,7 @@ describe('POST', function() {
       }
     };
     var promise = programs.createProgram(req).catch(function(err) {
-      assert.equal(err.status, 400);
+      assert.equal(err.status, 404);
       done();
     });
   });
@@ -364,8 +364,8 @@ describe('DELETE', function() {
         program_id: 'id'
       },
     };
-    var promise = programs.deleteProgram(req).then(function(data) {
-      assert.deepEqual([], data);
+    var promise = programs.deleteProgram(req).catch(function(err) {
+      assert.equal(err.status, 400);
       done();
     });
   });
