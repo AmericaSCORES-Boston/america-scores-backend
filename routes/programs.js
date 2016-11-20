@@ -13,9 +13,21 @@ function getPrograms(req) {
 }
 
 function getProgram(req) {
-  if (req.params.program_id && Object.keys(req.params).length == 1) {
-    return query('SELECT * FROM Program WHERE program_id = ' + req.params.program_id);
-  }
+    var id = req.params.program_id;
+    return query('SELECT * FROM Program WHERE program_id = ?', [id]);
+}
+
+function getProgramsBySite(req) {
+  return query('SELECT * FROM Program WHERE program_id = ' + req.params.program_id);
+}
+
+function getProgramsByStudent(req) {
+  return query('SELECT * FROM Program WHERE program_id = ' + req.params.program_id);
+
+}
+
+function getProgramsByAccount(req) {
+  return query('SELECT * FROM Program WHERE program_id = ' + req.params.program_id);
 }
 
 function createProgram(req) {
