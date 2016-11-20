@@ -21,7 +21,7 @@ app.get('/', function(req, res) {
 });
 
 function makeResponse(res, promise) {
-  return promise.then(function(data) {
+  promise.then(function(data) {
     res.send(data);
   })
   .catch(function(err) {
@@ -30,27 +30,10 @@ function makeResponse(res, promise) {
 }
 
 // Students
-
-app.get('/studentsa', function(req, res) {
-  students.getStudents(req)
-    .then(function(data) {
-      res.send(data);
-    })
-    .catch(function(err) {
-      res.setStatus(505);
-      res.send(err);
-    });
-});
-
-app.get('/studentsb', function(req, res) {
-  makeResponse(res, students.getStudents(req));
-});
-
-// app.route('/api/students')
-//  .get(function(req, res, next) {
-//    console.log('in students');
-//    makeResponse(res, students.getStudents(req));
-//  });
+app.route('/students')
+  .get(function(req, res, next) {
+    makeResponse(res, students.getStudents(req));
+  });
 
 app.route('/students/:student_id')
   .get(function(req, res, next) {
