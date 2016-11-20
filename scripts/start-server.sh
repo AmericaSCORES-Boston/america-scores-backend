@@ -1,3 +1,2 @@
 #!/usr/bin/env bash
-cd /amscores/backend
-npm start
+pm2 start /amscores/backend/app.js -n amscores_backend

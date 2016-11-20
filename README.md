@@ -7,6 +7,9 @@ The backend for the America SCORES data collection system.
 ### Getting Started
 ~~~~
 > git clone https://github.com/CS4500-AmericaSCORES/america-scores-backend
-> cd backend/
+> cd america-scores-backend/
 > npm install
 ~~~~
+
+### Versioning
+This project uses [semantic versioning](http://semver.org/).

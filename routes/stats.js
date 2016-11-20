@@ -50,7 +50,7 @@ const query = require('../lib/utils').query;
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
- function postStat(req) {
+ function createStat(req) {
 	 if (!req.body || !req.body.event_id || !req.body.student_id) {
 		     return Promise.reject({
 				 status: 406,
@@ -118,3 +118,11 @@ const query = require('../lib/utils').query;
  function deleteStat(req) {
 	 return query('DELETE FROM Measurement WHERE measurement_id = ' + req.params.measurement_id);
  }
+
+module.exports = {
+  getStats,
+  getStat,
+  createStat,
+  updateStat,
+  deleteStat,
+};

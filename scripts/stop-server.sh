@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-if [ -e /amscores/backend ]; then
-  cd /amscores/backend
-  npm stop
-
-  mv config/creds.js ../
-  rm -rf *
+if [[ ! -z $(pm2 list | grep amscores_backend) ]]; then
+  pm2 delete amscores_backend
 fi
