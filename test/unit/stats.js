@@ -13,7 +13,7 @@ const stats = require('../../routes/stats');
 
 // Create fake stats
 var fakeStat = {
-  stat_id: 1,
+  measurement_id: 1,
   student_id: 1,
   event_id: 1,
   height: 5,
@@ -22,7 +22,7 @@ var fakeStat = {
 };
 
 var fakeStat2 = {
-  stat_id: 2,
+  measurement_id: 2,
   student_id: 1,
   event_id: 2,
   height: 7,
@@ -31,7 +31,7 @@ var fakeStat2 = {
 };
 
 var fakeStat3 = {
-  stat_id: 3,
+  measurement_id: 3,
   student_id: 2,
   event_id: 6,
   height: 71,
@@ -40,7 +40,7 @@ var fakeStat3 = {
 };
 
 var fakeStat4 = {
-  stat_id: 4,
+  measurement_id: 4,
   student_id: 2,
   event_id: 4,
   height: 40,
@@ -49,7 +49,7 @@ var fakeStat4 = {
 };
 
 var fakeStat5 = {
-  stat_id: 5,
+  measurement_id: 5,
   student_id: 2,
   event_id: 2,
   height: 44,
@@ -58,7 +58,7 @@ var fakeStat5 = {
 };
 
 var fakeStat6 = {
-  stat_id: 6,
+  measurement_id: 6,
   student_id: 4,
   event_id: 2,
   height: 4,
@@ -68,7 +68,7 @@ var fakeStat6 = {
 
 // This stat is added later
 var fakeStat7 = {
-  stat_id: 7,
+  measurement_id: 7,
   student_id: 2,
   event_id: 2,
   height: 320,
@@ -93,7 +93,7 @@ beforeEach(function() {
 
 describe('stats', function() {
   describe('getStats(req)', function() {
-    xit('should get all the stats in the database', function(done) {
+    it('should get all the stats in the database', function(done) {
       // GET all doesn't need anything from the request, so pass in empty
       var promise = stats.getStats({});
 
