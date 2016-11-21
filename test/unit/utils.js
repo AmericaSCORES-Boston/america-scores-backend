@@ -86,6 +86,7 @@ describe('utils', function() {
 
       utils.query(queryString, args)
       .then(function(data) {
+        console.log(data);
         done(new Error('Query did not fail as expected'));
       })
       .catch(function(err) {
