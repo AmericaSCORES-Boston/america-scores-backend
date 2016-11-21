@@ -57,4 +57,51 @@ describe('utils', function() {
       assert.equal(err.message, 'ID type error');
     });
   });
+
+  describe('query(queryString, args)', function() {
+    it('should error if the query has an invalid argument',
+    function(done) {
+      var queryString = 'INSERT INTO Student (first_name, last_name, dob) ' +
+      'VALUES (?, ?, DATE(?))';
+      var args = ['Percy', 'Jackson', '08/18/1993'];
+
+      utils.query(queryString, args)
+      .catch(function(err) {
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.status, 400);
+        assert.equal(err.message, 'ID type error');
+        done();
+      });
+    });
+
+    it('should error if the query references an id that does not exist',
+    function(done) {
+      var queryString = 'INSERT INTO StudentToProgram ' +
+      '(student_id, program_id) VALUES (?, ?)';
+      var args = [2132, 2];
+
+      utils.query(queryString, args)
+      .catch(function(err) {
+        assert.equal(err.name, 'ArgumentNotFound');
+        assert.equal(err.status, 404);
+        assert.equal(err.message, 'ID not found in DB');
+        done();
+      });
+    });
+
+    it('should error if the query has missing parts',
+    function(done) {
+      var queryString = 'INSERT INTO Student (first_name, last_name, dob) ' +
+      'VALUES (?, ?, DATE(?))';
+      var args = [undefined, undefined, undefined];
+
+      utils.query(queryString, args)
+      .catch(function(err) {
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.status, 400);
+        assert.equal(err.message, 'Body error');
+        done();
+      });
+    });
+  });
 });
