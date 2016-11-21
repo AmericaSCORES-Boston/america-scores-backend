@@ -208,7 +208,7 @@ describe('POST', function() {
         site_id: 'id',
       },
       body: {
-        program_name: "New"
+        program_name: 'New'
       }
     };
     programs.createProgram(req).catch(function(err) {
@@ -225,7 +225,7 @@ describe('POST', function() {
         program_name: 'New'
       }
     };
-    var promise = programs.createProgram(req).catch(function(err) {
+    programs.createProgram(req).catch(function(err) {
       assert.equal(err.status, 404);
       done();
     });
@@ -300,7 +300,6 @@ describe('PUT', function() {
         program_name: 'Updated'
       }
     };
-    var promise = programs.updateProgram(req);
     programs.updateProgram(req).then(function(data) {
       assert.deepEqual([], data);
       done();
@@ -314,7 +313,6 @@ describe('PUT', function() {
       body: {
       }
     };
-    var promise = programs.updateProgram(req);
     programs.updateProgram(req).then(function(data) {
       assert.deepEqual([], data);
       done();
@@ -353,7 +351,8 @@ describe('DELETE', function() {
         program_id: -1,
       },
     };
-    var promise = programs.deleteProgram(req).then(function(data) {
+
+    programs.deleteProgram(req).then(function(data) {
       assert.deepEqual([], data);
       done();
     });
@@ -364,7 +363,7 @@ describe('DELETE', function() {
         program_id: 'id'
       },
     };
-    var promise = programs.deleteProgram(req).catch(function(err) {
+    programs.deleteProgram(req).catch(function(err) {
       assert.equal(err.status, 400);
       done();
     });
