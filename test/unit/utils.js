@@ -63,12 +63,16 @@ describe('utils', function() {
     function(done) {
       var queryString = 'INSERT INTO Student (first_name, last_name, dob) ' +
       'VALUES (?, ?, DATE(?))';
-      var args = ['Percy', 'Jackson', '087718/1993'];
+      var args = ['Newt', 'Scamander', '087718/1993'];
 
       utils.query(queryString, args)
       .then(function(data) {
-        console.log(data);
-        done(new Error('Query did not fail as expected'));
+        utils.query('SELECT student_id FROM Student WHERE ' +
+          'first_name = ? AND last_name = ? AND dob = ?', args)
+        .then(function(data) {
+          console.log(data);
+          done(new Error('Query did not fail as expected'));
+        });
       })
       .catch(function(err) {
         assert.equal(err.name, 'InvalidArgumentError');
@@ -86,7 +90,6 @@ describe('utils', function() {
 
       utils.query(queryString, args)
       .then(function(data) {
-        console.log(data);
         done(new Error('Query did not fail as expected'));
       })
       .catch(function(err) {
