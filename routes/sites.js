@@ -2,6 +2,7 @@
 
 const Promise = require('bluebird');
 const query = require('../lib/utils').query;
+const defined = require('../lib/utils').defined;
 
 /**
  * Gets all sites matching filter, or all sites if no filter is present.
@@ -10,7 +11,7 @@ const query = require('../lib/utils').query;
  * @return {Promise} The promise
  */
 function getSites(req) {
-  if (req.query && req.query.acct_id) {
+  if (defined(req.query) && defined(req.query.acct_id)) {
     return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ?', [req.query.acct_id]);
   }
 
@@ -24,7 +25,7 @@ function getSites(req) {
  * @return {Promise} The promise
  */
 function createSite(req) {
-  if (!req.body || !req.body.site_name || !req.body.site_address) {
+  if (!defined(req.body) || !defined(req.body.site_name) || !defined(req.body.site_address)) {
     return Promise.reject({
       status: 406,
       message: 'Must provide site\'s name, and address'
@@ -61,7 +62,7 @@ function getSite(req) {
  * @return {Promise} The promise
  */
 function updateSite(req) {
-  if (!req.body || (!req.body.site_name && !req.body.site_address)) {
+  if (!defined(req.body) || (!defined(req.body.site_name) && !defined(req.body.site_address))) {
     return Promise.reject({
       status: 406,
       message: 'Must provide site\'s name, or address'
@@ -70,12 +71,12 @@ function updateSite(req) {
 
   return Promise.resolve()
     .then(function() {
-      if (req.body.site_name) {
+      if (defined(req.body.site_name)) {
         return query('UPDATE Site SET site_name = ? WHERE site_id = ?', [req.body.site_name, req.params.site_id]);
       }
     })
     .then(function() {
-      if (req.body.site_address) {
+      if (defined(req.body.site_address)) {
         return query('UPDATE Site SET site_address = ? WHERE site_id = ?', [req.body.site_address, req.params.site_id]);
       }
     });

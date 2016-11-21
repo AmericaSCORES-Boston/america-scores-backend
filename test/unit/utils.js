@@ -118,4 +118,33 @@ describe('utils', function() {
       });
     });
   });
+  describe('define(value)', function() {
+    it('returns false because the value is undefined', function() {
+      assert.isFalse(utils.defined(undefined));
+    });
+
+    it('returns false because the value is null', function() {
+      assert.isFalse(utils.defined(null));
+    });
+
+    it('returns false because the object\'s field is not defined', function() {
+      var testObject = {};
+      assert.isFalse(utils.defined(testObject.value));
+    });
+
+    it('returns true because \'\' is defined', function() {
+      assert.isTrue(utils.defined(''));
+    });
+
+    it('returns true because 0 is defined', function() {
+      assert.isTrue(utils.defined(0));
+    });
+
+    it('returns true because the object is defined', function() {
+      var testObject = {
+        value: 4
+      };
+      assert.isTrue(utils.defined(testObject.value));
+    });
+  });
 });
