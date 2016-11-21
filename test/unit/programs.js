@@ -1,4 +1,3 @@
-process.env.NODE_ENV = 'development';
 const programs = require('../../routes/programs');
 const seed = require('../../lib/utils').seed;
 const chai = require('chai');
