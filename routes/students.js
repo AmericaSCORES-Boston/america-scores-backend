@@ -1,8 +1,9 @@
 'use strict';
 
 const Promise = require('bluebird');
-const query = require('../lib/utils').query;
-const defined = require('../lib/utils').defined;
+const utils = require('../lib/utils');
+const query = utils.query;
+const defined = utils.defined;
 
 // Require other routes called
 var sites = require('../routes/sites');

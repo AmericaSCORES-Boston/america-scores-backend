@@ -1,8 +1,9 @@
 'use strict';
 
 const Promise = require('bluebird');
-const query = require('../lib/utils').query;
-const defined = require('../lib/utils').defined;
+const utils = require('../lib/utils');
+const query = utils.query;
+const defined = utils.defined;
 
 /**
  * Gets all sites matching filter, or all sites if no filter is present.
