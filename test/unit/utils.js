@@ -66,6 +66,11 @@ describe('utils', function() {
       var args = ['Percy', 'Jackson', '087718/1993'];
 
       utils.query(queryString, args)
+      .then(function(data) {
+        console.log('No error given when we expected one. Test failed.');
+        assert.equal(false, true);
+        done();
+      })
       .catch(function(err) {
         assert.equal(err.name, 'InvalidArgumentError');
         assert.equal(err.status, 400);
@@ -78,9 +83,14 @@ describe('utils', function() {
     function(done) {
       var queryString = 'INSERT INTO StudentToProgram ' +
       '(student_id, program_id) VALUES (?, ?)';
-      var args = [2132, 2];
+      var args = [1231, 2];
 
       utils.query(queryString, args)
+      .then(function(data) {
+        console.log('No error given when we expected one. Test failed.');
+        assert.equal(false, true);
+        done();
+      })
       .catch(function(err) {
         assert.equal(err.name, 'ArgumentNotFound');
         assert.equal(err.status, 404);
@@ -96,6 +106,11 @@ describe('utils', function() {
       var args = [undefined, undefined, undefined];
 
       utils.query(queryString, args)
+      .then(function(data) {
+        console.log('No error given when we expected one. Test failed.');
+        assert.equal(false, true);
+        done();
+      })
       .catch(function(err) {
         assert.equal(err.name, 'InvalidArgumentError');
         assert.equal(err.status, 400);
