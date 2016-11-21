@@ -59,7 +59,7 @@ describe('utils', function() {
   });
 
   describe('query(queryString, args)', function() {
-    it('should error if the query has an invalid argument',
+    xit('should error if the query has an invalid argument',
     function(done) {
       var queryString = 'INSERT INTO Student (first_name, last_name, dob) ' +
       'VALUES (?, ?, DATE(?))';
