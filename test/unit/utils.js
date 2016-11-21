@@ -81,7 +81,7 @@ describe('utils', function() {
     function(done) {
       var queryString = 'INSERT INTO StudentToProgram ' +
       '(student_id, program_id) VALUES (?, ?)';
-      var args = [1, 2];
+      var args = [12213, 2333];
 
       utils.query(queryString, args)
       .then(function(data) {
