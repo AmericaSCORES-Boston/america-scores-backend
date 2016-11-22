@@ -10,6 +10,7 @@ var app = express();
 // Routes
 var students = require('./routes/students');
 var sites = require('./routes/sites');
+var programs = require('./routes/programs');
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -87,6 +88,41 @@ app.route('/sites/:site_id')
   })
   .delete(function(req, res, next) {
     makeResponse(res, sites.deleteSite(req));
+  });
+
+// Programs
+app.route('/programs')
+  .get(function(req, res, next) {
+    makeResponse(res, programs.getPrograms(req));
+  });
+
+app.route('/programs/:program_id')
+  .get(function(req, res, next) {
+    makeResponse(res, programs.getProgram(req));
+  })
+  .put(function(req, res, next) {
+    makeResponse(res, programs.updateProgram(req));
+  })
+  .delete(function(req, res, next) {
+    makeResponse(res, programs.deleteProgram(req));
+  });
+
+app.route('/site/:site_id/programs')
+  .get(function(req, res, next) {
+    makeResponse(res, programs.getProgramsBySite(req));
+  })
+  .post(function(req, res, next) {
+    makeResponse(res, programs.createProgram(req));
+  });
+
+app.route('/students/:student_id/programs')
+  .get(function(req, res, next) {
+    makeResponse(res, programs.getProgramsByStudent(req));
+  });
+
+app.route('/account/:account_id/programs')
+  .get(function(req, res, next) {
+    makeResponse(res, programs.getProgramsByAccount(req));
   });
 
 app.listen(config.server.port);
