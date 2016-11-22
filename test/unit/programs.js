@@ -363,10 +363,6 @@ describe('DELETE', function() {
       },
     };
     programs.deleteProgram(req).done(function(data) {
-      console.log(data);
-      done();
-    }).catch(function(err) {
-      assert.equal(err.status, 400);
       done();
     });
   });
