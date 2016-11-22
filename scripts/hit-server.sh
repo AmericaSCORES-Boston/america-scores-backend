@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-curl localhost:7777
+curl localhost:8888

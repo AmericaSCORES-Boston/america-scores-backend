@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-if [ "$DEPLOYMENT_GROUP_NAME" == "Development" ]; then
-  cd /amscores/backend
-  npm install
-fi
+chown -R ubuntu /amscores
+
+cd /amscores/backend
+mv ../creds.js config/
+
+npm install
