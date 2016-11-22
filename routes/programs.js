@@ -1,4 +1,6 @@
-const query = require('../lib/utils').query;
+const utils = require('../lib/utils');
+const query = utils.query;
+const defined = utils.defined;
 
 function getPrograms(req) {
   return query('SELECT * FROM Program');
@@ -34,7 +36,7 @@ function createProgram(req) {
 
 function updateProgram(req) {
   var program_id = req.params.program_id;
-  if (req.body.program_name) {
+  if (defined(req.body.program_name)) {
     return query('UPDATE Program SET program_name = ? WHERE program_id = ?', [req.body.program_name, program_id]).then(function(data) {
       return getProgram({params: {program_id: program_id}});
     });
