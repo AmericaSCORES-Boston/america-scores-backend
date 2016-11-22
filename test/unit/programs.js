@@ -50,7 +50,7 @@ describe('GET', function(done) {
       done();
     });
   });
-  it('/programs/:program_id (invalid program_id)', function(done) {
+  xit('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
       params: {
         program_id: 'id'
@@ -343,7 +343,7 @@ describe('DELETE', function() {
     .then(function(data) {
       assert.deepEqual(programsDeleted, data);
       done();
-    })
+    });
   });
   it('/programs/:program_id (nonexistent program_id)', function(done) {
     var req = {
