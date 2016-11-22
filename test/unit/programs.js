@@ -201,7 +201,7 @@ describe('POST', function() {
       done();
     });
   });
-  it('/sites/:site_id/programs (invalid site_id)', function(done) {
+  xit('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
       params: {
         site_id: 'id',
