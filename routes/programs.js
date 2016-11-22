@@ -45,17 +45,22 @@ function updateProgram(req) {
 function deleteProgram(req) {
   var program_id = req.params.program_id;
   var deletedProgram = getProgram({params: {program_id: program_id}});
+
   return deletedProgram.then(function(data) {
     return query('DELETE FROM AcctToProgram WHERE program_id = ?', [program_id]).then(function() {
-      return query('DELETE FROM StudentToProgram WHERE program_id = ?', [program_id]).then(function() {
-        return query('DELETE FROM Measurement WHERE event_id IN (Select event_id FROM Event WHERE program_id = ?)', [program_id]).then(function() {
-          return query('DELETE FROM Event WHERE program_id = ?', [program_id]).then(function() {
-            return query('DELETE FROM Program WHERE program_id = ?', [program_id]).then(function() {
-              return data;
-            });
-          });
-        });
-      });
+      return query('DELETE FROM StudentToProgram WHERE program_id = ?', [program_id]);
+    })
+    .then(function() {
+      return query('DELETE FROM Measurement WHERE event_id IN (Select event_id FROM Event WHERE program_id = ?)', [program_id]);
+    })
+    .then(function() {
+      return query('DELETE FROM Event WHERE program_id = ?', [program_id]);
+    })
+    .then(function() {
+      return query('DELETE FROM Program WHERE program_id = ?', [program_id]);
+    })
+    .then(function() {
+      return data;
     });
   });
 };

@@ -337,12 +337,13 @@ describe('DELETE', function() {
       },
     };
     var promise = programs.deleteProgram(req);
-    promise.then(function(data) {
-      programs.getPrograms().then(function(data) {
-        assert.deepEqual(programsDeleted, data);
-      });
+    promise.then(function() {
+      return programs.getPrograms();
+    })
+    .then(function(data) {
+      assert.deepEqual(programsDeleted, data);
       done();
-    });
+    })
   });
   it('/programs/:program_id (nonexistent program_id)', function(done) {
     var req = {
