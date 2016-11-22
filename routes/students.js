@@ -1,7 +1,9 @@
 'use strict';
 
 const Promise = require('bluebird');
-const query = require('../lib/utils').query;
+const utils = require('../lib/utils');
+const query = utils.query;
+const defined = utils.defined;
 
 // Require other routes called
 var sites = require('../routes/sites');
@@ -17,8 +19,7 @@ const isValidDate = require('../lib/utils').isValidDate;
 
 function getStudents(req) {
   // Get student by first name, last name, and date of birth
-  if (req.query.hasOwnProperty('first_name') &&
-  req.query.hasOwnProperty('last_name') && req.query.hasOwnProperty('dob')) {
+  if (defined(req.query.first_name) && defined(req.query.last_name) && defined(req.query.dob)) {
       var birthday = req.query.dob;
       if (isValidDate(birthday)) {
         // If the date is in yyyy-mm-dd format, get the student
@@ -190,7 +191,7 @@ function getStudentsBySite(req) {
 }
 
 function getStudent(req) {
-  if (!req.params || !req.params.student_id) {
+  if (!defined(req.params) || !defined(req.params.student_id)) {
     // Missing necessary fields, throw error
     return Promise.reject({
       name: 'MissingFieldError',
@@ -223,8 +224,8 @@ function getStudent(req) {
 
 function createStudent(req) {
   // Check that request has all necessary fields
-  if (req.body && req.body.first_name && req.body.last_name &&
-    req.body.dob && req.params && req.params.program_id) {
+  if (defined(req.body) && defined(req.body.first_name) && defined(req.body.last_name) &&
+    defined(req.body.dob) && defined(req.params) && defined(req.params.program_id)) {
       // Ensure that the given birthdate is valid
       if (!isValidDate(req.body.dob)) {
         return createInvalidArgumentError(req.body.dob, 'dob',
@@ -302,20 +303,20 @@ function createStudent(req) {
 
 function updateStudent(req) {
   // Check that request has all necessary fields
-  if (req.params && req.params.student_id && req.body) {
+  if (defined(req.params) && defined(req.params.student_id) && defined(req.body)) {
     // All required fields are present. Check that student_id is valid
     if (!isPositiveInteger(req.params.student_id)) {
       return createInvalidArgumentError(req.params.student_id, 'student_id');
     }
 
     // Check that date of birth, if present, is valid
-    if (req.body.dob && !isValidDate(req.body.dob)) {
+    if (defined(req.body.dob) && !isValidDate(req.body.dob)) {
       return createInvalidArgumentError(req.body.dob, 'dob',
       'Failed due to invalid birthdate. Try yyyy-mm-dd.');
     }
 
     // Check that program_id, if present, is valid
-    if (req.params.program_id && !isPositiveInteger(req.params.program_id)) {
+    if (defined(req.params.program_id) && !isPositiveInteger(req.params.program_id)) {
       return createInvalidArgumentError(req.params.program_id, 'program_id');
     }
 
@@ -324,7 +325,7 @@ function updateStudent(req) {
     .then(function(count) {
       if (count > 0) {
         // The student exists. Next, check if a program update was requested
-        if (!req.params.program_id) {
+        if (!defined(req.params.program_id)) {
           // No program update requested. Update students table.
           var queryComponents = createUpdateQuery(req.body);
           queryComponents[1].push(req.params.student_id);
@@ -340,7 +341,7 @@ function updateStudent(req) {
                 req.params.student_id])
               .then(function() {
                 // Check if any other fields need to be updated.
-                if (req.body.first_name || req.body.last_name || req.body.dob) {
+                if (defined(req.body.first_name) || defined(req.body.last_name) || defined(req.body.dob)) {
                   // Note: Line is repeated b/c partial updates aren't allowed
                   var queryComponents = createUpdateQuery(req.body);
                   queryComponents[1].push(req.params.student_id);
@@ -371,7 +372,7 @@ function updateStudent(req) {
 }
 
 function deleteStudent(req) {
-  if (req.params && req.params.student_id) {
+  if (defined(req.params) && defined(req.params.student_id)) {
     if (isPositiveInteger(req.params.student_id)) {
       return countInDB(req.params.student_id, 'Student', 'student_id')
       .then(function(count) {
