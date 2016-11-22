@@ -107,7 +107,7 @@ app.route('/programs/:program_id')
     makeResponse(res, programs.deleteProgram(req));
   });
 
-app.route('/site/:site_id/programs')
+app.route('/sites/:site_id/programs')
   .get(function(req, res, next) {
     makeResponse(res, programs.getProgramsBySite(req));
   })
