@@ -211,7 +211,7 @@ describe('POST', function() {
       }
     };
     programs.createProgram(req).catch(function(err) {
-      assert.equal(err.status, 400);
+      assert.equal(err.status, 404);
       done();
     });
   });
@@ -362,7 +362,10 @@ describe('DELETE', function() {
         program_id: 'id'
       },
     };
-    programs.deleteProgram(req).catch(function(err) {
+    programs.deleteProgram(req).done(function(data) {
+      console.log(data);
+      done();
+    }).catch(function(err) {
       assert.equal(err.status, 400);
       done();
     });
