@@ -50,7 +50,7 @@ describe('GET', function(done) {
       done();
     });
   });
-  xit('/programs/:program_id (invalid program_id)', function(done) {
+  it('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
       params: {
         program_id: 'id'
@@ -86,7 +86,7 @@ describe('GET', function(done) {
       done();
     });
   });
-  xit('/sites/:site_id/programs (invalid site_id)', function(done) {
+  it('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
       params: {
         site_id: 'id'
