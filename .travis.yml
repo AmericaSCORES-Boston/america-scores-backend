@@ -20,7 +20,7 @@ after_success:
   - ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha $(find test -name '*.js') -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
 
 before_deploy:
-  - zip -r backend-latest config/config.js config/connection.js database/ lib/ routes/ scripts/ app.js appspec.yml package.json
+  - zip -r backend-latest config/config.js config/connection.js database/ lib/ routes/ scripts/ app.js appspec.yml gulpfile.js package.json
   - mkdir -p backend
   - mv backend-latest.zip backend/
 
@@ -31,15 +31,38 @@ deploy:
     region: us-east-1
     local_dir: backend
     skip_cleanup: true
+    upload-dir: prod
     on:
-      branch: develop
-    bucket: amscores-deploy-dev
+      branch: master
+    bucket: amscores-deploy
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     region: us-east-1
-    bucket: "amscores-deploy-dev"
-    key: backend-latest.zip
+    bucket: "amscores-deploy"
+    key: prod/backend-latest.zip
+    bundle_type: zip
+    application: AmScoresBackend
+    deployment_group: Production
+    on:
+      branch: master
+    wait-until-deployed: true
+  - provider: s3
+    access_key_id: $AMSCORES_AWS_KEY_ID
+    secret_access_key: $AMSCORES_AWS_KEY_SECRET
+    region: us-east-1
+    local_dir: backend
+    skip_cleanup: true
+    upload-dir: dev
+    on:
+      branch: develop
+    bucket: amscores-deploy
+  - provider: codedeploy
+    access_key_id: $AMSCORES_AWS_KEY_ID
+    secret_access_key: $AMSCORES_AWS_KEY_SECRET
+    region: us-east-1
+    bucket: "amscores-deploy"
+    key: dev/backend-latest.zip
     bundle_type: zip
     application: AmScoresBackend
     deployment_group: Development

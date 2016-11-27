@@ -1,8 +1,8 @@
-'use strcit';
+'use strict';
 
 const mysql = require('mysql');
 const Promise = require('bluebird');
-const env = process.env.NODE_ENV || 'development';
+const env = 'development';
 const config = require('./config')[env];
 
 Promise.promisifyAll(mysql);
