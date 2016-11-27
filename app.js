@@ -5,6 +5,7 @@ const config = require('./config/config.js')[env];
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var request = require('request')
 var app = express();
 
 // Routes
@@ -15,6 +16,33 @@ var programs = require('./routes/programs');
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
 app.use(bodyParser.urlencoded({extended: true}));
+
+// exchange access_token for user info
+app.use(function(req, res, next) {
+  if (!req.hasOwnProperty('authorization')) {
+    res.status(400);
+    res.send('authorization field not found in request');
+  }
+
+  var options = { method: 'GET',
+ 	 url: 'https://asbadmin.auth0.com/userinfo',
+   headers: { authorization: 'Bearer ' + req.authorization }
+  };
+
+  request(options, function (err, response, body) {
+    if(err) {
+      //unsure if this is how we want to
+      //throw new Error(error);
+      res.status = response.status;
+      res.send('Unable to retrieve user info from Auth0');
+    } else {
+        parsedBody = JSON.parse(body);
+        req.user = parsedBody;
+        if(body.has)
+        next();
+    }
+  });
+});
 
 app.get('/', function(req, res) {
   res.status(405);
