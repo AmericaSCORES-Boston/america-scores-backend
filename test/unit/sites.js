@@ -75,11 +75,13 @@ describe('Sites', function() {
         done();
       });
     });
+  });
 
+  describe('getSitesByAccount(req)', function() {
     it('gets all sites for a given coach', function(done) {
-      var promise = sites.getSites({
-        query: {
-          acct_id: 1
+      var promise = sites.getSitesByAccount({
+        params: {
+          account_id: 1
         }
       });
 
@@ -90,9 +92,9 @@ describe('Sites', function() {
     });
 
     it('it should return no sites if the given coach does not exist', function(done) {
-      var promise = sites.getSites({
-        query: {
-          acct_id: 100
+      var promise = sites.getSitesByAccount({
+        params: {
+          account_id: 100
         }
       });
 
