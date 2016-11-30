@@ -106,7 +106,7 @@ describe('stats', function() {
     });
 
     // Get all stats at one site
-    xit('should get all stats for one site', function(done) {
+    it('should get all stats for one site', function(done) {
       var req = {
         params: {
           site_id: 1
@@ -122,7 +122,7 @@ describe('stats', function() {
     });
 
     // test for site_id not in database
-    xit('should return empty array if the site_id is not in database',
+    it('should return empty array if the site_id is not in database',
     function(done) {
       var req = {
         params: {
@@ -137,7 +137,7 @@ describe('stats', function() {
       });
     });
 
-    xit('should give an error if the site_id is negative',
+    it('should give an error if the site_id is negative',
     function(done) {
       var req = {
         params: {
@@ -160,7 +160,7 @@ describe('stats', function() {
     });
 
     // test for error if site_id not an integer
-    xit('should give an error if the stat_id is not an integer',
+    it('should give an error if the stat_id is not an integer',
     function(done) {
       var req = {
         params: {
@@ -182,7 +182,7 @@ describe('stats', function() {
     });
 
     // Get all stats of one student
-    xit('should get all stats for one student', function(done) {
+    it('should get all stats for one student', function(done) {
       var req = {
         params: {
           student_id: 1
@@ -198,7 +198,7 @@ describe('stats', function() {
     });
 
     // test for student_id not in database
-    xit('should return empty array if the student_id is not in the database',
+    it('should return empty array if the student_id is not in the database',
     function(done) {
       var req = {
         params: {
@@ -213,7 +213,7 @@ describe('stats', function() {
       });
     });
 
-    xit('should give an error if the student_id is negative',
+    it('should give an error if the student_id is negative',
     function(done) {
       var req = {
         params: {
@@ -236,7 +236,7 @@ describe('stats', function() {
     });
 
     // test for error if student_id not an integer
-    xit('should give an error if the student_id is not an integer',
+    it('should give an error if the student_id is not an integer',
     function(done) {
       var req = {
         params: {
@@ -259,7 +259,7 @@ describe('stats', function() {
   });
 
   describe('getStat(req)', function() {
-    xit('should get a specific stat', function(done) {
+    it('should get a specific stat', function(done) {
       var req = {
         params: {
           // The student_id is contained in the request
@@ -271,12 +271,11 @@ describe('stats', function() {
 
       promise.then(function(data) {
         assert.deepEqual(data, [fakeStat4]);
-        assert.length(data, 1);
         done();
       });
     });
 
-    xit('should give an error if the stat_id is negative',
+    it('should give an error if the stat_id is negative',
     function(done) {
       var req = {
         params: {
@@ -298,7 +297,7 @@ describe('stats', function() {
       });
     });
 
-    xit('should give an error if the stat_id is not an integer',
+    it('should give an error if the stat_id is not an integer',
     function(done) {
       var req = {
         params: {
@@ -320,7 +319,7 @@ describe('stats', function() {
       });
     });
 
-    xit('should give an error if the stat_id is not in the database',
+    it('should return empty array if the stat_id is not in the database',
     function(done) {
       var req = {
         params: {
@@ -329,10 +328,8 @@ describe('stats', function() {
       };
 
       var promise = stats.getStat(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given stat_id is not found in the database');
-        assert.equal(err.status, 404);
+      promise.then(function(data) {
+        assert.deepEqual(data, []);
         done();
       });
     });
@@ -340,9 +337,9 @@ describe('stats', function() {
 
   describe('createStat(req)', function() {
     // Post a new row of stats into stats database
-    xit('should add new stats to the database', function(done) {
+    it('should add new stats to the database', function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 2,
           event_id: 2,
         },
@@ -375,9 +372,9 @@ describe('stats', function() {
     });
 
     // Attempt to post existing stat
-    xit('adding an existing set of stat should do nothing', function(done) {
+    it('adding an existing set of stat should do nothing', function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 1,
           event_id: 1,
         },
@@ -412,7 +409,7 @@ describe('stats', function() {
     });
 
     // check error is thrown if required component 'param' is missing in request
-    xit('attempting to post stats with missing param will result in an error',
+    it('attempting to post stats with missing param will result in an error',
      function(done) {
       var req = {
         body: {
@@ -430,7 +427,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -447,10 +444,10 @@ describe('stats', function() {
     });
 
     // check error is thrown if required component 'param' is missing in request
-    xit('attempting to post stats with missing body will result in an error',
+    it('attempting to post stats with missing body will result in an error',
     function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 2,
           event_id: 2,
         }
@@ -464,9 +461,9 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
-      .catch(function() {
+      .catch(function(err) {
         assert.equal(err.message,
         'Could not post due to missing fields');
         assert.equal(err.status, 400);
@@ -481,10 +478,10 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'student_id' is missing in request
-    xit('attempting to post stats with missing params "student_id" will ' +
+    it('attempting to post stats with missing params "student_id" will ' +
     'result in an error', function(done) {
       var req = {
-        param: {
+        params: {
           event_id: 2,
         },
         body: {
@@ -502,7 +499,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -519,10 +516,10 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'event_id' is missing in request
-    xit('attempting to post stats with missing params "event_id" will ' +
+    it('attempting to post stats with missing params "event_id" will ' +
     'result in an error', function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 2,
         },
         body: {
@@ -540,7 +537,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -557,10 +554,10 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'pacer' is missing in request
-    xit('attempting to post stats with missing field "pacer" will ' +
+    it('attempting to post stats with missing field "pacer" will ' +
     'result in an error', function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 1,
           event_id: 1,
         },
@@ -578,7 +575,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -595,10 +592,10 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'weight' is missing in request
-    xit('attempting to post stats with missing field "weight" will ' +
+    it('attempting to post stats with missing field "weight" will ' +
     'result in an error', function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 1,
           event_id: 1,
         },
@@ -616,7 +613,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -633,10 +630,10 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'height' is missing in request
-    xit('attempting to post stats with missing field "height" will ' +
+    it('attempting to post stats with missing field "height" will ' +
     'result in an error', function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 1,
           event_id: 1,
         },
@@ -654,7 +651,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -671,10 +668,10 @@ describe('stats', function() {
     });
 
     // check error is thrown if required field 'event_id' is missing in request
-    xit('attempting to post stats with missing field event_id will ' +
+    it('attempting to post stats with missing field event_id will ' +
     'result in an error', function(done) {
       var req = {
-        param: {
+        params: {
           student_id: 1,
         },
         body: {
@@ -692,7 +689,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -708,10 +705,10 @@ describe('stats', function() {
       });
     });
 
-    xit('attempting to post stats with missing field student_id will ' +
+    it('attempting to post stats with missing field student_id will ' +
     'result in an error', function(done) {
       var req = {
-        param: {
+        params: {
           event_id: 1,
         },
         body: {
@@ -729,7 +726,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.createStat(req);
       })
       .catch(function(err) {
         assert.equal(err.message,
@@ -748,9 +745,9 @@ describe('stats', function() {
 
   describe('updateStat(req)', function() {
     // update existing stats
-    xit('should update stats in the database', function(done) {
+    it('should update stats in the database', function(done) {
       var req = {
-        param: {
+        params: {
           stat_id: 1,
         },
         body: {
@@ -785,9 +782,9 @@ describe('stats', function() {
     });
 
     // update non existing stats should error
-    xit('should error updating non-existing stats', function(done) {
+    it('should error updating non-existing stats', function(done) {
       var req = {
-        param: {
+        params: {
           stat_id: 99999,
         },
         body: {
@@ -825,9 +822,9 @@ describe('stats', function() {
 
   describe('deleteStat(req)', function() {
     // delete existing stats
-    xit('should delete stats in the database', function(done) {
+    it('should delete stats in the database', function(done) {
       var req = {
-        param: {
+        params: {
           stat_id: 1
         }
       };
@@ -857,9 +854,9 @@ describe('stats', function() {
     });
 
     // delete non existing stats should error
-    xit('should error delete non-existing stats', function(done) {
+    it('should error delete non-existing stats', function(done) {
       var req = {
-        param: {
+        params: {
           stat_id: 99999,
         }
       };
@@ -889,7 +886,7 @@ describe('stats', function() {
       });
     });
 
-    xit('should give an error if the stat_id is negative',
+    it('should give an error if the stat_id is negative',
     function(done) {
       var req = {
         params: {
