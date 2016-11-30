@@ -1,6 +1,6 @@
 {
   "name": "america-scores-backend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The backend for the America SCORES data collection app.",
   "main": "index.js",
   "scripts": {
