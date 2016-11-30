@@ -130,6 +130,35 @@ app.route('/accounts/:account_id/programs')
     makeResponse(res, programs.getProgramsByAccount(req));
   });
 
+// Events
+app.route('/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEvents(req));
+  });
+
+app.route('/programs/:program_id')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEvent(req));
+  })
+  .delete(function(req, res, next) {
+    makeResponse(res, events.deleteEvent(req));
+  });
+
+app.route('/students/:student_id/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEventsByStudent(req));
+  });
+
+app.route('/programs/:program_id/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEventsByProgram(req));
+  });
+
+app.route('/accounts/:account_id/programs/:program_id/events')
+  .post(function(req, res, next) {
+    makeResponse(res, events.createEvent(req));
+  });
+
 var server = app.listen(config.server.port);
 console.log('Listening on port ' + config.server.port);
 
