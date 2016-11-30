@@ -143,16 +143,7 @@ function getStudent(req) {
 
   // Check if student is a positive integer
   if (isPositiveInteger(id)) {
-    // Check if the student is in the database
-    return countInDB(id, 'Student', field)
-    .then(function(count) {
-      if (count > 0) {
-        // The id is in the database. Fetch the student
-        return query('SELECT * FROM Student WHERE student_id=?', [id]);
-      } else {
-        return createArgumentNotFoundError(id, field);
-      }
-    });
+    return query('SELECT * FROM Student WHERE student_id=?', [id]);
   } else {
     // Error for invalid id format
     // id is not a number or is negative (invalid)
@@ -341,14 +332,6 @@ function deleteStudent(req) {
       message: 'Request must have a params section with a valid student_id'
     });
   }
-}
-
-function countInDB(id, table, field) {
-  return query('SELECT COUNT(*) FROM ' + table + ' WHERE ' + field + ' = ?',
-  [id])
-  .then(function(data) {
-    return data[0]['COUNT(*)'];
-  });
 }
 
 function createUpdateQuery(body) {

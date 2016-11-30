@@ -660,25 +660,18 @@ describe('Students', function() {
       });
     });
 
-    it('should give an error if the student_id is not in the database',
+    it('should return an empty array if the student_id is not in the database',
     function(done) {
       var req = {
         params: {
-          // The student_id is contained in the request
-          student_id: 617
+          student_id: 5736
         }
       };
 
-      var promise = students.getStudent(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Invalid request: The given student_id does not exist' +
-        ' in the database');
-
-        assert.equal(err.name, 'ArgumentNotFoundError');
-        assert.equal(err.propertyName, 'student_id');
-        assert.equal(err.propertyValue, req.params.student_id);
-        assert.equal(err.status, 404);
+      students.getStudent(req)
+      .then(function(data) {
+        assert.deepEqual(data, []);
+        assert.lengthOf(data, 0);
         done();
       });
     });
