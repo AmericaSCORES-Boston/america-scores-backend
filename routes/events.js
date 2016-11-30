@@ -34,7 +34,7 @@ function createEvent(req) {
   }
   return query('SELECT * FROM AcctToProgram WHERE program_id = ? AND acct_id = ?', [program_id, account_id])
   .then(function(data) {
-    if (data.length == 1 && data[0].acct_id == account_id && data[0].program_id) {
+    if (data.length == 1 && data[0].acct_id == account_id && data[0].program_id == program_id) {
       return query('INSERT INTO Event (program_id, acct_id, event_date) VALUES (?, ?, DATE(?))', [program_id, account_id, event_date])
       .then(function(data) {
         return query('SELECT * FROM Event WHERE event_id = ?', [data.insertId]);
