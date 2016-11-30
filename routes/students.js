@@ -7,9 +7,8 @@ const defined = utils.defined;
 
 // Require other routes called
 var sites = require('../routes/sites');
-// TODO Uncomment these as they get implemented
-// var programs = require('../routes/programs');
-// var events = require('../routes/events');
+var programs = require('../routes/programs');
+var events = require('../routes/events');
 
 // Require isPositiveInteger for argument checking
 const isPositiveInteger = require('../lib/utils').isPositiveInteger;
@@ -45,28 +44,26 @@ function getStudents(req) {
   }
 }
 
-// TODO: Delete this function and use the following one once programs is
-// implemented
 function getStudentsByProgram(req) {
-  var id = req.params.program_id;
-  var table = 'Program';
-  var field = 'program_id';
-  var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-  '(SELECT student_id FROM StudentToProgram ' +
-  'WHERE program_id = ?)';
+    var id = req.params.program_id;
+    var field = 'program_id';
+    var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+    '(SELECT student_id FROM StudentToProgram ' +
+    'WHERE program_id = ?)';
 
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return countInDB(id, table, field)
-    .then(function(count) {
-      if (count > 0) {
+    return programs.getProgram(req)
+    .then(function(idLookup) {
+      if (idLookup.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
         return createArgumentNotFoundError(id, field);
       }
-    }).then(function(data) {
+    })
+    .then(function(data) {
       return data;
     });
   } else {
@@ -74,35 +71,6 @@ function getStudentsByProgram(req) {
     return createInvalidArgumentError(id, field);
   }
 }
-
-// TODO USE THIS FUNCTION ONCE PROGRAMS IS IMPLEMENTED. DELETE OLD ONE.
-// function getStudentsByProgram(req) {
-//     var id = req.params.program_id;
-//     var field = 'program_id';
-//     var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-//     '(SELECT student_id FROM StudentToProgram ' +
-//     'WHERE program_id = ?)';
-//
-//   // Check if the id is an integer > 0
-//   if (isPositiveInteger(id)) {
-//     // Check if the id is in the related table
-//     return programs.getProgram(req)
-//     .then(function(idLookup) {
-//       if (idLookup.length > 0) {
-//         return query(queryString, [id]);
-//       } else {
-//         // Given id does not exist, give error.
-//         return createArgumentNotFoundError(id, field);
-//       }
-//     })
-//     .then(function(data) {
-//       return data;
-//     });
-//   } else {
-//     // id is not a number or is negative (invalid)
-//     return createInvalidArgumentError(id, field);
-//   }
-// }
 
 function getStudentsByEvent(req) {
   var id = req.params.event_id;
@@ -115,15 +83,16 @@ function getStudentsByEvent(req) {
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return countInDB(id, table, field)
-    .then(function(count) {
-      if (count > 0) {
+    return events.getEvent(req)
+    .then(function(idLookup) {
+      if (idLookup.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
         return createArgumentNotFoundError(id, field);
       }
-    }).then(function(data) {
+    })
+    .then(function(data) {
       return data;
     });
   } else {
@@ -131,36 +100,6 @@ function getStudentsByEvent(req) {
     return createInvalidArgumentError(id, field);
   }
 }
-
-// TODO USE THIS FUNCTION ONCE EVENTS IS IMPLEMENTED. DELETE OLD ONE.
-// function getStudentsByEvent(req) {
-//   var id = req.params.event_id;
-//   var table = 'Event';
-//   var field = 'event_id';
-//   var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-//   '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-//   '(SELECT program_id FROM Event WHERE event_id = ?))';
-//
-//   // Check if the id is an integer > 0
-//   if (isPositiveInteger(id)) {
-//     // Check if the id is in the related table
-//     return events.getEvent(req)
-//     .then(function(idLookup) {
-//       if (idLookup.length > 0) {
-//         return query(queryString, [id]);
-//       } else {
-//         // Given id does not exist, give error.
-//         return createArgumentNotFoundError(id, field);
-//       }
-//     })
-//     .then(function(data) {
-//       return data;
-//     });
-//   } else {
-//     // id is not a number or is negative (invalid)
-//     return createInvalidArgumentError(id, field);
-//   }
-// }
 
 function getStudentsBySite(req) {
   var id = req.params.site_id;
