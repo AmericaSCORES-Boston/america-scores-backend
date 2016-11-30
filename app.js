@@ -11,6 +11,7 @@ var app = express();
 var students = require('./routes/students');
 var sites = require('./routes/sites');
 var programs = require('./routes/programs');
+var events = require('./routes/events');
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -136,7 +137,7 @@ app.route('/events')
     makeResponse(res, events.getEvents(req));
   });
 
-app.route('/programs/:program_id')
+app.route('/events/:event_id')
   .get(function(req, res, next) {
     makeResponse(res, events.getEvent(req));
   })

@@ -8,6 +8,8 @@ const Promise = require('bluebird');
 const students = require('../../routes/students');
 const sites = require('../../routes/sites');
 const programs = require('../../routes/programs');
+const events = require('../../routes/events');
+
 
 describe('app.js', function() {
   var app;
@@ -394,6 +396,105 @@ describe('app.js', function() {
         .expect('got the programs for an account', 200)
         .end(function() {
           assert.isTrue(getProgramsByAccountStub.called);
+          done();
+        });
+    });
+  });
+
+  describe('events endpoint', function() {
+    var getEventsStub;
+    var getEventStub;
+    var deleteEventStub;
+    var getEventsByProgramStub;
+    var createEventStub;
+    var getEventsByStudentStub;
+
+    before(function() {
+      getEventsStub = sinon.stub(events, 'getEvents', function() {
+        return Promise.resolve('got the events');
+      });
+      getEventStub = sinon.stub(events, 'getEvent', function() {
+        return Promise.resolve('got the event');
+      });
+      deleteEventStub = sinon.stub(events, 'deleteEvent', function() {
+        return Promise.resolve('deleted the event');
+      });
+      createEventStub = sinon.stub(events, 'createEvent', function() {
+        return Promise.resolve('created an event');
+      });
+      getEventsByStudentStub = sinon.stub(events, 'getEventsByStudent', function() {
+        return Promise.resolve('got the events for a student');
+      });
+      getEventsByProgramStub = sinon.stub(events, 'getEventsByProgram', function() {
+        return Promise.resolve('got the events for a program');
+      });
+    });
+
+    after(function() {
+      events.getEvents.restore();
+      events.getEvent.restore();
+      events.deleteEvent.restore();
+      events.createEvent.restore();
+      events.getEventsByStudent.restore();
+      events.getEventsByProgram.restore();
+    });
+
+    it('GET /events', function(done) {
+      request(app)
+        .get('/events')
+        .expect('got the events', 200)
+        .end(function() {
+          assert.isTrue(getEventsStub.called);
+          done();
+        });
+    });
+
+    it('GET /events/:event_id', function(done) {
+      request(app)
+        .get('/events/3')
+        .expect('got the event', 200)
+        .end(function() {
+          assert.isTrue(getEventStub.called);
+          done();
+        });
+    });
+
+    it('DELETE /events/:event_id', function(done) {
+      request(app)
+        .delete('/events/3')
+        .expect('deleted the event', 200)
+        .end(function() {
+          assert.isTrue(deleteEventStub.called);
+          done();
+        });
+    });
+
+    it('POST /accounts/:account_id/programs/:program_id/events', function(done) {
+      request(app)
+        .post('/accounts/1/programs/1/events')
+        .expect('created an event', 200)
+        .end(function() {
+          assert.isTrue(createEventStub.called);
+          done();
+        });
+    });
+
+    it('GET /students/:student_id/events', function(done) {
+      request(app)
+        .get('/students/3/events')
+        .expect('got the events for a student', 200)
+        .end(function() {
+          assert.isTrue(getEventsByStudentStub.called);
+          done();
+        });
+    });
+
+    it('GET /program/:program_id/events', function(done) {
+      request(app)
+        .get('/programs/1/events')
+        .expect('got the events for a program', 200)
+        .end(function() {
+          assert.isTrue(getEventsByProgramStub.called);
           done();
         });
     });
