@@ -1,7 +1,14 @@
 'use strict';
 
 const Promise = require('bluebird');
-const query = require('../lib/utils').query;
+const utils = require('../lib/utils');
+const query = utils.query;
+const defined = utils.defined;
+
+// Require other routes called
+var sites = require('../routes/sites');
+var programs = require('../routes/programs');
+var events = require('../routes/events');
 
 // Require isPositiveInteger for argument checking
 const isPositiveInteger = require('../lib/utils').isPositiveInteger;
@@ -11,8 +18,7 @@ const isValidDate = require('../lib/utils').isValidDate;
 
 function getStudents(req) {
   // Get student by first name, last name, and date of birth
-  if (req.query && req.query.first_name && req.query.last_name &&
-    req.query.dob) {
+  if (defined(req.query.first_name) && defined(req.query.last_name) && defined(req.query.dob)) {
       var birthday = req.query.dob;
       if (isValidDate(birthday)) {
         // If the date is in yyyy-mm-dd format, get the student
@@ -25,56 +31,105 @@ function getStudents(req) {
         ' Try yyyy-mm-dd.';
         return createInvalidArgumentError(birthday, 'dob', message);
       }
-  } else if (req.params && (req.params.program_id || req.params.site_id ||
-    req.params.event_id)) {
-    if (req.params.program_id) {
-      var id = req.params.program_id;
-      var table = 'Program';
-      var field = 'program_id';
-      var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-      '(SELECT student_id FROM StudentToProgram ' +
-      'WHERE program_id = ?)';
-    } else if (req.params.site_id) {
-      var id = req.params.site_id;
-      var table = 'Site';
-      var field = 'site_id';
-      var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-      '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-      '(SELECT program_id FROM Program WHERE site_id = ?))';
-    } else if (req.params.event_id) {
-      var id = req.params.event_id;
-      var table = 'Event';
-      var field = 'event_id';
-      var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-      '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-      '(SELECT program_id FROM Event WHERE event_id = ?))';
-    }
-
-    // Check if the id is an integer > 0
-    if (isPositiveInteger(id)) {
-      // Check if the id is in the related table
-      return countInDB(id, table, field)
-      .then(function(count) {
-        if (count > 0) {
-          return query(queryString, [id]);
-        } else {
-          // Given id does not exist, give error.
-          return createArgumentNotFoundError(id, field);
-        }
-      }).then(function(data) {
-        return data;
-      });
-    } else {
-      // id is not a number or is negative (invalid)
-      return createInvalidArgumentError(id, field);
-    }
-  } else {
+  } else if (!req.query.hasOwnProperty('first_name') &&
+  !req.query.hasOwnProperty('last_name') && !req.query.hasOwnProperty('dob')) {
     return query('SELECT * FROM Student');
+  } else {
+    return Promise.reject({
+      name: 'UnsupportedRequest',
+      status: 501,
+      message: 'The API does not support a request of this format. ' +
+      ' See the documentation for a list of options.'
+    });
+  }
+}
+
+function getStudentsByProgram(req) {
+    var id = req.params.program_id;
+    var field = 'program_id';
+    var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+    '(SELECT student_id FROM StudentToProgram ' +
+    'WHERE program_id = ?)';
+
+  // Check if the id is an integer > 0
+  if (isPositiveInteger(id)) {
+    // Check if the id is in the related table
+    return programs.getProgram(req)
+    .then(function(idLookup) {
+      if (idLookup.length > 0) {
+        return query(queryString, [id]);
+      } else {
+        // Given id does not exist, give error.
+        return createArgumentNotFoundError(id, field);
+      }
+    })
+    .then(function(data) {
+      return data;
+    });
+  } else {
+    // id is not a number or is negative (invalid)
+    return createInvalidArgumentError(id, field);
+  }
+}
+
+function getStudentsByEvent(req) {
+  var id = req.params.event_id;
+  var field = 'event_id';
+  var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+  '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
+  '(SELECT program_id FROM Event WHERE event_id = ?))';
+
+  // Check if the id is an integer > 0
+  if (isPositiveInteger(id)) {
+    // Check if the id is in the related table
+    return events.getEvent(req)
+    .then(function(idLookup) {
+      if (idLookup.length > 0) {
+        return query(queryString, [id]);
+      } else {
+        // Given id does not exist, give error.
+        return createArgumentNotFoundError(id, field);
+      }
+    })
+    .then(function(data) {
+      return data;
+    });
+  } else {
+    // id is not a number or is negative (invalid)
+    return createInvalidArgumentError(id, field);
+  }
+}
+
+function getStudentsBySite(req) {
+  var id = req.params.site_id;
+  var field = 'site_id';
+  var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+  '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
+  '(SELECT program_id FROM Program WHERE site_id = ?))';
+
+  // Check if the id is an integer > 0
+  if (isPositiveInteger(id)) {
+    // Check if the id is in the related table
+    return sites.getSite(req)
+    .then(function(idLookup) {
+      if (idLookup.length > 0) {
+        return query(queryString, [id]);
+      } else {
+        // Given id does not exist, give error.
+        return createArgumentNotFoundError(id, field);
+      }
+    })
+    .then(function(data) {
+      return data;
+    });
+  } else {
+    // id is not a number or is negative (invalid)
+    return createInvalidArgumentError(id, field);
   }
 }
 
 function getStudent(req) {
-  if (!req.params || !req.params.student_id) {
+  if (!defined(req.params) || !defined(req.params.student_id)) {
     // Missing necessary fields, throw error
     return Promise.reject({
       name: 'MissingFieldError',
@@ -88,16 +143,7 @@ function getStudent(req) {
 
   // Check if student is a positive integer
   if (isPositiveInteger(id)) {
-    // Check if the student is in the database
-    return countInDB(id, 'Student', field)
-    .then(function(count) {
-      if (count > 0) {
-        // The id is in the database. Fetch the student
-        return query('SELECT * FROM Student WHERE student_id=?', [id]);
-      } else {
-        return createArgumentNotFoundError(id, field);
-      }
-    });
+    return query('SELECT * FROM Student WHERE student_id=?', [id]);
   } else {
     // Error for invalid id format
     // id is not a number or is negative (invalid)
@@ -107,8 +153,8 @@ function getStudent(req) {
 
 function createStudent(req) {
   // Check that request has all necessary fields
-  if (req.body && req.body.first_name && req.body.last_name &&
-    req.body.dob && req.params && req.params.program_id) {
+  if (defined(req.body) && defined(req.body.first_name) && defined(req.body.last_name) &&
+    defined(req.body.dob) && defined(req.params) && defined(req.params.program_id)) {
       // Ensure that the given birthdate is valid
       if (!isValidDate(req.body.dob)) {
         return createInvalidArgumentError(req.body.dob, 'dob',
@@ -121,9 +167,9 @@ function createStudent(req) {
       }
 
       // Check if the given program_id exists in the database
-      return countInDB(req.params.program_id, 'Program', 'program_id')
-      .then(function(count) {
-        if (count > 0) {
+      return programs.getProgram(req)
+      .then(function(idLookup) {
+        if (idLookup.length > 0) {
           // The program_id is valid, add the student to the database
           var promise = getStudents({
             query: {
@@ -186,45 +232,45 @@ function createStudent(req) {
 
 function updateStudent(req) {
   // Check that request has all necessary fields
-  if (req.params && req.params.student_id && req.body) {
+  if (defined(req.params) && defined(req.params.student_id) && defined(req.body)) {
     // All required fields are present. Check that student_id is valid
     if (!isPositiveInteger(req.params.student_id)) {
       return createInvalidArgumentError(req.params.student_id, 'student_id');
     }
 
     // Check that date of birth, if present, is valid
-    if (req.body.dob && !isValidDate(req.body.dob)) {
+    if (defined(req.body.dob) && !isValidDate(req.body.dob)) {
       return createInvalidArgumentError(req.body.dob, 'dob',
       'Failed due to invalid birthdate. Try yyyy-mm-dd.');
     }
 
     // Check that program_id, if present, is valid
-    if (req.params.program_id && !isPositiveInteger(req.params.program_id)) {
+    if (defined(req.params.program_id) && !isPositiveInteger(req.params.program_id)) {
       return createInvalidArgumentError(req.params.program_id, 'program_id');
     }
 
     // Check if the given student_id exists in the database
-    return countInDB(req.params.student_id, 'Student', 'student_id')
-    .then(function(count) {
-      if (count > 0) {
+    return getStudent(req)
+    .then(function(idLookup) {
+      if (idLookup.length > 0) {
         // The student exists. Next, check if a program update was requested
-        if (!req.params.program_id) {
+        if (!defined(req.params.program_id)) {
           // No program update requested. Update students table.
           var queryComponents = createUpdateQuery(req.body);
           queryComponents[1].push(req.params.student_id);
           return query(queryComponents[0], queryComponents[1]);
         } else {
           // Program update requested. Check if the new program exists.
-          return countInDB(req.params.program_id, 'Program', 'program_id')
-          .then(function(count) {
-            if (count > 0) {
+          return programs.getProgram(req)
+          .then(function(idLookup) {
+            if (idLookup.length > 0) {
               // The program exists. Update the student's program
               return query('UPDATE StudentToProgram SET program_id = ? ' +
               'WHERE student_id = ?', [req.params.program_id,
                 req.params.student_id])
               .then(function() {
                 // Check if any other fields need to be updated.
-                if (req.body.first_name || req.body.last_name || req.body.dob) {
+                if (defined(req.body.first_name) || defined(req.body.last_name) || defined(req.body.dob)) {
                   // Note: Line is repeated b/c partial updates aren't allowed
                   var queryComponents = createUpdateQuery(req.body);
                   queryComponents[1].push(req.params.student_id);
@@ -255,11 +301,11 @@ function updateStudent(req) {
 }
 
 function deleteStudent(req) {
-  if (req.params && req.params.student_id) {
+  if (defined(req.params) && defined(req.params.student_id)) {
     if (isPositiveInteger(req.params.student_id)) {
-      return countInDB(req.params.student_id, 'Student', 'student_id')
-      .then(function(count) {
-        if (count > 0) {
+      return getStudent(req)
+      .then(function(idLookup) {
+        if (idLookup.length > 0) {
           return query('DELETE FROM Measurement WHERE student_id=?',
            [req.params.student_id])
           .then(function() {
@@ -286,14 +332,6 @@ function deleteStudent(req) {
       message: 'Request must have a params section with a valid student_id'
     });
   }
-}
-
-function countInDB(id, table, field) {
-  return query('SELECT COUNT(*) FROM ' + table + ' WHERE ' + field + ' = ?',
-  [id])
-  .then(function(data) {
-    return data[0]['COUNT(*)'];
-  });
 }
 
 function createUpdateQuery(body) {
@@ -346,5 +384,7 @@ function createArgumentNotFoundError(id, field) {
 }
 
 // export Student functions
-module.exports = {getStudents, getStudent, createStudent, updateStudent,
-  deleteStudent};
+module.exports = {
+  getStudents, getStudentsByProgram, getStudentsByEvent, getStudentsBySite,
+  getStudent, createStudent, updateStudent, deleteStudent
+};
