@@ -201,7 +201,7 @@ describe('POST', function() {
       done();
     });
   });
-  it('/sites/:site_id/programs (invalid site_id)', function(done) {
+  xit('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
       params: {
         site_id: 'id',
@@ -357,7 +357,7 @@ describe('DELETE', function() {
       done();
     });
   });
-  it('/programs/:program_id (invalid program_id)', function(done) {
+  xit('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
       params: {
         program_id: 'id'
