@@ -1,6 +1,6 @@
 'use strict';
 
-const env = 'development';
+const env = process.env.NODE_ENV || 'development';
 const config = require('./config/config.js')[env];
 
 var express = require('express');
