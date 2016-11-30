@@ -74,7 +74,6 @@ function getStudentsByProgram(req) {
 
 function getStudentsByEvent(req) {
   var id = req.params.event_id;
-  var table = 'Event';
   var field = 'event_id';
   var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
   '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
@@ -177,9 +176,9 @@ function createStudent(req) {
       }
 
       // Check if the given program_id exists in the database
-      return countInDB(req.params.program_id, 'Program', 'program_id')
-      .then(function(count) {
-        if (count > 0) {
+      return programs.getProgram(req)
+      .then(function(idLookup) {
+        if (idLookup.length > 0) {
           // The program_id is valid, add the student to the database
           var promise = getStudents({
             query: {
@@ -260,9 +259,9 @@ function updateStudent(req) {
     }
 
     // Check if the given student_id exists in the database
-    return countInDB(req.params.student_id, 'Student', 'student_id')
-    .then(function(count) {
-      if (count > 0) {
+    return getStudent(req)
+    .then(function(idLookup) {
+      if (idLookup.length > 0) {
         // The student exists. Next, check if a program update was requested
         if (!defined(req.params.program_id)) {
           // No program update requested. Update students table.
@@ -271,9 +270,9 @@ function updateStudent(req) {
           return query(queryComponents[0], queryComponents[1]);
         } else {
           // Program update requested. Check if the new program exists.
-          return countInDB(req.params.program_id, 'Program', 'program_id')
-          .then(function(count) {
-            if (count > 0) {
+          return programs.getProgram(req)
+          .then(function(idLookup) {
+            if (idLookup.length > 0) {
               // The program exists. Update the student's program
               return query('UPDATE StudentToProgram SET program_id = ? ' +
               'WHERE student_id = ?', [req.params.program_id,
@@ -313,9 +312,9 @@ function updateStudent(req) {
 function deleteStudent(req) {
   if (defined(req.params) && defined(req.params.student_id)) {
     if (isPositiveInteger(req.params.student_id)) {
-      return countInDB(req.params.student_id, 'Student', 'student_id')
-      .then(function(count) {
-        if (count > 0) {
+      return getStudent(req)
+      .then(function(idLookup) {
+        if (idLookup.length > 0) {
           return query('DELETE FROM Measurement WHERE student_id=?',
            [req.params.student_id])
           .then(function() {
