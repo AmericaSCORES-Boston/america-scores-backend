@@ -11,6 +11,7 @@ var app = express();
 var students = require('./routes/students');
 var sites = require('./routes/sites');
 var programs = require('./routes/programs');
+var events = require('./routes/events');
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -128,6 +129,35 @@ app.route('/students/:student_id/programs')
 app.route('/accounts/:account_id/programs')
   .get(function(req, res, next) {
     makeResponse(res, programs.getProgramsByAccount(req));
+  });
+
+// Events
+app.route('/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEvents(req));
+  });
+
+app.route('/events/:event_id')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEvent(req));
+  })
+  .delete(function(req, res, next) {
+    makeResponse(res, events.deleteEvent(req));
+  });
+
+app.route('/students/:student_id/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEventsByStudent(req));
+  });
+
+app.route('/programs/:program_id/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEventsByProgram(req));
+  });
+
+app.route('/accounts/:account_id/programs/:program_id/events')
+  .post(function(req, res, next) {
+    makeResponse(res, events.createEvent(req));
   });
 
 var server = app.listen(config.server.port);
