@@ -9,7 +9,7 @@ const query = require('../../lib/utils').query;
 const seed = require('../../lib/utils').seed;
 
 // Require test accounts
-// const constants = require('../../lib/constants');
+const constants = require('../../lib/constants');
 
 // The file to be tested
 const students = require('../../routes/students');
@@ -138,7 +138,8 @@ describe('Students', function() {
         // Express has empty query, params, and body by default in req
         query: {},
         params: {},
-        body: {}
+        body: {},
+        user: constants.admin
       });
 
       // When the promised data is returned, check it against the expected data
@@ -155,7 +156,10 @@ describe('Students', function() {
           first_name: 'Percy',
           last_name: 'Jackson',
           dob: '1993-08-18'
-        }
+        },
+        params: {},
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudents(req);
@@ -174,7 +178,10 @@ describe('Students', function() {
           first_name: 'Percy',
           last_name: 'Jackson',
           dob: '1992-34-54'
-        }
+        },
+        params: {},
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudents(req);
@@ -198,7 +205,10 @@ describe('Students', function() {
           first_name: 'Percy',
           last_name: 'Jackson',
           dob: '08-18-1993'
-        }
+        },
+        params: {},
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudents(req);
@@ -219,7 +229,10 @@ describe('Students', function() {
       var req = {
         query: {
           first_name: 'Annabeth'
-        }
+        },
+        params: {},
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudents(req);
@@ -241,7 +254,9 @@ describe('Students', function() {
       var req = {
         params: {
           program_id: 1
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByProgram(req);
@@ -258,7 +273,9 @@ describe('Students', function() {
       var req = {
         params: {
           program_id: -4
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByProgram(req);
@@ -280,13 +297,17 @@ describe('Students', function() {
       var req = {
         params: {
           program_id: 'SuperbadInput'
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var req2 = {
         params: {
           program_id: 1.22
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByProgram(req);
@@ -320,7 +341,9 @@ describe('Students', function() {
       var req = {
         params: {
           program_id: 4231
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByProgram(req);
@@ -344,7 +367,9 @@ describe('Students', function() {
       var req = {
         params: {
           event_id: 4
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByEvent(req);
@@ -361,7 +386,9 @@ describe('Students', function() {
       var req = {
         params: {
           event_id: -4
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByEvent(req);
@@ -383,13 +410,17 @@ describe('Students', function() {
       var req = {
         params: {
           event_id: 'SuperbadInput'
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var req2 = {
         params: {
           event_id: 5.6
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByEvent(req);
@@ -423,7 +454,9 @@ describe('Students', function() {
       var req = {
         params: {
           event_id: 423
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsByEvent(req);
@@ -447,7 +480,9 @@ describe('Students', function() {
       var req = {
         params: {
           site_id: 2
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       students.getStudentsBySite(req)
@@ -463,7 +498,9 @@ describe('Students', function() {
       var req = {
         params: {
           site_id: -4
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsBySite(req);
@@ -485,13 +522,17 @@ describe('Students', function() {
       var req = {
         params: {
           site_id: 'ADogNamedSpy'
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var req2 = {
         params: {
           site_id: 3.1
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsBySite(req);
@@ -525,7 +566,9 @@ describe('Students', function() {
       var req = {
         params: {
           site_id: 1234
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudentsBySite(req);
@@ -549,7 +592,9 @@ describe('Students', function() {
         params: {
           // The student_id is contained in the request
           student_id: 1
-        }
+        },
+        body: {},
+        user: constants.admin
       };
 
       var promise = students.getStudent(req);
@@ -563,7 +608,9 @@ describe('Students', function() {
 
     it('should not get if request is missing params section',
     function(done) {
-      var req = {};
+      var req = {
+        user: constants.admin
+      };
 
       students.getStudent(req)
       .catch(function(err) {
@@ -593,7 +640,8 @@ describe('Students', function() {
       var req = {
         params: {
 
-        }
+        },
+        user: constants.admin
       };
 
       students.getStudent(req)
@@ -625,7 +673,8 @@ describe('Students', function() {
         params: {
           // The student_id is contained in the request
           student_id: -2
-        }
+        },
+        user: constants.admin
       };
 
       var promise = students.getStudent(req);
@@ -648,14 +697,16 @@ describe('Students', function() {
         params: {
           // The student_id is contained in the request
           student_id: 'superbad'
-        }
+        },
+        user: constants.admin
       };
 
       var req2= {
         params: {
           // The student_id is contained in the request
           student_id: 867.5309
-        }
+        },
+        user: constants.admin
       };
 
       var promise = students.getStudent(req);
@@ -689,7 +740,8 @@ describe('Students', function() {
       var req = {
         params: {
           student_id: 5736
-        }
+        },
+        user: constants.admin
       };
 
       students.getStudent(req)
@@ -707,7 +759,8 @@ describe('Students', function() {
         params: {
           program_id: 2
         },
-        body: daveURL
+        body: daveURL,
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -742,7 +795,8 @@ describe('Students', function() {
         params: {
           program_id: 1
         },
-        body: annabethURL
+        body: annabethURL,
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -773,7 +827,8 @@ describe('Students', function() {
       var req = {
         params: {
           program_id: 1
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -807,7 +862,8 @@ describe('Students', function() {
           first_name: 'Asami',
           last_name: 'Sato',
           dob: '1994-05-23'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -844,7 +900,8 @@ describe('Students', function() {
           first_name: 'Asami',
           last_name: 'Sato',
           dob: '1994-05-23'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -881,7 +938,8 @@ describe('Students', function() {
         body: {
           first_name: 'Korra',
           dob: '1994-11-18'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -918,7 +976,8 @@ describe('Students', function() {
         body: {
           first_name: 'Asami',
           last_name: 'Sato'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -955,7 +1014,8 @@ describe('Students', function() {
         body: {
           last_name: 'Lupin',
           dob: '1965-02-13'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -993,7 +1053,8 @@ describe('Students', function() {
           first_name: 'Hermione',
           last_name: 'Granger',
           dob: '1979-09-19'
-        }
+        },
+        user: constants.admin
       };
 
       var req2 = {
@@ -1004,7 +1065,8 @@ describe('Students', function() {
           first_name: 'Hermione',
           last_name: 'Granger',
           dob: '1979-09-19'
-        }
+        },
+        user: constants.admin
       };
 
       var req3 = {
@@ -1015,7 +1077,8 @@ describe('Students', function() {
           first_name: 'Hermione',
           last_name: 'Granger',
           dob: '1979-09-19'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -1102,7 +1165,8 @@ describe('Students', function() {
           first_name: 'Hermione',
           last_name: 'Granger',
           dob: '1979-09-19'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -1141,7 +1205,8 @@ describe('Students', function() {
           first_name: 'Hermione',
           last_name: 'Granger',
           dob: 'NotADate'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -1179,7 +1244,8 @@ describe('Students', function() {
           first_name: 'Hermione',
           last_name: 'Granger',
           dob: '10-05-1945'
-        }
+        },
+        user: constants.admin
       };
 
       students.createStudent(req)
@@ -1216,7 +1282,8 @@ describe('Students', function() {
         },
         body: {
           first_name: 'Perseus'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1245,7 +1312,8 @@ describe('Students', function() {
         },
         body: {
           last_name: 'Poseidonsson'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1274,7 +1342,8 @@ describe('Students', function() {
         },
         body: {
           dob: '1990-03-15'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1305,7 +1374,8 @@ describe('Students', function() {
           first_name: 'Hazel',
           last_name: 'Levesque',
           dob: '1928-12-17'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1336,7 +1406,8 @@ describe('Students', function() {
       var req = {
         params: {
           student_id: 1
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1370,7 +1441,8 @@ describe('Students', function() {
         body: {
           first_name: 'Stiles',
           last_name: 'Stilinski'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1407,7 +1479,8 @@ describe('Students', function() {
         body: {
           first_name: 'Stiles',
           last_name: 'Stilinski'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1444,7 +1517,8 @@ describe('Students', function() {
         },
         body: {
           dob: '1994-33-22'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1481,7 +1555,8 @@ describe('Students', function() {
         },
         body: {
           dob: '1994-33-22'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1519,7 +1594,8 @@ describe('Students', function() {
         },
         body: {
           first_name: 'Karkat'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1556,7 +1632,8 @@ describe('Students', function() {
           program_id: 3
         },
         body: {
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1592,7 +1669,8 @@ describe('Students', function() {
         },
         body: {
           first_name: 'Magnus'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1631,7 +1709,8 @@ describe('Students', function() {
         },
         body: {
           dob: '1994-07-22'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1670,7 +1749,8 @@ describe('Students', function() {
         },
         body: {
           first_name: 'Karkat'
-        }
+        },
+        user: constants.admin
       };
 
       students.updateStudent(req)
@@ -1706,7 +1786,8 @@ describe('Students', function() {
       var req = {
         params: {
           student_id: 2
-        }
+        },
+        user: constants.admin
       };
 
       students.deleteStudent(req)
@@ -1771,7 +1852,9 @@ describe('Students', function() {
 
     it('should not get if request is missing params section',
     function(done) {
-      var req = {};
+      var req = {
+        user: constants.admin
+      };
 
       students.deleteStudent(req)
       .catch(function(err) {
@@ -1801,7 +1884,8 @@ describe('Students', function() {
       var req = {
         params: {
 
-        }
+        },
+        user: constants.admin
       };
 
       students.deleteStudent(req)
@@ -1832,7 +1916,8 @@ describe('Students', function() {
       var req = {
         params: {
           student_id: 1.33
-        }
+        },
+        user: constants.admin
       };
 
       students.deleteStudent(req)
@@ -1867,7 +1952,8 @@ describe('Students', function() {
       var req = {
         params: {
           student_id: 617
-        }
+        },
+        user: constants.admin
       };
 
       students.deleteStudent(req)
@@ -1898,5 +1984,3 @@ describe('Students', function() {
     });
   });
 });
-// TODO: Future-JIRA Factor out the "Is database unchanged?" check into
-// a separate method to avoid repeated code
