@@ -1,6 +1,6 @@
 // Require the testing dependencies
-var chai = require('chai');
-var assert = chai.assert;
+const chai = require('chai');
+const assert = chai.assert;
 
 // Require query function for getAllStudents check
 const query = require('../../lib/utils').query;
@@ -8,8 +8,11 @@ const query = require('../../lib/utils').query;
 // Require seed to reset database before each test
 const seed = require('../../lib/utils').seed;
 
+// Require test accounts
+const constants = require('../../lib/constants');
+
 // The file to be tested
-var students = require('../../routes/students');
+const students = require('../../routes/students');
 
 // Get contents of Students table in DB for use in asserts
 function getAllStudents() {
