@@ -1,4 +1,4 @@
-//TODO standardize post->create to match other routes
+// TODO standardize post->create to match other routes
 
 function getAccounts(req) {
   // returns promise
@@ -6,6 +6,10 @@ function getAccounts(req) {
 
 function getAccount(req) {
   // returns promise
+}
+
+function getAccountsByProgram(req) {
+
 }
 
 function addAccount(req) {
@@ -21,4 +25,4 @@ function deleteAccount(req) {
 }
 
 module.exports(
-  getAccounts, getAccount, addAccount, updateAccount, deleteAccount);
+  getAccounts, getAccount, getAccountsByProgram, getAccountsBySite, addAccount, updateAccount, deleteAccount);
