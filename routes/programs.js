@@ -3,7 +3,10 @@ const query = utils.query;
 const defined = utils.defined;
 
 function getPrograms(req) {
-  return query('SELECT * FROM Program');
+  if (req.user.authorization == 'Admin' || req.user.authorization == 'Staff') {
+    return query('SELECT * FROM Program');
+  }
+  return Promise.reject({status: 403, message: "Access denied"});
 }
 
 function getProgram(req) {
@@ -27,6 +30,9 @@ function getProgramsByAccount(req) {
 }
 
 function createProgram(req) {
+  if (req.user.authorization == 'Coach' || req.user.authorization == 'Volunteer') {
+    return Promise.reject({status: 403, message: 'Access denied'});
+  }
   var site_id = req.params.site_id;
   var program_name = req.body.program_name;
   if(!defined(program_name)) {
@@ -63,6 +69,9 @@ function updateProgram(req) {
 }
 
 function deleteProgram(req) {
+  if (req.user.authorization != 'Admin') {
+    return Promise.reject({status: 403, message: 'Acces denied'});
+  }
   var program_id = req.params.program_id;
   return query('SELECT * FROM Program WHERE program_id = ?', [program_id])
   .then(function(data) {
