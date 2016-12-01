@@ -317,40 +317,44 @@ function updateStudent(req) {
 }
 
 function deleteStudent(req) {
-  if (defined(req.params) && defined(req.params.student_id)) {
-    if (isPositiveInteger(req.params.student_id)) {
-      return getStudent(req)
-      .then(function(data) {
-        var student = data;
-        if (data.length > 0) {
-          return query('DELETE FROM Measurement WHERE student_id=?',
-           [req.params.student_id])
-          .then(function() {
-            return query('DELETE FROM StudentToProgram WHERE student_id=?',
-             [req.params.student_id]);
-          })
-          .then(function() {
-            return query('DELETE FROM Student WHERE student_id=?',
-             [req.params.student_id]);
-          })
-          .then(function() {
-            return student;
-          });
-        } else {
-          return createArgumentNotFoundError(req.params.student_id,
-            'student_id');
-        }
-      });
+  if (req.user.authorization == 'Admin') {
+    if (defined(req.params) && defined(req.params.student_id)) {
+      if (isPositiveInteger(req.params.student_id)) {
+        return getStudent(req)
+        .then(function(data) {
+          var student = data;
+          if (data.length > 0) {
+            return query('DELETE FROM Measurement WHERE student_id=?',
+             [req.params.student_id])
+            .then(function() {
+              return query('DELETE FROM StudentToProgram WHERE student_id=?',
+               [req.params.student_id]);
+            })
+            .then(function() {
+              return query('DELETE FROM Student WHERE student_id=?',
+               [req.params.student_id]);
+            })
+            .then(function() {
+              return student;
+            });
+          } else {
+            return createArgumentNotFoundError(req.params.student_id,
+              'student_id');
+          }
+        });
+      } else {
+        return createInvalidArgumentError(req.params.student_id, 'student_id');
+      }
     } else {
-      return createInvalidArgumentError(req.params.student_id, 'student_id');
+      // Missing necessary fields, throw error
+      return Promise.reject({
+        name: 'MissingFieldError',
+        status: 400,
+        message: 'Request must have a params section with a valid student_id'
+      });
     }
   } else {
-    // Missing necessary fields, throw error
-    return Promise.reject({
-      name: 'MissingFieldError',
-      status: 400,
-      message: 'Request must have a params section with a valid student_id'
-    });
+    return createAccessDeniedError();
   }
 }
 
@@ -400,6 +404,15 @@ function createArgumentNotFoundError(id, field) {
     ' does not exist in the database',
     propertyName: field,
     propertyValue: id
+  });
+}
+
+function createAccessDeniedError() {
+  return Promise.reject({
+    name: 'AccessDenied',
+    status: 403,
+    message: 'Access denied: this account does not have permission ' +
+    'for this action'
   });
 }
 

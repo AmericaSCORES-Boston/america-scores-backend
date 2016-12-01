@@ -1982,5 +1982,104 @@ describe('Students', function() {
         done();
       });
     });
+
+    it('should not delete a student if the user is staff. Access denied.',
+    function(done) {
+      var req = {
+        params: {
+          student_id: 2
+        },
+        user: constants.staff
+      };
+
+      students.deleteStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should not delete a student if the user is a coach. Access denied.',
+    function(done) {
+      var req = {
+        params: {
+          student_id: 2
+        },
+        user: constants.coach
+      };
+
+      students.deleteStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
+
+    it('should not delete a student if the user is a volunteer. Access denied.',
+    function(done) {
+      var req = {
+        params: {
+          student_id: 2
+        },
+        user: constants.volunteer
+      };
+
+      students.deleteStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Check that nothing changed
+        assert.deepEqual(oldDB, data);
+        assert.lengthOf(data, studentCount);
+
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(oldPrograms, data);
+        assert.lengthOf(oldPrograms, programMatchCount);
+        done();
+      });
+    });
   });
 });
