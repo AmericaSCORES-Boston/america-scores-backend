@@ -52,3 +52,7 @@ gulp.task('seed', () => {
 gulp.task('demoSeed', () => {
   utils.demoSeed();
 });
+
+gulp.task('reportSeed', () => {
+  utils.reportSeed();
+});
