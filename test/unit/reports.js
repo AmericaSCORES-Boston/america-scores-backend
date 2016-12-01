@@ -11,7 +11,7 @@ var reports = require('../../routes/reports');
 
 // ADD BEFORE EACH TO reseed
 beforeEach(function() {
-  return reportSeed();
+  reportSeed();
 });
 
 // Reports testing block
