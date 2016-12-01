@@ -9,7 +9,7 @@ const query = require('../../lib/utils').query;
 const seed = require('../../lib/utils').seed;
 
 // Require test accounts
-const constants = require('../../lib/constants');
+// const constants = require('../../lib/constants');
 
 // The file to be tested
 const students = require('../../routes/students');
