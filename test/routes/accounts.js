@@ -16,7 +16,7 @@ const query = require('../../lib/utils').query;
 
 // Get contents of Accounts table in DB, used for asserts
 function getAllAccounts() {
-  return query('SELECT * FROM Acct')
+  return query('SELECT * FROM Acct');
 }
 
 // starting data from /utils.js.seed()
@@ -148,7 +148,7 @@ var newVolunteerRes = {
 var newCoachReq = {
   data: {
     f_name: 'first13',
-    l_name: 'last13
+    l_name: 'last13',
     email: '13@email.com',
     authorization: 'Coach'
   }
@@ -278,7 +278,7 @@ var badAuthorizationReq = {
   }
 };
 
-/*var malFormedDataReq = {
+/* var malFormedDataReq = {
   data: {
     f_name: 'first',
     l_name: 'last',
@@ -366,7 +366,7 @@ describe('Accounts', function() {
       });
     });
 
-  describe('getAccountsByProgram(req)', function(){
+  describe('getAccountsByProgram(req)', function() {
       it('it should get all accounts for a specific program', function(done) {
         var promise = accounts.getAccountsByProgram({
           params: {
@@ -381,7 +381,7 @@ describe('Accounts', function() {
        });
   });
 
-  describe('getAccountsBySite(req)', function(){
+  describe('getAccountsBySite(req)', function() {
        it('it should get all accounts for a specific site', function(done) {
          var promise = accounts.getAccountsBySite({
            params: {
@@ -423,7 +423,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should retrieve an empty object as acc_id DNE', function (done) {
+    it('it should retrieve an empty object as acc_id DNE', function(done) {
       var promise = accounts.getAccount({
         query: {
           id: 404
@@ -433,7 +433,7 @@ describe('Accounts', function() {
       promise.then(function(data) {
         assert.deepEqual([], data);
         done();
-      })
+      });
     });
 /* TODO - remove malformatting?
     it('it should return missing argument error', function(done) {
@@ -467,14 +467,13 @@ describe('Accounts', function() {
 
           // check only id 5 was affected
           return getAccounts();
-        })
+        });
       promise.then(function(data) {
         // check entire db
         assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
         done();
         });
       });
-    });
 
     it('it should return missing argument errors', function(done) {
       // missing all fields

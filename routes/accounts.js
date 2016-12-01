@@ -1,9 +1,9 @@
 'use strict';
-const Promise = require('bluebird');
+/* const Promise = require('bluebird');
 const utils = require('../lib/utils');
 const query = utils.query;
 const defined = utils.defined;
-
+*/
 function getAccounts(req) {
 }
 
@@ -16,7 +16,7 @@ function getAccountsBySite(req) {
 function getAccountsByProgram(req) {
 }
 
-function addAccount(req) {
+function createAccount(req) {
 }
 
 function updateAccount(req) {
