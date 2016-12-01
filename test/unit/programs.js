@@ -201,7 +201,7 @@ describe('POST', function() {
       done();
     });
   });
-  xit('/sites/:site_id/programs (invalid site_id)', function(done) {
+  it('/sites/:site_id/programs (invalid site_id)', function(done) {
     var req = {
       params: {
         site_id: 'id',
@@ -210,8 +210,8 @@ describe('POST', function() {
         program_name: 'New'
       }
     };
-    programs.createProgram(req).catch(function(err) {
-      assert.equal(err.status, 400);
+    programs.createProgram(req).then(function(data) {
+      assert.deepEqual([], data);
       done();
     });
   });
@@ -224,8 +224,8 @@ describe('POST', function() {
         program_name: 'New'
       }
     };
-    programs.createProgram(req).catch(function(err) {
-      assert.equal(err.status, 404);
+    programs.createProgram(req).then(function(data) {
+      assert.deepEqual([], data);
       done();
     });
   });
@@ -264,16 +264,13 @@ describe('PUT', function() {
         program_name: 'Updated'
       }
     };
-    var promise = programs.updateProgram(req);
-    promise.then(function(data) {
-      programs.getProgram({params: {program_id: 1}}).then(function(data) {
-        assert.equal(data.name, req.body.name);
-      });
-      programs.getPrograms().then(function(data) {
-        assert.deepEqual(programsUpdated, data);
-      });
+    programs.updateProgram(req).then(function(data) {
+      assert.equal(req.body.program_name, data[0].program_name);
       assert.deepEqual([updatedProgram], data);
-      done();
+      return programs.getPrograms()
+    }).then(function(data) {
+        assert.deepEqual(programsUpdated, data);
+        done();
     });
   });
   it('/programs/:program_id (nonexistent program_id)', function(done) {
@@ -293,7 +290,7 @@ describe('PUT', function() {
   it('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
       params: {
-        program_id: 'ID',
+        program_id: 'id',
       },
       body: {
         program_name: 'Updated'
@@ -312,8 +309,8 @@ describe('PUT', function() {
       body: {
       }
     };
-    programs.updateProgram(req).then(function(data) {
-      assert.deepEqual([], data);
+    programs.updateProgram(req).catch(function(err) {
+      assert.equal(err.status, 400);
       done();
     });
   });
@@ -336,8 +333,7 @@ describe('DELETE', function() {
         program_id: 1,
       },
     };
-    var promise = programs.deleteProgram(req);
-    promise.then(function() {
+    programs.deleteProgram(req).then(function() {
       return programs.getPrograms();
     })
     .then(function(data) {
@@ -351,19 +347,19 @@ describe('DELETE', function() {
         program_id: -1,
       },
     };
-
     programs.deleteProgram(req).then(function(data) {
       assert.deepEqual([], data);
       done();
     });
   });
-  xit('/programs/:program_id (invalid program_id)', function(done) {
+  it('/programs/:program_id (invalid program_id)', function(done) {
     var req = {
       params: {
         program_id: 'id'
       },
     };
-    programs.deleteProgram(req).catch(function(err) {
+    programs.deleteProgram(req).then(function(data) {
+      assert.deepEqual([], data);
       done();
     });
   });

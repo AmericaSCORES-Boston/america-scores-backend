@@ -29,41 +29,62 @@ function getProgramsByAccount(req) {
 function createProgram(req) {
   var site_id = req.params.site_id;
   var program_name = req.body.program_name;
-  return query('INSERT INTO Program (site_id, program_name) VALUES(?, ?)', [site_id, program_name]).then(function(data) {
-    return getProgram({params: {program_id: data.insertId}});
+  if(!defined(program_name)) {
+    return Promise.reject({status: 400, message: 'Missing progam_name'});
+  }
+  return query('SELECT * FROM Site WHERE site_id = ?', [site_id])
+  .then(function(data) {
+    if (data.length == 1 && data[0].site_id == site_id) {
+      return query('INSERT INTO Program (site_id, program_name) VALUES(?, ?)', [site_id, program_name])
+      .then(function(data) {
+        return query('SELECT * FROM Program WHERE program_id = ?', [data.insertId]);
+      });
+    }
+    return Promise.resolve([]);
   });
 }
 
 function updateProgram(req) {
   var program_id = req.params.program_id;
-  if (defined(req.body.program_name)) {
-    return query('UPDATE Program SET program_name = ? WHERE program_id = ?', [req.body.program_name, program_id]).then(function(data) {
-      return getProgram({params: {program_id: program_id}});
-    });
+  var program_name = req.body.program_name;
+  if(!defined(program_name)) {
+    return Promise.reject({status: 400, message: 'Missing program_name'});
   }
-  return Promise.resolve([]);
+  return query('SELECT * FROM Program WHERE program_id = ?', [program_id])
+  .then(function(data) {
+    if (data.length == 1 && data[0].program_id == program_id) {
+      return query('UPDATE Program SET program_name = ? WHERE program_id = ?', [req.body.program_name, program_id])
+      .then(function() {
+        return query('SELECT * FROM Program WHERE program_id = ?', program_id);
+      });
+    }
+    return Promise.resolve([]);
+  })
 }
 
 function deleteProgram(req) {
   var program_id = req.params.program_id;
-  var deletedProgram = getProgram({params: {program_id: program_id}});
-
-  return deletedProgram.then(function(data) {
-    return query('DELETE FROM AcctToProgram WHERE program_id = ?', [program_id]).then(function() {
-      return query('DELETE FROM StudentToProgram WHERE program_id = ?', [program_id]);
-    })
-    .then(function() {
-      return query('DELETE FROM Measurement WHERE event_id IN (Select event_id FROM Event WHERE program_id = ?)', [program_id]);
-    })
-    .then(function() {
-      return query('DELETE FROM Event WHERE program_id = ?', [program_id]);
-    })
-    .then(function() {
-      return query('DELETE FROM Program WHERE program_id = ?', [program_id]);
-    })
-    .then(function() {
-      return data;
-    });
+  return query('SELECT * FROM Program WHERE program_id = ?', [program_id])
+  .then(function(data) {
+    if (data.length == 1 && data[0].program_id == program_id) {
+      return query('DELETE FROM AcctToProgram WHERE program_id = ?', [program_id])
+      .then(function() {
+        return query('DELETE FROM StudentToProgram WHERE program_id = ?', [program_id]);
+      })
+      .then(function() {
+        return query('DELETE FROM Measurement WHERE event_id IN (Select event_id FROM Event WHERE program_id = ?)', [program_id]);
+      })
+      .then(function() {
+        return query('DELETE FROM Event WHERE program_id = ?', [program_id]);
+      })
+      .then(function() {
+        return query('DELETE FROM Program WHERE program_id = ?', [program_id]);
+      })
+      .then(function() {
+        return data;
+      });
+    }
+    return Promise.resolve([]);
   });
 };
 
