@@ -27,7 +27,7 @@ describe('Reports', function() {
         'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
         'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 08/19/2016, 7, 7, 7\n'
       };
-      var promise = reports.getReports();
+      var promise = reports.getReports({});
 
       promise.then(function(data) {
         assert.deepEqual(data, expectedCSV);

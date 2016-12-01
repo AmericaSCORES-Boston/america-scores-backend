@@ -9,7 +9,7 @@ function getReports(req) {
 
 }
 
-function getReport(req) {
+function getReportByProgram(req) {
 
 }
 
