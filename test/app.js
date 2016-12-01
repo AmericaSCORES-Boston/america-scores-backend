@@ -5,17 +5,17 @@ const chai = require('chai');
 const assert = chai.assert;
 const request = require('supertest');
 const Promise = require('bluebird');
-const students = require('../../routes/students');
-const sites = require('../../routes/sites');
-const programs = require('../../routes/programs');
-const events = require('../../routes/events');
+const students = require('../routes/students');
+const sites = require('../routes/sites');
+const programs = require('../routes/programs');
+const events = require('../routes/events');
 
 
 describe('app.js', function() {
   var app;
 
   before(function() {
-    app = require('../../app');
+    app = require('../app');
   });
 
   after(function() {
