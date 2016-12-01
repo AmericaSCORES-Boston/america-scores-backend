@@ -2,7 +2,7 @@
 
 const mysql = require('mysql');
 const Promise = require('bluebird');
-const env = 'development';
+const env = process.env.NODE_ENV || 'development';
 const config = require('./config')[env];
 
 Promise.promisifyAll(mysql);
