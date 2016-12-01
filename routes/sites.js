@@ -6,17 +6,23 @@ const query = utils.query;
 const defined = utils.defined;
 
 /**
- * Gets all sites matching filter, or all sites if no filter is present.
+ * Gets all sites.
  *
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
 function getSites(req) {
-  if (defined(req.query) && defined(req.query.acct_id)) {
-    return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ?', [req.query.acct_id]);
-  }
-
   return query('SELECT * FROM Site');
+}
+
+/**
+ * Gets all sites for given account.
+ *
+ * @param {Object} req The given request object
+ * @return {Promise} The promise
+ */
+function getSitesByAccount(req) {
+  return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ?', [req.params.account_id]);
 }
 
 /**
@@ -94,5 +100,5 @@ function deleteSite(req) {
 }
 
 module.exports = {
-  getSites, createSite, getSite, updateSite, deleteSite
+  getSites, getSitesByAccount, createSite, getSite, updateSite, deleteSite
 };
