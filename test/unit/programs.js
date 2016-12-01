@@ -267,7 +267,7 @@ describe('PUT', function() {
     programs.updateProgram(req).then(function(data) {
       assert.equal(req.body.program_name, data[0].program_name);
       assert.deepEqual([updatedProgram], data);
-      return programs.getPrograms()
+      return programs.getPrograms();
     }).then(function(data) {
         assert.deepEqual(programsUpdated, data);
         done();

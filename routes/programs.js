@@ -59,7 +59,7 @@ function updateProgram(req) {
       });
     }
     return Promise.resolve([]);
-  })
+  });
 }
 
 function deleteProgram(req) {
