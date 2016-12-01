@@ -15,5 +15,5 @@ function getReportByProgram(req) {
 
 module.exports = {
   getReports,
-  getReport,
+  getReportByProgram,
 };
