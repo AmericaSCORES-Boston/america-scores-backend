@@ -2,4 +2,4 @@
 cd /amscores/backend
 mv ../creds.js config/
 
-npm install
+sudo npm install
