@@ -55,8 +55,8 @@ function getStudentsByProgram(req) {
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
     return programs.getProgram(req)
-    .then(function(idLookup) {
-      if (idLookup.length > 0) {
+    .then(function(data) {
+      if (data.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
@@ -83,8 +83,8 @@ function getStudentsByEvent(req) {
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
     return events.getEvent(req)
-    .then(function(idLookup) {
-      if (idLookup.length > 0) {
+    .then(function(data) {
+      if (data.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
@@ -111,8 +111,8 @@ function getStudentsBySite(req) {
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
     return sites.getSite(req)
-    .then(function(idLookup) {
-      if (idLookup.length > 0) {
+    .then(function(data) {
+      if (data.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
@@ -168,8 +168,10 @@ function createStudent(req) {
 
       // Check if the given program_id exists in the database
       return programs.getProgram(req)
-      .then(function(idLookup) {
-        if (idLookup.length > 0) {
+      .then(function(data) {
+        if (data.length > 0) {
+          var student_id;
+
           // The program_id is valid, add the student to the database
           var promise = getStudents({
             query: {
@@ -195,10 +197,18 @@ function createStudent(req) {
                 });
               })
               .then(function(data) {
+                student_id = data[0].student_id;
                 // Then, link student to the program in StudentToProgram table
                 return query('INSERT INTO StudentToProgram ' +
                 '(student_id, program_id) VALUES (?, ?)',
-                  [data[0].student_id, req.params.program_id]);
+                  [student_id, req.params.program_id]);
+              })
+              .then(function() {
+                return getStudent({
+                  params: {
+                    student_id: student_id
+                  }
+                });
               });
             } else {
               // Student already exists
@@ -251,19 +261,22 @@ function updateStudent(req) {
 
     // Check if the given student_id exists in the database
     return getStudent(req)
-    .then(function(idLookup) {
-      if (idLookup.length > 0) {
+    .then(function(data) {
+      if (data.length > 0) {
         // The student exists. Next, check if a program update was requested
         if (!defined(req.params.program_id)) {
           // No program update requested. Update students table.
           var queryComponents = createUpdateQuery(req.body);
           queryComponents[1].push(req.params.student_id);
-          return query(queryComponents[0], queryComponents[1]);
+          return query(queryComponents[0], queryComponents[1])
+          .then(function() {
+            return getStudent(req);
+          });
         } else {
           // Program update requested. Check if the new program exists.
           return programs.getProgram(req)
-          .then(function(idLookup) {
-            if (idLookup.length > 0) {
+          .then(function(data) {
+            if (data.length > 0) {
               // The program exists. Update the student's program
               return query('UPDATE StudentToProgram SET program_id = ? ' +
               'WHERE student_id = ?', [req.params.program_id,
@@ -276,6 +289,9 @@ function updateStudent(req) {
                   queryComponents[1].push(req.params.student_id);
                   return query(queryComponents[0], queryComponents[1]);
                 }
+              })
+              .then(function() {
+                return getStudent(req);
               });
             } else {
               // The program does not exist
@@ -304,8 +320,9 @@ function deleteStudent(req) {
   if (defined(req.params) && defined(req.params.student_id)) {
     if (isPositiveInteger(req.params.student_id)) {
       return getStudent(req)
-      .then(function(idLookup) {
-        if (idLookup.length > 0) {
+      .then(function(data) {
+        var student = data;
+        if (data.length > 0) {
           return query('DELETE FROM Measurement WHERE student_id=?',
            [req.params.student_id])
           .then(function() {
@@ -315,6 +332,9 @@ function deleteStudent(req) {
           .then(function() {
             return query('DELETE FROM Student WHERE student_id=?',
              [req.params.student_id]);
+          })
+          .then(function() {
+            return student;
           });
         } else {
           return createArgumentNotFoundError(req.params.student_id,
