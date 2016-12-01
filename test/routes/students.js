@@ -133,7 +133,8 @@ before(function() {
 // Students testing block
 describe('Students', function() {
   describe('getStudents(req)', function() {
-    it('should get all the students in the database', function(done) {
+    it('should get all the students in the database if the account is an admin',
+     function(done) {
       var promise = students.getStudents({
         // Express has empty query, params, and body by default in req
         query: {},
@@ -149,7 +150,64 @@ describe('Students', function() {
       });
     });
 
-    it('should be able to get a student using first, last name and birthday',
+    it('should get all the students in the database if the account is staff',
+     function(done) {
+      var promise = students.getStudents({
+        // Express has empty query, params, and body by default in req
+        query: {},
+        params: {},
+        body: {},
+        user: constants.staff
+      });
+
+      // When the promised data is returned, check it against the expected data
+      promise.then(function(data) {
+        assert.deepEqual([percy, annabeth, brian, pam], data);
+        done();
+      });
+    });
+
+    it('should not get all the students if the account is a volunteer',
+    function(done) {
+      var promise = students.getStudents({
+        // Express has empty query, params, and body by default in req
+        query: {},
+        params: {},
+        body: {},
+        user: constants.volunteer
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+        done();
+      });
+    });
+
+    it('should not get all the students if the account is a coach',
+    function(done) {
+      var promise = students.getStudents({
+        // Express has empty query, params, and body by default in req
+        query: {},
+        params: {},
+        body: {},
+        user: constants.coach
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+        done();
+      });
+    });
+
+    it('admins should be able to get a student using first, last name and birthday',
     function(done) {
       var req = {
         query: {
@@ -160,6 +218,72 @@ describe('Students', function() {
         params: {},
         body: {},
         user: constants.admin
+      };
+
+      var promise = students.getStudents(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual(data, [percy]);
+        done();
+      });
+    });
+
+    it('staff should be able to get a student using first, last name and birthday',
+    function(done) {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          dob: '1993-08-18'
+        },
+        params: {},
+        body: {},
+        user: constants.staff
+      };
+
+      var promise = students.getStudents(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual(data, [percy]);
+        done();
+      });
+    });
+
+    it('volunteers should be able to get a student using first, last name and birthday',
+    function(done) {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          dob: '1993-08-18'
+        },
+        params: {},
+        body: {},
+        user: constants.volunteers
+      };
+
+      var promise = students.getStudents(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual(data, [percy]);
+        done();
+      });
+    });
+
+    it('coaches should be able to get a student using first, last name and birthday',
+    function(done) {
+      var req = {
+        query: {
+          first_name: 'Percy',
+          last_name: 'Jackson',
+          dob: '1993-08-18'
+        },
+        params: {},
+        body: {},
+        user: constants.coaches
       };
 
       var promise = students.getStudents(req);

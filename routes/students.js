@@ -33,7 +33,11 @@ function getStudents(req) {
       }
   } else if (!req.query.hasOwnProperty('first_name') &&
   !req.query.hasOwnProperty('last_name') && !req.query.hasOwnProperty('dob')) {
-    return query('SELECT * FROM Student');
+    if (req.user.authorization == 'Admin' || req.user.authorization == 'Staff') {
+      return query('SELECT * FROM Student');
+    } else {
+      return createAccessDeniedError();
+    }
   } else {
     return Promise.reject({
       name: 'UnsupportedRequest',
