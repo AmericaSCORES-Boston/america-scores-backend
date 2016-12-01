@@ -1,64 +1,165 @@
 // Set the env to test
 process.env.NODE_ENV = 'test';
 
-// Require the testing dependencies
+// require the testing dependencies
 var chai = require('chai');
 var assert = chai.assert;
 
-// Endpoints being tested
+// endpoints being tested
 var accounts = require('../../routes/accounts');
 var accounts = require('../../routes/programs');
 
-// Create testing example data
-var first = {
+// starting data from /utils.js.seed()
+var acc1 = {
   id: 1,
-  firstName: 'first1',
-  lastName: 'last1',
-  email: '1@email.com',
-  type: 'coach'
+  firstName: 'Ron',
+  lastName: 'Large',
+  email: 'ronlarge@gmail.com',
+  type: 'Coach'
 };
 
-var second = {
+var acc2 = {
   id: 2,
-  firstName: 'first2',
-  lastName: 'last2',
-  email: '2@email.com',
-  type: 'admin'
+  firstName: 'Marcel',
+  lastName: 'Yogg',
+  email: 'myogg@gmail.com',
+  type: 'Coach'
 };
 
-var updateSecondReq = {
+var acc3 = {
+  id: 3,
+  firstName: 'Maggie',
+  lastName: 'Pam',
+  email: 'mp@gmail.com',
+  type: 'Volunteer'
+};
+
+var acc4 = {
+  id: 4,
+  firstName: 'Jeff',
+  lastName: 'Nguyen',
+  email: 'jnguyen@gmail.com',
+  type: 'Volunteer'
+};
+
+var acc5 = {
+  id: 5,
+  firstName: 'Larry',
+  lastName: 'Mulligan',
+  email: 'lmulligan@gmail.com',
+  type: 'Staff'
+};
+
+var acc6 = {
+  id: 6,
+  firstName: 'Jake',
+  lastName: 'Sky',
+  email: 'blue@gmail.com',
+  type: 'Staff'
+};
+
+var acc7 = {
+  id: 7,
+  firstName: 'Mark',
+  lastName: 'Pam',
+  email: 'redsoxfan@gmail.com',
+  type: 'Admin'
+};
+
+var acc9 = {
+  id: 9,
+  firstName: 'Tom',
+  lastName: 'Lerner',
+  email: 'tlerner@gmail.com',
+  type: 'Coach'
+};
+
+// manipulated accounts
+var updReq1 = {
   data: {
     id: 2,
     firstName: 'UpdatedFirst',
     lastName: 'UpdatedLast',
     email: 'updated@email.com',
-    type: 'coach'
+    type: 'Admin'
   }
 };
 
-var updateSecondResp = {
+var updResp2 = {
   id: 2,
   firstName: 'UpdatedFirst',
   lastName: 'UpdatedLast',
   email: 'updated@email.com',
-  type: 'coach'
+  type: 'Admin'
 };
 
-var newAccountReq = {
+// newly created accounts
+var newAdminReq = {
   data: {
-    firstName: 'first3',
-    lastName: 'last3',
-    email: '3@email.com',
-    type: 'staff'
+    firstName: 'first10',
+    lastName: 'last10',
+    email: '10@email.com',
+    type: 'Admin'
   }
 };
 
-var newAccountResp = {
-  id: 3,
-  firstName: 'first3',
-  lastName: 'last3',
-  email: '3@email.com',
-  type: 'staff'
+var newAdminRes = {
+  id: 10,
+  firstName: 'first10',
+  lastName: 'last10',
+  email: '10@email.com',
+  type: 'Admin'
+};
+
+var newStaffReq = {
+  data: {
+    firstName: 'first11',
+    lastName: 'last11',
+    email: '11@email.com',
+    type: 'Staff'
+  }
+};
+
+var newStaffRes = {
+  id: 11,
+  firstName: 'first11',
+  lastName: 'last11',
+  email: '11@email.com',
+  type: 'Staff'
+};
+
+var newVolunteerReq = {
+  data: {
+    firstName: 'first12',
+    lastName: 'last12',
+    email: '12@email.com',
+    type: 'Volunteer'
+  }
+};
+
+var newVolunteerRes = {
+  id: 12,
+  firstName: 'first12',
+  lastName: 'last12',
+  email: '12@email.com',
+  type: 'Volunteer'
+};
+
+var newCoachReq = {
+  data: {
+    firstName: 'first13',
+    lastName: 'last13
+    email: '13@email.com',
+    type: 'Coach'
+  }
+};
+
+var newCoachRes = {
+  id: 13,
+  firstName: 'first13',
+  lastName: 'last13',
+  email: '13@email.com',
+  type: 'Coach'
 };
 
 // bad put request data
@@ -68,7 +169,7 @@ var noIDPutReq = {
     firstName: 'first',
     lastName: 'last',
     email: 'something@rob.com',
-    type: 'staff'
+    type: 'Staff'
   }
 };
 
@@ -78,7 +179,7 @@ var noFNamePutReq = {
     firstName: '',
     lastName: 'last',
     email: 'something@rob.com',
-    type: 'staff'
+    type: 'Staff'
   }
 };
 
@@ -88,7 +189,7 @@ var noLNamePutReq = {
     firstName: 'first',
     lastName: '',
     email: 'something@rob.com',
-    type: 'staff'
+    type: 'Staff'
   }
 };
 
@@ -98,11 +199,11 @@ var noEmailPutReq = {
     firstName: 'first',
     lastName: 'last',
     email: '',
-    type: 'staff'
+    type: 'Staff'
   }
 };
 
-var noTypePutReq = {
+var badTypePutReq = {
   data: {
     id: 1,
     firstName: 'first',
@@ -118,49 +219,7 @@ var badEMailPutReq = {
     firstName: 'first',
     lastName: 'last',
     email: 'something.com',
-    type: 'staff'
-  }
-};
-
-var badTypePutReq = {
-  data: {
-    id: 1,
-    firstName: 'first',
-    lastName: 'last',
-    email: 'something.com',
-    type: 'foo'
-  }
-};
-
-var badIDPutReq = {
-  data: {
-    id: 'string',
-    firstName: 'first',
-    lastName: 'last',
-    email: 'something@rob.com',
-    type: 'staff'
-  }
-};
-
-// TODO Verify how we are handling id assignments. Is this test okay?
-var idDNEPutReq = {
-  data: {
-    id: 999999999,
-    firstName: 'first',
-    lastName: 'last',
-    email: 'something@rob.com',
-    type: 'staff'
-  }
-};
-
-var malFormedDataPutReq = {
-  data: {
-    id: 1,
-    firstName: 'first',
-    lastName: 'last',
-    email: 'some@thing.com',
-    type: 'staff',
-    extra: 'thing'
+    type: 'Staff'
   }
 };
 
@@ -170,7 +229,7 @@ var noFNameReq = {
     firstName: '',
     lastName: 'last',
     email: 'something@rob.com',
-    type: 'staff'
+    type: 'Staff'
   }
 };
 
@@ -179,7 +238,7 @@ var noLNameReq = {
     firstName: 'first',
     lastName: '',
     email: 'something@rob.com',
-    type: 'staff'
+    type: 'Staff'
   }
 };
 
@@ -232,8 +291,6 @@ var malFormedDataReq = {
 // Accounts testing block
 describe('Accounts', function() {
     beforeEach(function() {
-      // TODO clear DB
-      // seed data
     });
 
     describe('/GET accounts', function() {
@@ -241,9 +298,7 @@ describe('Accounts', function() {
         var promise = accounts.getAccounts({});
 
         promise.then(function(data) {
-          assert.lengthOf(data, 2);
-          assert.typeOf(data, 'array');
-          assert.deepEqual([first, second], data);
+          assert.deepEqual([acc1, acc2, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9], data);
           done();
         });
       });
