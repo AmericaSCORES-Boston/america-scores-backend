@@ -2,349 +2,414 @@
 process.env.NODE_ENV = 'test';
 
 // require the testing dependencies
-var chai = require('chai');
-var assert = chai.assert;
+const chai = require('chai');
+const assert = chai.assert;
 
 // endpoints being tested
-var accounts = require('../../routes/accounts');
-var accounts = require('../../routes/programs');
+const accounts = require('../../routes/accounts');
+
+// Require seed to reset db before each test
+const seed = require('../../lib/utils').seed;
+
+// Require query function for getAllAccounts check
+const query = require('../../lib/utils').query;
+
+// Get contents of Accounts table in DB, used for asserts
+function getAllAccounts() {
+  return query('SELECT * FROM Acct')
+}
 
 // starting data from /utils.js.seed()
 var acc1 = {
   id: 1,
-  firstName: 'Ron',
-  lastName: 'Large',
+  f_name: 'Ron',
+  l_name: 'Large',
   email: 'ronlarge@gmail.com',
-  type: 'Coach'
+  authorization: 'Coach'
 };
 
 var acc2 = {
   id: 2,
-  firstName: 'Marcel',
-  lastName: 'Yogg',
+  f_name: 'Marcel',
+  l_name: 'Yogg',
   email: 'myogg@gmail.com',
-  type: 'Coach'
+  authorization: 'Coach'
 };
 
 var acc3 = {
   id: 3,
-  firstName: 'Maggie',
-  lastName: 'Pam',
+  f_name: 'Maggie',
+  l_name: 'Pam',
   email: 'mp@gmail.com',
-  type: 'Volunteer'
+  authorization: 'Volunteer'
 };
 
 var acc4 = {
   id: 4,
-  firstName: 'Jeff',
-  lastName: 'Nguyen',
+  f_name: 'Jeff',
+  l_name: 'Nguyen',
   email: 'jnguyen@gmail.com',
-  type: 'Volunteer'
+  authorization: 'Volunteer'
 };
 
 var acc5 = {
   id: 5,
-  firstName: 'Larry',
-  lastName: 'Mulligan',
+  f_name: 'Larry',
+  l_name: 'Mulligan',
   email: 'lmulligan@gmail.com',
-  type: 'Staff'
+  authorization: 'Staff'
 };
 
 var acc6 = {
   id: 6,
-  firstName: 'Jake',
-  lastName: 'Sky',
+  f_name: 'Jake',
+  l_name: 'Sky',
   email: 'blue@gmail.com',
-  type: 'Staff'
+  authorization: 'Staff'
 };
 
 var acc7 = {
   id: 7,
-  firstName: 'Mark',
-  lastName: 'Pam',
+  f_name: 'Mark',
+  l_name: 'Pam',
   email: 'redsoxfan@gmail.com',
-  type: 'Admin'
+  authorization: 'Admin'
 };
 
 var acc9 = {
   id: 9,
-  firstName: 'Tom',
-  lastName: 'Lerner',
+  f_name: 'Tom',
+  l_name: 'Lerner',
   email: 'tlerner@gmail.com',
-  type: 'Coach'
+  authorization: 'Coach'
 };
 
-// manipulated accounts
-var updReq1 = {
-  data: {
-    id: 2,
-    firstName: 'UpdatedFirst',
-    lastName: 'UpdatedLast',
-    email: 'updated@email.com',
-    type: 'Admin'
-  }
-};
-
-var updResp2 = {
-  id: 2,
-  firstName: 'UpdatedFirst',
-  lastName: 'UpdatedLast',
+// updated accounts
+var acc5_upd = {
+  id: 5,
+  f_name: 'updatedFirst',
+  l_name: 'updatedLast',
   email: 'updated@email.com',
-  type: 'Admin'
+  authorization: 'Admin'
 };
 
 // newly created accounts
 var newAdminReq = {
   data: {
-    firstName: 'first10',
-    lastName: 'last10',
+    f_name: 'first10',
+    l_name: 'last10',
     email: '10@email.com',
-    type: 'Admin'
+    authorization: 'Admin'
   }
 };
 
 var newAdminRes = {
   id: 10,
-  firstName: 'first10',
-  lastName: 'last10',
+  f_name: 'first10',
+  l_name: 'last10',
   email: '10@email.com',
-  type: 'Admin'
+  authorization: 'Admin'
 };
 
 var newStaffReq = {
   data: {
-    firstName: 'first11',
-    lastName: 'last11',
+    f_name: 'first11',
+    l_name: 'last11',
     email: '11@email.com',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
 var newStaffRes = {
   id: 11,
-  firstName: 'first11',
-  lastName: 'last11',
+  f_name: 'first11',
+  l_name: 'last11',
   email: '11@email.com',
-  type: 'Staff'
+  authorization: 'Staff'
 };
 
 var newVolunteerReq = {
   data: {
-    firstName: 'first12',
-    lastName: 'last12',
+    f_name: 'first12',
+    l_name: 'last12',
     email: '12@email.com',
-    type: 'Volunteer'
+    authorization: 'Volunteer'
   }
 };
 
 var newVolunteerRes = {
   id: 12,
-  firstName: 'first12',
-  lastName: 'last12',
+  f_name: 'first12',
+  l_name: 'last12',
   email: '12@email.com',
-  type: 'Volunteer'
+  authorization: 'Volunteer'
 };
 
 var newCoachReq = {
   data: {
-    firstName: 'first13',
-    lastName: 'last13
+    f_name: 'first13',
+    l_name: 'last13
     email: '13@email.com',
-    type: 'Coach'
+    authorization: 'Coach'
   }
 };
 
 var newCoachRes = {
   id: 13,
-  firstName: 'first13',
-  lastName: 'last13',
+  f_name: 'first13',
+  l_name: 'last13',
   email: '13@email.com',
-  type: 'Coach'
+  authorization: 'Coach'
 };
 
 // bad put request data
 var noIDPutReq = {
   data: {
     id: '',
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: 'something@rob.com',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
 var noFNamePutReq = {
   data: {
     id: 1,
-    firstName: '',
-    lastName: 'last',
+    f_name: '',
+    l_name: 'last',
     email: 'something@rob.com',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
 var noLNamePutReq = {
   data: {
     id: 1,
-    firstName: 'first',
-    lastName: '',
+    f_name: 'first',
+    l_name: '',
     email: 'something@rob.com',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
 var noEmailPutReq = {
   data: {
     id: 1,
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: '',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
-var badTypePutReq = {
+var badAuthorizationPutReq = {
   data: {
     id: 1,
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: 'some@thing.com',
-    type: ''
+    authorization: ''
   }
 };
 
 var badEMailPutReq = {
   data: {
     id: 1,
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: 'something.com',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
 // bad post request data
 var noFNameReq = {
   data: {
-    firstName: '',
-    lastName: 'last',
+    f_name: '',
+    l_name: 'last',
     email: 'something@rob.com',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
 var noLNameReq = {
   data: {
-    firstName: 'first',
-    lastName: '',
+    f_name: 'first',
+    l_name: '',
     email: 'something@rob.com',
-    type: 'Staff'
+    authorization: 'Staff'
   }
 };
 
 var noEmailReq = {
   data: {
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: '',
-    type: 'staff'
+    authorization: 'staff'
   }
 };
 
-var noTypeReq = {
+var noAuthorizationReq = {
   data: {
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: 'some@thing.com',
-    type: ''
+    authorization: ''
   }
 };
 
 var badEMailReq = {
   data: {
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: 'something.com',
-    type: 'staff'
+    authorization: 'staff'
   }
 };
 
-var badTypeReq = {
+var badAuthorizationReq = {
   data: {
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: 'something.com',
-    type: 'foo'
+    authorization: 'foo'
   }
 };
 
-var malFormedDataReq = {
+/*var malFormedDataReq = {
   data: {
-    firstName: 'first',
-    lastName: 'last',
+    f_name: 'first',
+    l_name: 'last',
     email: 'some@thing.com',
-    type: 'staff',
+    authorization: 'staff',
     extra: 'thing'
   }
-};
+};*/
 
 // Accounts testing block
 describe('Accounts', function() {
     beforeEach(function() {
     });
 
-    describe('/GET accounts', function() {
+    describe('getAccounts(req)', function() {
       it('it should get all accounts in DB', function(done) {
-        var promise = accounts.getAccounts({});
+        // Retrieve all students when req.query.authorization is empty
+        var promise = accounts.getAccounts({
+          query: {},
+          params: {},
+          body: {}
+        });
 
+        // Confirm entire DB retrieved
         promise.then(function(data) {
           assert.deepEqual([acc1, acc2, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9], data);
           done();
         });
       });
 
-      // it('it should get all programs for a specific account',
-      //  function(done) {
-      //   var promise = accounts.getAccounts({
-      //     params: {
-      //       prog_id: 1
-      //     }
-      //   });
-      //
-      //   promise.then(function(data) {
-      //     assert.lengthOf(data, 2);
-      //     assert.typeOf(data, 'array');
-      //     assert.deepEqual([first, second], data);
-      //     done();
-      //   });
-      // });
+      it('it should get all accounts in DB where authorization=Volunteer', function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            authorization: 'Volunteer'
+          }
+        });
 
-      // it('it should get all accounts for a specific site', function(done) {
-      //   //TODO
-      //   var promise = accounts.getAccounts({});
-      //
-      //   promise.then(function(data) {
-      //     assert.lengthOf(data, 2);
-      //     assert.typeOf(data, 'array');
-      //     assert.deepEqual([first, second], data);
-      //     done();
-      //   });
-      // });
+        promise.then(function(data) {
+          // Check that all Volunteer accounts returned
+          assert.deepEqual(data, [acc3, acc4]);
+          done();
+        });
+      });
 
-      // it('it should get all accounts of a specific type', function(done) {
-      //   //TODO
-      //   var promise = accounts.getAccounts({});
-      //
-      //   promise.then(function(data) {
-      //     assert.lengthOf(data, 2);
-      //     assert.typeOf(data, 'array');
-      //     assert.deepEqual([first, second], data);
-      //     done();
-      //   });
-      // });
+      it('it should get all accounts in DB where authorization=Staff', function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            authorization: 'Staff'
+          }
+        });
+
+        promise.then(function(data) {
+          // Check that all Staff accounts returned
+          assert.deepEqual(data, [acc5, acc6]);
+          done();
+        });
+      });
+
+      it('it should get all accounts in DB where authorization=Admin', function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            authorization: 'Admin'
+          }
+        });
+
+        promise.then(function(data) {
+          // Check that all Admin accounts returned
+          assert.deepEqual(data, [acc7, acc8]);
+          done();
+        });
+      });
+
+      it('it should get all accounts in DB where authorization=Coach', function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            authorization: 'Coach'
+          }
+        });
+
+        promise.then(function(data) {
+          // Check that all Staff accounts returned
+          assert.deepEqual(data, [acc1, acc2, acc9]);
+          done();
+        });
+      });
     });
 
-  describe('/GET account', function() {
+  describe('getAccountsByProgram(req)', function(){
+      it('it should get all accounts for a specific program', function(done) {
+        var promise = accounts.getAccountsByProgram({
+          params: {
+            program_id: 1
+          }
+        });
+
+         promise.then(function(data) {
+           assert.deepEqual([acc7, acc1, acc6], data);
+           done();
+         });
+       });
+  });
+
+  describe('getAccountsBySite(req)', function(){
+       it('it should get all accounts for a specific site', function(done) {
+         var promise = accounts.getAccountsBySite({
+           params: {
+             site_id: 1
+           }
+         });
+
+         promise.then(function(data) {
+           assert.deepEqual([acc7, acc1, acc6], data);
+           done();
+         });
+       });
+
+       it('it should get 0 accounts when a site id that DNE is passed', function(done) {
+         var promise = accounts.getAccountsBySite({
+           params: {
+             site_id: 404
+           }
+         });
+
+         promise.then(function(data) {
+           assert.deepEqual([], data);
+           done();
+         });
+       });
+    });
+
+  describe('getAccount(req)', function() {
     it('it should retrieve a single account', function(done) {
       var promise = accounts.getAccount({
         query: {
@@ -353,11 +418,24 @@ describe('Accounts', function() {
       });
 
       promise.then(function(data) {
-        assert.deepEqual([first], data);
+        assert.deepEqual([acc1], data);
         done();
       });
     });
 
+    it('it should retrieve an empty object as acc_id DNE', function (done) {
+      var promise = accounts.getAccount({
+        query: {
+          id: 404
+        }
+      });
+
+      promise.then(function(data) {
+        assert.deepEqual([], data);
+        done();
+      })
+    });
+/* TODO - remove malformatting?
     it('it should return missing argument error', function(done) {
       assert.throw(accounts.getAccount({}));
       assert.throw(accounts.getAccount(malFormedDataReq));
@@ -366,22 +444,35 @@ describe('Accounts', function() {
           id: 'bad'
         }
       }));
-    });
+    });*/
   });
 
-  describe('/PUT account', function() {
-    it('it should update an account', function(done) {
-      var promise = accounts.updateAccount(updateSecondReq);
+  describe('updateAccount(req)', function() {
+    it('it should update an account with all new fields', function(done) {
+      var req = {
+        params: {
+          account_id: 5
+        },
+        body: {
+          f_name: 'updatedFirst',
+          l_name: 'updatedLast',
+          email: 'updated@email.com',
+          authorization: 'Admin'
+        }
+      };
+      accounts.updateAccount(req)
+        .then(function(data) {
+          // check that updated account is returned
+          assert.deepEqual(data, [acc5_upd]);
 
+          // check only id 5 was affected
+          return getAccounts();
+        })
       promise.then(function(data) {
-        return accounts.getAccount({
-          params: {
-            id: 2
-          }
-        });
-      }).then(function(data) {
-        assert.equal(updateSecondResp, data);
+        // check entire db
+        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
         done();
+        });
       });
     });
 
@@ -396,13 +487,13 @@ describe('Accounts', function() {
       assert.throw(accounts.updateAccount(noFNamePutReq));
       assert.throw(accounts.updateAccount(noLNamePutReq));
       assert.throw(accounts.updateAccount(noEmailPutReq));
-      assert.throw(accounts.updateAccount(noTypePutReq));
+      assert.throw(accounts.updateAccount(noAuthorizationPutReq));
       assert.throw(accounts.updateAccount(noIDPutReq));
 
       // malformed data
       assert.throw(accounts.updateAccount(badIDPutReq));
       assert.throw(accounts.updateAccount(badEMailPutReq));
-      assert.throw(accounts.updateAccount(badTypePutReq));
+      assert.throw(accounts.updateAccount(badAuthorizationPutReq));
       assert.throw(accounts.updateAccount(malFormedDataPutReq));
     });
   });
@@ -437,10 +528,10 @@ describe('Accounts', function() {
       assert.throws(accounts.addAccount(noFNameReq));
       assert.throws(accounts.addAccount(noLNameReq));
       assert.throws(accounts.addAccount(noEmailReq));
-      assert.throws(accounts.addAccount(noTypeReq));
+      assert.throws(accounts.addAccount(noAuthorizationReq));
 
       // malformed data
-      assert.throws(accounts.addAccount(badTypeReq));
+      assert.throws(accounts.addAccount(badAuthorizationReq));
       assert.throws(accounts.addAccount(badEMailReq));
       assert.throws(accounts.addAccount(malFormedDataReq));
     });

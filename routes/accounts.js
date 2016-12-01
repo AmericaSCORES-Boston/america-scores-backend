@@ -1,28 +1,30 @@
-// TODO standardize post->create to match other routes
+'use strict';
+const Promise = require('bluebird');
+const utils = require('../lib/utils');
+const query = utils.query;
+const defined = utils.defined;
 
 function getAccounts(req) {
-  // returns promise
 }
 
 function getAccount(req) {
-  // returns promise
+}
+
+function getAccountsBySite(req) {
 }
 
 function getAccountsByProgram(req) {
-
 }
 
 function addAccount(req) {
-  // returns promise
 }
 
 function updateAccount(req) {
-  // returns promise
 }
 
 function deleteAccount(req) {
-  // returns promise
 }
 
 module.exports(
-  getAccounts, getAccount, getAccountsByProgram, getAccountsBySite, addAccount, updateAccount, deleteAccount);
+  getAccounts, getAccount, getAccountsByProgram, getAccountsBySite,
+  getAccountsByProgram, createAccount, updateAccount, deleteAccount);
