@@ -5,7 +5,10 @@ const config = require('./config/config.js')[env];
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var cors = require('cors');
 var app = express();
+
+app.use(cors());
 
 // Routes
 var students = require('./routes/students');
@@ -16,14 +19,6 @@ var events = require('./routes/events');
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
 app.use(bodyParser.urlencoded({extended: true}));
-
-// Enable cross-origin resource sharing (CORS)
-app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
 
 app.get('/', function(req, res) {
   res.status(405);
