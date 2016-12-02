@@ -20,6 +20,8 @@ var events = require('./routes/events');
 app.use(bodyParser.json({type: 'application/json'}));
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.options('*', cors());
+
 app.get('/', function(req, res) {
   res.status(405);
   res.send('Route not implemented');
