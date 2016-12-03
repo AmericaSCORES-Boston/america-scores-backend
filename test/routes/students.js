@@ -373,7 +373,7 @@ describe('Students', function() {
   });
 
   describe('getStudentsByProgram(req)', function() {
-    it('should get all the students for a given program',
+    it('should get all the students for a given program (admin)',
     function(done) {
       var req = {
         params: {
@@ -390,6 +390,108 @@ describe('Students', function() {
         assert.deepEqual([annabeth], data);
         done();
       });
+    });
+
+    it('should get all the students for a given program (staff)',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: {},
+        user: constants.staff
+      };
+
+      var promise = students.getStudentsByProgram(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([annabeth], data);
+        done();
+      });
+    });
+
+    it('should get all the students for a given program only if the'
+    + ' volunteer has permission',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 2
+        },
+        body: {},
+        user: constants.volunteer
+      };
+
+      var promise = students.getStudentsByProgram(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([brian], data);
+        done();
+      });
+    });
+
+    xit('should give an error if the volunteer does not have permissions for the program',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: {},
+        user: constants.volunteer
+      };
+
+      students.getStudentsByProgram(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+        done();
+      });
+    });
+
+    it('should get all the students for a given program only if the'
+    + ' coach has permission',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: {},
+        user: constants.coach
+      };
+
+      var promise = students.getStudentsByProgram(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([annabeth], data);
+        done();
+      });
+    });
+
+    xit('should give an error if the coach does not have permissions for the program',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 3
+        },
+        body: {},
+        user: constants.coach
+      };
+
+      students.getStudentsByProgram(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+        done();
+      });
+
     });
 
     it('should give an error if the program_id is negative',
@@ -486,7 +588,7 @@ describe('Students', function() {
   });
 
   describe('getStudentsByEvent(req)', function() {
-    it('should get all the students associated with a given event',
+    it('should get all the students associated with a given event (admin)',
     function(done) {
       var req = {
         params: {
@@ -501,6 +603,69 @@ describe('Students', function() {
       promise.then(function(data) {
         // Check that we received the correct students
         assert.deepEqual([annabeth], data);
+        done();
+      });
+    });
+
+    it('should get all the students associated with a given event (staff)',
+    function(done) {
+      var req = {
+        params: {
+          event_id: 4
+        },
+        body: {},
+        user: constants.staff
+      };
+
+      var promise = students.getStudentsByEvent(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([annabeth], data);
+        done();
+      });
+    });
+
+    it('should get all the students for a given event only if the'
+    + ' volunteer has permission',
+    function(done) {
+      var req = {
+        params: {
+          event_id: 2
+        },
+        body: {},
+        user: constants.volunteer
+      };
+
+      var promise = students.getStudentsByEvent(req);
+
+      promise.then(function(data) {
+        console.log(data);
+        // $$$ THIS IS BROKEN TILL YOU FIX THE EVENTS QUERY
+        // Check that we received the correct students
+        assert.deepEqual([percy, annabeth, pam], data);
+        done();
+      });
+    });
+
+    // $$$ DO THIS NEXT
+    xit('should give an error if the volunteer does not have permissions for the program',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: {},
+        user: constants.volunteer
+      };
+
+      students.getStudentsByProgram(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
         done();
       });
     });

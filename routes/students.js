@@ -82,6 +82,8 @@ function getStudentsByEvent(req) {
   var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
   '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
   '(SELECT program_id FROM Event WHERE event_id = ?))';
+  // $$$ this is wrong, you should be linking from event, to measurement, to student.
+  // TODO: fix this query + results in tests
 
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
@@ -285,6 +287,8 @@ function updateStudent(req) {
               return query('UPDATE StudentToProgram SET program_id = ? ' +
               'WHERE student_id = ?', [req.params.program_id,
                 req.params.student_id])
+                // $$$ TODO: This replaces the current student to program relationship.
+                // Should we replace or just add a new one? When should the old relationship be cleared?
               .then(function() {
                 // Check if any other fields need to be updated.
                 if (defined(req.body.first_name) || defined(req.body.last_name) || defined(req.body.dob)) {
