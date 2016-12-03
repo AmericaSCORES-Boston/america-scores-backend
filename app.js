@@ -3,18 +3,21 @@
 const env = process.env.NODE_ENV || 'development';
 const config = require('./config/config.js')[env];
 
-var express = require('express');
-var bodyParser = require('body-parser');
+const express = require('express');
+const bodyParser = require('body-parser');
 // var cors = require('cors');
-var app = express();
+const app = express();
 
 // app.use(cors());
 
+const makeResponse = require('./lib/utils').makeResponse;
+
 // Routes
-var students = require('./routes/students');
-var sites = require('./routes/sites');
-var programs = require('./routes/programs');
-var events = require('./routes/events');
+const students = require('./routes/students');
+const sites = require('./routes/sites');
+const programs = require('./routes/programs');
+const events = require('./routes/events');
+const stats = require('./routes/stats');
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -32,15 +35,6 @@ app.get('/', function(req, res) {
   res.status(405);
   res.send('Route not implemented');
 });
-
-function makeResponse(res, promise) {
-  promise.then(function(data) {
-    res.send(data);
-  })
-  .catch(function(err) {
-    res.status(err.status).send(err);
-  });
-}
 
 // Students
 app.route('/students')
@@ -172,6 +166,30 @@ app.route('/accounts/:account_id/programs/:program_id/events')
   });
 
 // Stats
+app.route('/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStats(req));
+  });
+
+app.route('/sites/:site_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsBySite(req));
+  });
+
+app.route('/programs/:program_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsByProgram(req));
+  });
+
+app.route('/events/:event_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsByEvent(req));
+  });
+
+app.route('/students/:student_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsByStudent(req));
+  });
 
 var server = app.listen(config.server.port);
 console.log('Listening on port ' + config.server.port);
