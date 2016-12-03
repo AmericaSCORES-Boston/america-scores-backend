@@ -17,7 +17,7 @@ beforeEach(function() {
 // Reports testing block
 describe('Reports', function() {
   describe('getReports()', function() {
-    it('should successfully generate a CSV report of all students and their stats', function(done) {
+    xit('should successfully generate a CSV report of all students and their stats', function(done) {
       // NOTE: the third column is intentionally left empty, as per request from Alicia
       var expectedCSV = {
         report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Data, ' +
@@ -37,7 +37,7 @@ describe('Reports', function() {
   });
 
   describe('getReportByProgram(req)', function() {
-    it('should successfully generate a CSV report of students and their stats', function(done) {
+    xit('should successfully generate a CSV report of students and their stats', function(done) {
         // NOTE: the third column is intentionally left empty, as per request from Alicia
       var expectedCSV = {
         report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Data, ' +
@@ -60,7 +60,7 @@ describe('Reports', function() {
       });
     });
 
-    it('should successfully generate a CSV report of students and their stats 2', function(done) {
+    xit('should successfully generate a CSV report of students and their stats 2', function(done) {
       var expectedCSV = {
         report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Data, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
@@ -83,7 +83,7 @@ describe('Reports', function() {
       });
     });
 
-    it('should return error if given program_id is not an int', function(done) {
+    xit('should return error if given program_id is not an int', function(done) {
       var req = {
         params: {
           program_id: 'hi'
@@ -99,7 +99,7 @@ describe('Reports', function() {
       });
     });
 
-    it('should return empty if given program_id is not in the database', function(done) {
+    xit('should return empty if given program_id is not in the database', function(done) {
       var req = {
         params: {
           program_id: 3921893
