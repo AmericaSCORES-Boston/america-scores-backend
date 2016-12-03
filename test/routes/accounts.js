@@ -21,7 +21,7 @@ function getAllAccounts() {
 
 // starting data from /utils.js.seed()
 var acc1 = {
-  id: 1,
+  account_id: 1,
   f_name: 'Ron',
   l_name: 'Large',
   email: 'ronlarge@gmail.com',
@@ -29,7 +29,7 @@ var acc1 = {
 };
 
 var acc2 = {
-  id: 2,
+  account_id: 2,
   f_name: 'Marcel',
   l_name: 'Yogg',
   email: 'myogg@gmail.com',
@@ -37,7 +37,7 @@ var acc2 = {
 };
 
 var acc3 = {
-  id: 3,
+  account_id: 3,
   f_name: 'Maggie',
   l_name: 'Pam',
   email: 'mp@gmail.com',
@@ -45,7 +45,7 @@ var acc3 = {
 };
 
 var acc4 = {
-  id: 4,
+  account_id: 4,
   f_name: 'Jeff',
   l_name: 'Nguyen',
   email: 'jnguyen@gmail.com',
@@ -53,7 +53,7 @@ var acc4 = {
 };
 
 var acc5 = {
-  id: 5,
+  account_id: 5,
   f_name: 'Larry',
   l_name: 'Mulligan',
   email: 'lmulligan@gmail.com',
@@ -61,7 +61,7 @@ var acc5 = {
 };
 
 var acc6 = {
-  id: 6,
+  account_id: 6,
   f_name: 'Jake',
   l_name: 'Sky',
   email: 'blue@gmail.com',
@@ -69,7 +69,7 @@ var acc6 = {
 };
 
 var acc7 = {
-  id: 7,
+  account_id: 7,
   f_name: 'Mark',
   l_name: 'Pam',
   email: 'redsoxfan@gmail.com',
@@ -77,7 +77,7 @@ var acc7 = {
 };
 
 var acc9 = {
-  id: 9,
+  account_id: 9,
   f_name: 'Tom',
   l_name: 'Lerner',
   email: 'tlerner@gmail.com',
@@ -86,12 +86,46 @@ var acc9 = {
 
 // updated accounts
 var acc5_upd = {
-  id: 5,
+  account_id: 5,
   f_name: 'updatedFirst',
   l_name: 'updatedLast',
   email: 'updated@email.com',
   authorization: 'Admin'
 };
+
+
+var acc7_fn_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'Pam',
+  email: 'redsoxfan@gmail.com',
+  authorization: 'Admin'
+};
+
+var acc7_ln_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'updatedSecond',
+  email: 'redsoxfan@gmail.com',
+  authorization: 'Admin'
+};
+
+var acc7_email_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'updatedSecond',
+  email: 'updated@gmail.com',
+  authorization: 'Admin'
+};
+
+var acc7_auth_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'updatedSecond',
+  email: 'updated@gmail.com',
+  authorization: 'Staff'
+};
+
 
 // newly created accounts
 var newAdminReq = {
@@ -104,7 +138,7 @@ var newAdminReq = {
 };
 
 var newAdminRes = {
-  id: 10,
+  account_id: 10,
   f_name: 'first10',
   l_name: 'last10',
   email: '10@email.com',
@@ -121,7 +155,7 @@ var newStaffReq = {
 };
 
 var newStaffRes = {
-  id: 11,
+  account_id: 11,
   f_name: 'first11',
   l_name: 'last11',
   email: '11@email.com',
@@ -138,7 +172,7 @@ var newVolunteerReq = {
 };
 
 var newVolunteerRes = {
-  id: 12,
+  account_id: 12,
   f_name: 'first12',
   l_name: 'last12',
   email: '12@email.com',
@@ -155,7 +189,7 @@ var newCoachReq = {
 };
 
 var newCoachRes = {
-  id: 13,
+  account_id: 13,
   f_name: 'first13',
   l_name: 'last13',
   email: '13@email.com',
@@ -165,7 +199,7 @@ var newCoachRes = {
 // bad put request data
 var noIDPutReq = {
   data: {
-    id: '',
+    account_id: '',
     f_name: 'first',
     l_name: 'last',
     email: 'something@rob.com',
@@ -175,7 +209,7 @@ var noIDPutReq = {
 
 var noFNamePutReq = {
   data: {
-    id: 1,
+    account_id: 1,
     f_name: '',
     l_name: 'last',
     email: 'something@rob.com',
@@ -185,7 +219,7 @@ var noFNamePutReq = {
 
 var noLNamePutReq = {
   data: {
-    id: 1,
+    account_id: 1,
     f_name: 'first',
     l_name: '',
     email: 'something@rob.com',
@@ -195,7 +229,7 @@ var noLNamePutReq = {
 
 var noEmailPutReq = {
   data: {
-    id: 1,
+    account_id: 1,
     f_name: 'first',
     l_name: 'last',
     email: '',
@@ -205,7 +239,7 @@ var noEmailPutReq = {
 
 var badAuthorizationPutReq = {
   data: {
-    id: 1,
+    account_id: 1,
     f_name: 'first',
     l_name: 'last',
     email: 'some@thing.com',
@@ -215,7 +249,7 @@ var badAuthorizationPutReq = {
 
 var badEMailPutReq = {
   data: {
-    id: 1,
+    account_id: 1,
     f_name: 'first',
     l_name: 'last',
     email: 'something.com',
@@ -288,6 +322,18 @@ var badAuthorizationReq = {
   }
 };*/
 
+// get original states of the database
+ before(function() {
+   getAllAccounts().then(function(data) {
+     initDB = data;
+
+     return query('SELECT * FROM AcctToProgram');
+   })
+     .then(function(data) {
+       initA2P = data;
+     });
+ });
+
 // Accounts testing block
 describe('Accounts', function() {
     beforeEach(function() {
@@ -304,7 +350,7 @@ describe('Accounts', function() {
 
         // Confirm entire DB retrieved
         promise.then(function(data) {
-          assert.deepEqual([acc1, acc2, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9], data);
+          assert.deepEqual(initDB, data);
           done();
         });
       });
@@ -413,7 +459,7 @@ describe('Accounts', function() {
     it('it should retrieve a single account', function(done) {
       var promise = accounts.getAccount({
         query: {
-          id: 1
+          account_id: 1
         }
       });
 
@@ -426,7 +472,7 @@ describe('Accounts', function() {
     it('it should retrieve an empty object as acc_id DNE', function(done) {
       var promise = accounts.getAccount({
         query: {
-          id: 404
+          account_id: 404
         }
       });
 
@@ -465,15 +511,132 @@ describe('Accounts', function() {
           // check that updated account is returned
           assert.deepEqual(data, [acc5_upd]);
 
-          // check only id 5 was affected
           return getAccounts();
         });
       promise.then(function(data) {
-        // check entire db
+        // confirm only expected entry was updatedd
         assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
         done();
         });
       });
+
+    it('it should update an account with a new first name', function(done) {
+      var req = {
+        params: {
+          account_id: 7
+        },
+        body: {
+          f_name: 'updatedFirst',
+        }
+      };
+      accounts.updateAccount(req)
+        .then(function(data) {
+          // check that updated account is returned
+          assert.deepEqual(data, [acc7_fn_upd]);
+
+          return getAccounts();
+        });
+      promise.then(function(data) {
+        // confirm only expected entry was updatedd
+        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
+        done();
+        });
+      });
+
+    it('it should update an account with a new last name', function(done) {
+      var req = {
+        params: {
+          account_id: 7
+        },
+        body: {
+          l_name: 'updatedLast',
+        }
+      };
+      accounts.updateAccount(req)
+        .then(function(data) {
+          // check that updated account is returned
+          assert.deepEqual(data, [acc7_ln_upd]);
+
+          return getAccounts();
+        });
+      promise.then(function(data) {
+        // confirm only expected entry was updatedd
+        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
+        done();
+        });
+      });
+
+    it('it should update an account with a new email', function(done) {
+      var req = {
+        params: {
+          account_id: 7
+        },
+        body: {
+          email: 'updated@gmail.com',
+        }
+      };
+      accounts.updateAccount(req)
+        .then(function(data) {
+          // check that updated account is returned
+          assert.deepEqual(data, [acc7_email_upd]);
+
+          return getAccounts();
+        });
+      promise.then(function(data) {
+        // confirm only expected entry was updatedd
+        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_updd, acc8, acc9]);
+        done();
+        });
+      });
+
+    it('it should update an account with a new auth level', function(done) {
+      var req = {
+        params: {
+          account_id: 7
+        },
+        body: {
+          authorization: 'Staff',
+        }
+      };
+      accounts.updateAccount(req)
+        .then(function(data) {
+          // check that updated account is returned
+          assert.deepEqual(data, [acc7_auth_upd]);
+
+          return getAccounts();
+        });
+      promise.then(function(data) {
+        // confirm only expected entry was updatedd
+        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
+        done();
+        });
+      });
+
+    it('it should return error err msg because body is missing', function(done) {
+      accounts.updateAccount({
+        params: {
+          account_id: 1
+        }
+      }).catch(function(err) {
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        assert.equal(err.message, 'Request must have body and params section. Within ' +
+        'params a valid account_id must be given. Body should contain updated values ' +
+        'for fields to be updated.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          // confirm no updates were incurred
+          assert.deepEqual(data, initDB);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+    });
 
     it('it should return missing argument errors', function(done) {
       // missing all fields
@@ -548,7 +711,7 @@ describe('Accounts', function() {
     it('it should delete an account', function(done) {
       var promise = deleteAccount({
         params: {
-          id: '1'
+          account_id: '1'
         }
       });
 
