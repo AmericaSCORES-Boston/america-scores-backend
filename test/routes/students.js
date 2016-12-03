@@ -1765,7 +1765,7 @@ describe('Students', function() {
           event_id: 2,
           height: 7,
           weight: 7,
-          pacer: 7
+          pacer: null
         },
         {
           measurement_id: 6,
@@ -1773,7 +1773,7 @@ describe('Students', function() {
           event_id: 2,
           height: 4,
           weight: 12,
-          pacer: 421
+          pacer: null
         }]);
         done();
       });

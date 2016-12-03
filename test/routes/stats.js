@@ -24,7 +24,7 @@ var fakeStat2 = {
   event_id: 2,
   height: 7,
   weight: 7,
-  pacer: 7
+  pacer: null
 };
 
 var fakeStat3 = {
@@ -51,7 +51,7 @@ var fakeStat5 = {
   event_id: 2,
   height: 44,
   weight: 16,
-  pacer: 500
+  pacer: null
 };
 
 var fakeStat6 = {
@@ -60,7 +60,7 @@ var fakeStat6 = {
   event_id: 2,
   height: 4,
   weight: 12,
-  pacer: 421
+  pacer: null
 };
 
 // This stat is added later
@@ -76,7 +76,7 @@ var fakeStat6 = {
 
 // Update Checking
 var fakeStat8 = {
-  stat_id: 1,
+  measurement_id: 1,
   student_id: 1,
   event_id: 1,
   height: 6,
@@ -85,21 +85,46 @@ var fakeStat8 = {
 };
 
 var pacerNewBatch = [{
-  stat_id: 7,
   student_id: 1,
   event_id: 3,
+  height: null,
+  weight: null,
   pacer: 28
 },
 {
-  stat_id: 8,
   student_id: 2,
   event_id: 3,
+  height: null,
+  weight: null,
   pacer: 35
 },
 {
-  stat_id: 8,
   student_id: 4,
   event_id: 3,
+  height: null,
+  weight: null,
+  pacer: 18
+}];
+
+var pacerUpdateBatch = [{
+  student_id: 1,
+  event_id: 3,
+  height: 71,
+  weight: 168,
+  pacer: 28
+},
+{
+  student_id: 2,
+  event_id: 3,
+  height: 68,
+  weight: 140,
+  pacer: 35
+},
+{
+  student_id: 4,
+  event_id: 3,
+  height: 62,
+  weight: 110,
   pacer: 18
 }];
 
@@ -354,7 +379,7 @@ describe('stats', function() {
 
   describe('uploadPacerStats(req)', function() {
     // Create a brand new set of stats w/ PACER data
-    xit('should create stats with PACER data for multiple students',
+    it('should create stats with PACER data for multiple students',
     function(done) {
       req = {
         params: {
@@ -390,15 +415,59 @@ describe('stats', function() {
         return stats.getStats({});
       })
       .then(function(data) {
-        console.log(data);
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(pacerNewBatch, data[i]);
+        }
         assert.lengthOf(data, statCount + pacerNewBatch.length);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-           fakeStat4, fakeStat5, fakeStat6].concat(pacerNewBatch));
         done();
       });
     });
 
-    // Add PACER data to existing set of stats (w/ height/weight info)
+    it('should add PACER data to existing set of stats',
+    function(done) {
+      req = {
+        params: {
+          event_id: 2
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
+        }
+      };
+
+      var promise = stats.getStats({});
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+           fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.uploadPacerStats(req);
+      })
+      .then(function() {
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(pacerUpdateBatch, data[i]);
+        }
+        assert.lengthOf(data, statCount);
+        done();
+      });
+    });
 
     // Some mixture of create and updates (maybe some students did BMI before and some after PACER)
 
@@ -533,13 +602,18 @@ describe('stats', function() {
         done();
       });
     });
+
     // What to do if at least one student_id is not valid? Fail entire batch? Fail just that one?
     // Should it make note and continue to the next one?
 
     // ^^^ Same question if student_id is not in the db
+
+    // Pacer data is invalid
+
+    //
   });
 
-  describe('uploadPacerStats(req)', function() {
+  describe('uploadBMIStats(req)', function() {
   });
   // $$$ may not be needed anymore
   // describe('createStat(req)', function() {
@@ -1029,7 +1103,7 @@ describe('stats', function() {
 
   describe('deleteStat(req)', function() {
     // delete existing stats
-    it('should delete stats in the database', function(done) {
+    xit('should delete stats in the database', function(done) {
       var req = {
         params: {
           stat_id: 1
@@ -1093,7 +1167,7 @@ describe('stats', function() {
       });
     });
 
-    it('should give an error if the stat_id is negative',
+    xit('should give an error if the stat_id is negative',
     function(done) {
       var req = {
         params: {
@@ -1103,7 +1177,6 @@ describe('stats', function() {
 
       var promise = stats.deleteStat(req);
       promise.catch(function(err) {
-        console.log(err);
         assert.equal(err.message,
         'Given stat_id is of invalid format (e.g. not an integer or' +
         ' negative)');
