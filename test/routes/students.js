@@ -1,6 +1,6 @@
 // Require the testing dependencies
-var chai = require('chai');
-var assert = chai.assert;
+const chai = require('chai');
+const assert = chai.assert;
 
 // Require query function for getAllStudents check
 const query = require('../../lib/utils').query;
@@ -8,8 +8,11 @@ const query = require('../../lib/utils').query;
 // Require seed to reset database before each test
 const seed = require('../../lib/utils').seed;
 
+// Require test accounts
+// const constants = require('../../lib/constants');
+
 // The file to be tested
-var students = require('../../routes/students');
+const students = require('../../routes/students');
 
 // Get contents of Students table in DB for use in asserts
 function getAllStudents() {
@@ -35,6 +38,13 @@ var perseus = {
   'first_name': 'Perseus',
   'last_name': 'Jackson',
   'dob': new Date(93, 7, 18)
+};
+
+var percyNewDob = {
+  'student_id': 1,
+  'first_name': 'Percy',
+  'last_name': 'Jackson',
+  'dob': new Date(90, 2, 15)
 };
 
 var annabethURL = {
@@ -84,6 +94,20 @@ var pam = {
   'dob': new Date(93, 3, 12)
 };
 
+var poseidonsson = {
+  'student_id': 1,
+  'first_name': 'Percy',
+  'last_name': 'Poseidonsson',
+  'dob': new Date(93, 7, 18)
+};
+
+var hazel = {
+  'student_id': 1,
+  'first_name': 'Hazel',
+  'last_name': 'Levesque',
+  'dob': new Date(28, 11, 17)
+};
+
 // ADD BEFORE EACH TO reseed
 beforeEach(function() {
   return seed();
@@ -110,8 +134,12 @@ before(function() {
 describe('Students', function() {
   describe('getStudents(req)', function() {
     it('should get all the students in the database', function(done) {
-      // GET all doesn't need anything from the request, so pass in empty
-      var promise = students.getStudents({});
+      var promise = students.getStudents({
+        // Express has empty query, params, and body by default in req
+        query: {},
+        params: {},
+        body: {}
+      });
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
@@ -186,107 +214,28 @@ describe('Students', function() {
       });
     });
 
-    it('should get all the students for a given site',
-    function(done) {
+    it('should give an error if the request is not an option listed in ' +
+    'the API documentation (unexpected format)', function(done) {
       var req = {
-        params: {
-          site_id: 2
-        }
-      };
-
-      var promise = students.getStudents(req);
-
-      promise.then(function(data) {
-        // Check that we received the correct students
-        assert.deepEqual([brian], data);
-        done();
-      });
-    });
-
-    it('should give an error if the site_id is negative',
-    function(done) {
-      var req = {
-        params: {
-          site_id: -4
+        query: {
+          first_name: 'Annabeth'
         }
       };
 
       var promise = students.getStudents(req);
       promise.catch(function(err) {
         assert.equal(err.message,
-        'Given site_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
+          'The API does not support a request of this format. ' +
+          ' See the documentation for a list of options.');
 
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'site_id');
-        assert.equal(err.propertyValue, req.params.site_id);
-        assert.equal(err.status, 400);
-        done();
+          assert.equal(err.name, 'UnsupportedRequest');
+          assert.equal(err.status, 501);
+          done();
       });
     });
+  });
 
-    it('should give an error if the site_id is not an integer',
-    function(done) {
-      var req = {
-        params: {
-          site_id: 'ADogNamedSpy'
-        }
-      };
-
-      var req2 = {
-        params: {
-          site_id: 3.1
-        }
-      };
-
-      var promise = students.getStudents(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given site_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'site_id');
-        assert.equal(err.propertyValue, req.params.site_id);
-        assert.equal(err.status, 400);
-      });
-
-      promise = students.getStudents(req2);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given site_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'site_id');
-        assert.equal(err.propertyValue, req2.params.site_id);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
-    it('should give an error if the site_id is not in the database',
-    function(done) {
-      var req = {
-        params: {
-          site_id: 1234
-        }
-      };
-
-      var promise = students.getStudents(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Invalid request: The given site_id does not exist in the' +
-        ' database');
-
-        assert.equal(err.name, 'ArgumentNotFoundError');
-        assert.equal(err.propertyName, 'site_id');
-        assert.equal(err.propertyValue, req.params.site_id);
-        assert.equal(err.status, 404);
-        done();
-      });
-    });
-
+  describe('getStudentsByProgram(req)', function() {
     it('should get all the students for a given program',
     function(done) {
       var req = {
@@ -295,7 +244,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByProgram(req);
 
       promise.then(function(data) {
         // Check that we received the correct students
@@ -312,7 +261,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByProgram(req);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Given program_id is of invalid format (e.g. not an integer or' +
@@ -340,7 +289,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByProgram(req);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Given program_id is of invalid format (e.g. not an integer or' +
@@ -352,7 +301,7 @@ describe('Students', function() {
         assert.equal(err.status, 400);
       });
 
-      promise = students.getStudents(req2);
+      promise = students.getStudentsByProgram(req2);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Given program_id is of invalid format (e.g. not an integer or' +
@@ -374,7 +323,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByProgram(req);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Invalid request: The given program_id does not exist in the' +
@@ -387,7 +336,9 @@ describe('Students', function() {
         done();
       });
     });
+  });
 
+  describe('getStudentsByEvent(req)', function() {
     it('should get all the students associated with a given event',
     function(done) {
       var req = {
@@ -396,7 +347,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByEvent(req);
 
       promise.then(function(data) {
         // Check that we received the correct students
@@ -413,7 +364,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByEvent(req);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Given event_id is of invalid format (e.g. not an integer or' +
@@ -441,7 +392,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByEvent(req);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Given event_id is of invalid format (e.g. not an integer or' +
@@ -453,7 +404,7 @@ describe('Students', function() {
         assert.equal(err.status, 400);
       });
 
-      promise = students.getStudents(req2);
+      promise = students.getStudentsByEvent(req2);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Given event_id is of invalid format (e.g. not an integer or' +
@@ -475,7 +426,7 @@ describe('Students', function() {
         }
       };
 
-      var promise = students.getStudents(req);
+      var promise = students.getStudentsByEvent(req);
       promise.catch(function(err) {
         assert.equal(err.message,
         'Invalid request: The given event_id does not exist in the' +
@@ -484,6 +435,108 @@ describe('Students', function() {
         assert.equal(err.name, 'ArgumentNotFoundError');
         assert.equal(err.propertyName, 'event_id');
         assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 404);
+        done();
+      });
+    });
+  });
+
+  describe('getStudentsBySite(req)', function() {
+    it('should get all the students for a given site',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 2
+        }
+      };
+
+      students.getStudentsBySite(req)
+      .then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([brian], data);
+        done();
+      });
+    });
+
+    it('should give an error if the site_id is negative',
+    function(done) {
+      var req = {
+        params: {
+          site_id: -4
+        }
+      };
+
+      var promise = students.getStudentsBySite(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given site_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the site_id is not an integer',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 'ADogNamedSpy'
+        }
+      };
+
+      var req2 = {
+        params: {
+          site_id: 3.1
+        }
+      };
+
+      var promise = students.getStudentsBySite(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given site_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
+        assert.equal(err.status, 400);
+      });
+
+      promise = students.getStudentsBySite(req2);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Given site_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req2.params.site_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if the site_id is not in the database',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 1234
+        }
+      };
+
+      var promise = students.getStudentsBySite(req);
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Invalid request: The given site_id does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'site_id');
+        assert.equal(err.propertyValue, req.params.site_id);
         assert.equal(err.status, 404);
         done();
       });
@@ -631,25 +684,18 @@ describe('Students', function() {
       });
     });
 
-    it('should give an error if the student_id is not in the database',
+    it('should return an empty array if the student_id is not in the database',
     function(done) {
       var req = {
         params: {
-          // The student_id is contained in the request
-          student_id: 617
+          student_id: 5736
         }
       };
 
-      var promise = students.getStudent(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Invalid request: The given student_id does not exist' +
-        ' in the database');
-
-        assert.equal(err.name, 'ArgumentNotFoundError');
-        assert.equal(err.propertyName, 'student_id');
-        assert.equal(err.propertyValue, req.params.student_id);
-        assert.equal(err.status, 404);
+      students.getStudent(req)
+      .then(function(data) {
+        assert.deepEqual(data, []);
+        assert.lengthOf(data, 0);
         done();
       });
     });
@@ -665,7 +711,9 @@ describe('Students', function() {
       };
 
       students.createStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the new student is returned
+        assert.deepEqual(data, [dave]);
         // Get the contents of the database after calling createStudent
         return getAllStudents();
       })
@@ -1172,7 +1220,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [perseus]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1198,7 +1249,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [poseidonsson]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1208,12 +1262,7 @@ describe('Students', function() {
         // Assert that the old data and new data aren't the same
         assert.notDeepEqual(oldDB, data);
         // Assert that the new data reflects the update changes
-        assert.deepEqual([{
-          'student_id': 1,
-          'first_name': 'Percy',
-          'last_name': 'Poseidonsson',
-          'dob': new Date(93, 7, 18)
-        }, annabeth, brian, pam], data);
+        assert.deepEqual([poseidonsson, annabeth, brian, pam], data);
         done();
       });
     });
@@ -1229,7 +1278,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [percyNewDob]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1239,12 +1291,7 @@ describe('Students', function() {
         // Assert that the old data and new data aren't the same
         assert.notDeepEqual(oldDB, data);
         // Assert that the new data reflects the update changes
-        assert.deepEqual([{
-          'student_id': 1,
-          'first_name': 'Percy',
-          'last_name': 'Jackson',
-          'dob': new Date(90, 2, 15)
-        }, annabeth, brian, pam], data);
+        assert.deepEqual([percyNewDob, annabeth, brian, pam], data);
         done();
       });
     });
@@ -1262,7 +1309,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [hazel]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1505,12 +1555,15 @@ describe('Students', function() {
           student_id: 2,
           program_id: 3
         },
-        body: { // NOTE: Do requests to JUST do programs still send a body?
+        body: {
         }
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [annabeth]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1543,7 +1596,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [magnus]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1654,7 +1710,10 @@ describe('Students', function() {
       };
 
       students.deleteStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [annabeth]);
+
         // Get the current student data in the database
         return getAllStudents();
       })

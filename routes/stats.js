@@ -67,7 +67,7 @@ const query = require('../lib/utils').query;
 	 }
 	 return query('SELECT * FROM Measurement');
  }
- 
+
  /**
  * GET
  * /stats/id : Get stat for an id
@@ -108,12 +108,12 @@ const query = require('../lib/utils').query;
 				 message: 'Could not post due to missing fields'
 			 });
 	 }
-	 
-	 return query('INSERT INTO Measurement (student_id, event_id, height, weight, pacer) VALUES (' 
-					+ req.params.student_id + ', ' + req.params.event_id + ', ' + req.body.height + ', ' 
+
+	 return query('INSERT INTO Measurement (student_id, event_id, height, weight, pacer) VALUES ('
+					+ req.params.student_id + ', ' + req.params.event_id + ', ' + req.body.height + ', '
 					+ req.body.weight + ', ' + req.body.pacer + ')');
  }
- 
+
  /**
  * PUT
  * /stats/id : Update stat with given id
@@ -134,7 +134,7 @@ const query = require('../lib/utils').query;
 				 message: 'Must provide height, weight and pacer values'
 			 });
 	 }
-	 
+
 	 return Promise.resolve()
     .then(function() {
 		 if (req.body.measurement_height) {
@@ -152,7 +152,7 @@ const query = require('../lib/utils').query;
 		 }
      });
  }
- 
+
  /**
  * DELETE
  * /stats/id : Delete stat with given id
