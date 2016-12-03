@@ -64,14 +64,15 @@ var fakeStat6 = {
 };
 
 // This stat is added later
-var fakeStat7 = {
-  measurement_id: 7,
-  student_id: 2,
-  event_id: 2,
-  height: 320,
-  weight: 54,
-  pacer: 382,
-};
+// TODO delete this comment
+// var fakeStat7 = {
+//   measurement_id: 7,
+//   student_id: 2,
+//   event_id: 2,
+//   height: 320,
+//   weight: 54,
+//   pacer: 382,
+// };
 
 // Update Checking
 var fakeStat8 = {
@@ -82,6 +83,25 @@ var fakeStat8 = {
   weight: 6,
   pacer: 6
 };
+
+var pacerNewBatch = [{
+  stat_id: 7,
+  student_id: 1,
+  event_id: 3,
+  pacer: 28
+},
+{
+  stat_id: 8,
+  student_id: 2,
+  event_id: 3,
+  pacer: 35
+},
+{
+  stat_id: 8,
+  student_id: 4,
+  event_id: 3,
+  pacer: 18
+}];
 
 // Add before each to reset database between tests
 beforeEach(function() {
@@ -332,18 +352,27 @@ describe('stats', function() {
     });
   });
 
-  describe('createStat(req)', function() {
-    // Post a new row of stats into stats database
-    it('should add new stats to the database', function(done) {
-      var req = {
+  describe('uploadPacerStats(req)', function() {
+    // Create a brand new set of stats w/ PACER data
+    it('should create stats with PACER data for multiple students',
+    function(done) {
+      req = {
         params: {
-          student_id: 2,
-          event_id: 2,
+          event_id: 3
         },
         body: {
-          height: 320,
-          weight: 54,
-          pacer: 382,
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
         }
       };
 
@@ -355,7 +384,7 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
            fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStat(req);
+        return stats.uploadPacerStats(req);
       })
       .then(function() {
         return stats.getStats({});
@@ -363,386 +392,441 @@ describe('stats', function() {
       .then(function(data) {
         assert.lengthOf(data, statCount + 1);
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-           fakeStat4, fakeStat5, fakeStat6, fakeStat7]);
+           fakeStat4, fakeStat5, fakeStat6].concat(pacerNewBatch));
         done();
       });
     });
 
-    // Attempt to post existing stat
-    it('adding an existing set of stat should do nothing', function(done) {
-      var req = {
-        params: {
-          student_id: 1,
-          event_id: 1,
-        },
-        body: {
-          height: 5,
-          weight: 5,
-          pacer: 5
-        }
-      };
+    // Add PACER data to existing set of stats (w/ height/weight info)
 
-      var promise = stats.getStats({});
-      var statCount;
+    // Some mixture of create and updates (maybe some students did BMI before and some after PACER)
 
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-           fakeStat4, fakeStat5, fakeStat6]);
+    // Fail if event_id is negative
 
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Unable to add student because this set of stats already exists');
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
+    // Fail if event_id is not an integer
 
-    // check error is thrown if required component 'param' is missing in request
-    it('attempting to post stats with missing param will result in an error',
-     function(done) {
-      var req = {
-        body: {
-          height: 44,
-          weight: 16,
-          pacer: 500
-        }
-      };
+    // Fail if event_id is not in database
 
-      var promise = stats.getStats({});
-      var statCount;
+    // What to do if at least one student_id is not valid? Fail entire batch? Fail just that one?
+    // Should it make note and continue to the next one?
 
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required component 'param' is missing in request
-    it('attempting to post stats with missing body will result in an error',
-    function(done) {
-      var req = {
-        params: {
-          student_id: 2,
-          event_id: 2,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required field 'student_id' is missing in request
-    it('attempting to post stats with missing params "student_id" will ' +
-    'result in an error', function(done) {
-      var req = {
-        params: {
-          event_id: 2,
-        },
-        body: {
-          height: 44,
-          weight: 16,
-          pacer: 500
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required field 'event_id' is missing in request
-    it('attempting to post stats with missing params "event_id" will ' +
-    'result in an error', function(done) {
-      var req = {
-        params: {
-          student_id: 2,
-        },
-        body: {
-          height: 44,
-          weight: 16,
-          pacer: 500
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required field 'pacer' is missing in request
-    it('attempting to post stats with missing field "pacer" will ' +
-    'result in an error', function(done) {
-      var req = {
-        params: {
-          student_id: 1,
-          event_id: 1,
-        },
-        body: {
-          height: 5,
-          weight: 5,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required field 'weight' is missing in request
-    it('attempting to post stats with missing field "weight" will ' +
-    'result in an error', function(done) {
-      var req = {
-        params: {
-          student_id: 1,
-          event_id: 1,
-        },
-        body: {
-          height: 5,
-          pacer: 5,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required field 'height' is missing in request
-    it('attempting to post stats with missing field "height" will ' +
-    'result in an error', function(done) {
-      var req = {
-        params: {
-          student_id: 1,
-          event_id: 1,
-        },
-        body: {
-          weight: 5,
-          pacer: 5,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required field 'event_id' is missing in request
-    it('attempting to post stats with missing field event_id will ' +
-    'result in an error', function(done) {
-      var req = {
-        params: {
-          student_id: 1,
-        },
-        body: {
-          pacer: 5,
-          height: 5,
-          weight: 5,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    it('attempting to post stats with missing field student_id will ' +
-    'result in an error', function(done) {
-      var req = {
-        params: {
-          event_id: 1,
-        },
-        body: {
-          pacer: 5,
-          height: 5,
-          weight: 5,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
+    // ^^^ Same question if student_id is not in the db
   });
+
+  describe('uploadPacerStats(req)', function() {
+  });
+  // $$$ may not be needed anymore
+  // describe('createStat(req)', function() {
+  //   // Post a new row of stats into stats database
+  //   it('should add new stats to the database', function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 2,
+  //         event_id: 2,
+  //       },
+  //       body: {
+  //         height: 320,
+  //         weight: 54,
+  //         pacer: 382,
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //          fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .then(function() {
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount + 1);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //          fakeStat4, fakeStat5, fakeStat6, fakeStat7]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // Attempt to post existing stat
+  //   it('adding an existing set of stat should do nothing', function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 1,
+  //         event_id: 1,
+  //       },
+  //       body: {
+  //         height: 5,
+  //         weight: 5,
+  //         pacer: 5
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //          fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Unable to add student because this set of stats already exists');
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required component 'param' is missing in request
+  //   it('attempting to post stats with missing param will result in an error',
+  //    function(done) {
+  //     var req = {
+  //       body: {
+  //         height: 44,
+  //         weight: 16,
+  //         pacer: 500
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required component 'param' is missing in request
+  //   it('attempting to post stats with missing body will result in an error',
+  //   function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 2,
+  //         event_id: 2,
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required field 'student_id' is missing in request
+  //   it('attempting to post stats with missing params "student_id" will ' +
+  //   'result in an error', function(done) {
+  //     var req = {
+  //       params: {
+  //         event_id: 2,
+  //       },
+  //       body: {
+  //         height: 44,
+  //         weight: 16,
+  //         pacer: 500
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required field 'event_id' is missing in request
+  //   it('attempting to post stats with missing params "event_id" will ' +
+  //   'result in an error', function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 2,
+  //       },
+  //       body: {
+  //         height: 44,
+  //         weight: 16,
+  //         pacer: 500
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required field 'pacer' is missing in request
+  //   it('attempting to post stats with missing field "pacer" will ' +
+  //   'result in an error', function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 1,
+  //         event_id: 1,
+  //       },
+  //       body: {
+  //         height: 5,
+  //         weight: 5,
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required field 'weight' is missing in request
+  //   it('attempting to post stats with missing field "weight" will ' +
+  //   'result in an error', function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 1,
+  //         event_id: 1,
+  //       },
+  //       body: {
+  //         height: 5,
+  //         pacer: 5,
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required field 'height' is missing in request
+  //   it('attempting to post stats with missing field "height" will ' +
+  //   'result in an error', function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 1,
+  //         event_id: 1,
+  //       },
+  //       body: {
+  //         weight: 5,
+  //         pacer: 5,
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   // check error is thrown if required field 'event_id' is missing in request
+  //   it('attempting to post stats with missing field event_id will ' +
+  //   'result in an error', function(done) {
+  //     var req = {
+  //       params: {
+  //         student_id: 1,
+  //       },
+  //       body: {
+  //         pacer: 5,
+  //         height: 5,
+  //         weight: 5,
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  //
+  //   it('attempting to post stats with missing field student_id will ' +
+  //   'result in an error', function(done) {
+  //     var req = {
+  //       params: {
+  //         event_id: 1,
+  //       },
+  //       body: {
+  //         pacer: 5,
+  //         height: 5,
+  //         weight: 5,
+  //       }
+  //     };
+  //
+  //     var promise = stats.getStats({});
+  //     var statCount;
+  //
+  //     promise.then(function(data) {
+  //       statCount = data.length;
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //
+  //       return stats.createStat(req);
+  //     })
+  //     .catch(function(err) {
+  //       assert.equal(err.message,
+  //       'Could not post due to missing fields');
+  //       assert.equal(err.status, 400);
+  //       return stats.getStats({});
+  //     })
+  //     .then(function(data) {
+  //       assert.lengthOf(data, statCount);
+  //       assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+  //         fakeStat4, fakeStat5, fakeStat6]);
+  //       done();
+  //     });
+  //   });
+  // });
 
   describe('updateStat(req)', function() {
     // update existing stats
-    it('should update stats in the database', function(done) {
+    xit('should update stats in the database', function(done) {
       var req = {
         params: {
           stat_id: 1,
@@ -779,7 +863,7 @@ describe('stats', function() {
     });
 
     // update non existing stats should error
-    it('should error updating non-existing stats', function(done) {
+    xit('should error updating non-existing stats', function(done) {
       var req = {
         params: {
           stat_id: 99999,
@@ -851,7 +935,7 @@ describe('stats', function() {
     });
 
     // delete non existing stats should error
-    it('should error delete non-existing stats', function(done) {
+    xit('should error delete non-existing stats', function(done) {
       var req = {
         params: {
           stat_id: 99999,

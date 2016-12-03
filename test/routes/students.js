@@ -248,7 +248,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data);
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
@@ -351,7 +351,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data);
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
@@ -1732,7 +1732,17 @@ describe('Students', function() {
         assert.notDeepEqual(oldPrograms, data);
         assert.lengthOf(data, programMatchCount - 1);
         assert.deepEqual(data, [{
-          id: 2,
+          id: 1,
+          student_id: 1,
+          program_id: 1
+        },
+        {
+          id: 3,
+          student_id: 4,
+          program_id: 1
+        },
+        {
+          id: 4,
           student_id: 3,
           program_id: 2
         }]);
