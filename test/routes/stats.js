@@ -354,7 +354,7 @@ describe('stats', function() {
 
   describe('uploadPacerStats(req)', function() {
     // Create a brand new set of stats w/ PACER data
-    it('should create stats with PACER data for multiple students',
+    xit('should create stats with PACER data for multiple students',
     function(done) {
       req = {
         params: {
@@ -390,7 +390,8 @@ describe('stats', function() {
         return stats.getStats({});
       })
       .then(function(data) {
-        assert.lengthOf(data, statCount + 1);
+        console.log(data);
+        assert.lengthOf(data, statCount + pacerNewBatch.length);
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
            fakeStat4, fakeStat5, fakeStat6].concat(pacerNewBatch));
         done();
@@ -402,11 +403,136 @@ describe('stats', function() {
     // Some mixture of create and updates (maybe some students did BMI before and some after PACER)
 
     // Fail if event_id is negative
+    it('should give an error if event_id is negative', function(done) {
+      req = {
+        params: {
+          event_id: -3
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
+        }
+      };
 
-    // Fail if event_id is not an integer
+      stats.uploadPacerStats(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
 
-    // Fail if event_id is not in database
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
 
+    it('should give an error if event_id is not an integer',
+    function(done) {
+      req = {
+        params: {
+          event_id: 2.3
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
+        }
+      };
+
+      stats.uploadPacerStats(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if event_id is not in the database',
+    function(done) {
+      req = {
+        params: {
+          event_id: 39328
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
+        }
+      };
+
+      var promise = stats.uploadPacerStats(req);
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Invalid request: The given event_id does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 404);
+        done();
+      });
+    });
+
+    it('should give an error if body is missing stats field',
+    function(done) {
+      req = {
+        params: {
+          event_id: 3
+        },
+        body: {}
+      };
+
+      var promise = stats.uploadPacerStats(req);
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have a stats section in the body' +
+          ' which contains a list of objects. Objects must have student_id ' +
+          'and either height and weight fields, pacer field, or all three');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
     // What to do if at least one student_id is not valid? Fail entire batch? Fail just that one?
     // Should it make note and continue to the next one?
 
@@ -971,12 +1097,13 @@ describe('stats', function() {
     function(done) {
       var req = {
         params: {
-          site_id: -4
+          stat_id: -4
         }
       };
 
       var promise = stats.deleteStat(req);
       promise.catch(function(err) {
+        console.log(err);
         assert.equal(err.message,
         'Given stat_id is of invalid format (e.g. not an integer or' +
         ' negative)');
