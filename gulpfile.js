@@ -28,7 +28,6 @@ gulp.task('eslint', () => {
 });
 
 gulp.task('test', () => {
-
   var stream = gulp.src('test/**/*.js', {read: false})
     .pipe(mocha({reporter: 'spec', timeout: 5000}));
 
