@@ -28,7 +28,9 @@ gulp.task('eslint', () => {
 });
 
 gulp.task('test', () => {
-  var stream = gulp.src('test/**/*.js', {read: false})
+//  var stream = gulp.src('test/**/*.js', {read: false})
+
+  var stream = gulp.src('test/**/accounts.js', {read: false})
     .pipe(mocha({reporter: 'spec'}));
 
   stream.on('end', function() {
