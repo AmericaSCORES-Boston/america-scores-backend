@@ -848,7 +848,7 @@ describe('stats', function() {
         return stats.updateStat(req);
       })
       .then(function() {
-        return stats.getStats({})
+        return stats.getStats({});
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
