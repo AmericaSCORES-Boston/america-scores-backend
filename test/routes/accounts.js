@@ -36,7 +36,6 @@ function checkAuth0(userID, expected) {
     }
   });
 }
-
 // objects to store the initial database tables
 var initAcc;
 var initA2P;
@@ -134,7 +133,7 @@ var acc7_fn_upd = {
 
 var acc7_ln_upd = {
   account_id: 7,
-  f_name: 'updatedFirst',
+  f_name: 'Mark',
   l_name: 'updatedSecond',
   email: 'redsoxfan@americascores.org',
   type: 'Admin'
@@ -142,17 +141,17 @@ var acc7_ln_upd = {
 
 var acc7_email_upd = {
   account_id: 7,
-  f_name: 'updatedFirst',
-  l_name: 'updatedSecond',
+  f_name: 'Mark',
+  l_name: 'Pam',
   email: 'updated@americascores.org',
   type: 'Admin'
 };
 
 var acc7_auth_upd = {
   account_id: 7,
-  f_name: 'updatedFirst',
-  l_name: 'updatedSecond',
-  email: 'updated@americascores.org',
+  f_name: 'Mark',
+  l_name: 'Pam',
+  email: 'redsoxfan@americascores.org',
   type: 'Staff'
 };
 
@@ -351,11 +350,11 @@ before(function() {
     initAcc = data;
 
     return query('SELECT * FROM AcctToProgram');
-   })
-     .then(function(data) {
-       // Acct to Program table
-       initA2P = data;
-     });
+  })
+    .then(function(data) {
+      // Acct to Program table
+      initA2P = data;
+    });
 });
 
 beforeEach(function() {
@@ -364,166 +363,166 @@ beforeEach(function() {
 
 describe('Accounts', function() {
   describe('getAccounts(req)', function() {
-      it('it should get all accounts in DB when requested by an admin', function(done) {
-        // Retrieve all students when req.query.type is empty
-        var promise = accounts.getAccounts({
-          query: {},
-          params: {},
-          body: {},
-          user: accType.Admin
-        });
-
-        // Confirm entire DB retrieved
-        promise.then(function(data) {
-          assert.deepEqual(initAcc, data);
-          done();
-        });
+    it('it should get all accounts in DB when requested by an admin', function(done) {
+      // Retrieve all students when req.query.type is empty
+      var promise = accounts.getAccounts({
+        query: {},
+        params: {},
+        body: {},
+        user: accType.Admin
       });
 
-      it('it should return a 401 error because staff cannot request accounts', function(done) {
-        var promise = accounts.getAccounts({
-          query: {},
-          params: {},
-          body: {},
-          user: accType.Staff
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'Unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initacc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(inita2p, data);
-            done();
-          });
-      });
-
-      it('it should return a 401 error because coaches cannot request accounts', function(done) {
-        var promise = accounts.getAccounts({
-          params: {
-            not_acc_id: 7
-          },
-          body: {
-            f_name: 'Beezlebub'
-          },
-          user: accType.Coach
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'Unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initAcc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(initA2P, data);
-            done();
-          });
-      });
-
-      it('it should return a 401 error because volunteers cannot request accounts', function(done) {
-        var promise = accounts.getAccounts({
-          query: {},
-          params: {},
-          body: {},
-          user: accType.Volunteer
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'Unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initAcc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(initA2P, data);
-            done();
-          });
-      });
-
-      it('it should get all accounts in DB where type=Volunteer', function(done) {
-        var promise = accounts.getAccounts({
-          query: {
-            type: 'Volunteer',
-          },
-          user: accType.Admin
-        });
-
-        promise.then(function(data) {
-          // Check that all Volunteer accounts returned
-          assert.deepEqual(data, [acc3, acc4]);
-          done();
-        });
-      });
-
-      it('it should get all accounts in DB where type=Staff', function(done) {
-        var promise = accounts.getAccounts({
-          query: {
-            type: 'Staff',
-          },
-          user: accType.Admin
-        });
-
-        promise.then(function(data) {
-          // Check that all Staff accounts returned
-          assert.deepEqual(data, [acc5, acc6]);
-          done();
-        });
-      });
-
-      it('it should get all accounts in DB where type=Admin', function(done) {
-        var promise = accounts.getAccounts({
-          query: {
-            type: 'Admin',
-          },
-          user: accType.Admin
-        });
-
-        promise.then(function(data) {
-          // Check that all Admin accounts returned
-          assert.deepEqual(data, [acc7, acc8]);
-          done();
-        });
-      });
-
-      it('it should get all accounts in DB where type=Coach', function(done) {
-        var promise = accounts.getAccounts({
-          query: {
-            type: 'Coach'
-          },
-          user: accType.Admin
-        });
-
-        promise.then(function(data) {
-          // Check that all Staff accounts returned
-          assert.deepEqual(data, [acc1, acc2, acc9]);
-          done();
-        });
+      // Confirm entire DB retrieved
+      promise.then(function(data) {
+        assert.deepEqual(initAcc, data);
+        done();
       });
     });
+
+    it('it should return a 401 error because staff cannot request accounts', function(done) {
+      var promise = accounts.getAccounts({
+        query: {},
+        params: {},
+        body: {},
+        user: accType.Staff
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'Request denied, insufficient authorization ' +
+          'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initacc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+    });
+
+    it('it should return a 401 error because coaches cannot request accounts', function(done) {
+      var promise = accounts.getAccounts({
+        params: {
+          not_acc_id: 7
+        },
+        body: {
+          f_name: 'Beezlebub'
+        },
+        user: accType.Coach
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'Request denied, insufficient authorization ' +
+          'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initAcc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+    });
+
+    it('it should return a 401 error because volunteers cannot request accounts', function(done) {
+      var promise = accounts.getAccounts({
+        query: {},
+        params: {},
+        body: {},
+        user: accType.Volunteer
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'Request denied, insufficient authorization ' +
+          'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initAcc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+    });
+
+    it('it should get all accounts in DB where type=Volunteer', function(done) {
+      var promise = accounts.getAccounts({
+        query: {
+          type: 'Volunteer',
+        },
+        user: accType.Admin
+      });
+
+      promise.then(function(data) {
+        // Check that all Volunteer accounts returned
+        assert.deepEqual(data, [acc3, acc4]);
+        done();
+      });
+    });
+
+    it('it should get all accounts in DB where type=Staff', function(done) {
+      var promise = accounts.getAccounts({
+        query: {
+          type: 'Staff',
+        },
+        user: accType.Admin
+      });
+
+      promise.then(function(data) {
+        // Check that all Staff accounts returned
+        assert.deepEqual(data, [acc5, acc6]);
+        done();
+      });
+    });
+
+    it('it should get all accounts in DB where type=Admin', function(done) {
+      var promise = accounts.getAccounts({
+        query: {
+          type: 'Admin',
+        },
+        user: accType.Admin
+      });
+
+      promise.then(function(data) {
+        // Check that all Admin accounts returned
+        assert.deepEqual(data, [acc7, acc8]);
+        done();
+      });
+    });
+
+    it('it should get all accounts in DB where type=Coach', function(done) {
+      var promise = accounts.getAccounts({
+        query: {
+          type: 'Coach'
+        },
+        user: accType.Admin
+      });
+
+      promise.then(function(data) {
+        // Check that all Staff accounts returned
+        assert.deepEqual(data, [acc1, acc2, acc9]);
+        done();
+      });
+    });
+  });
 
   describe('getAccountsByProgram(req)', function() {
     it('it should get all accounts for a specific program', function(done) {
@@ -534,11 +533,11 @@ describe('Accounts', function() {
         user: accType.Admin
       });
 
-       promise.then(function(data) {
-         assert.deepEqual([acc7, acc1, acc6], data);
-         done();
-       });
-     });
+      promise.then(function(data) {
+        assert.deepEqual([acc7, acc1, acc6], data);
+        done();
+      });
+    });
 
     it('it should return a 401 error because staff cannot request accounts', function(done) {
       var promise = accounts.getAccountsByProgram({
@@ -552,7 +551,7 @@ describe('Accounts', function() {
         assert.equal(err.name, 'Unauthorized');
         assert.equal(err.status, 401);
         assert.equal(err.message, 'Request denied, insufficient authorization ' +
-        'supplied.');
+          'supplied.');
 
         return getAllAccounts();
       })
@@ -562,7 +561,7 @@ describe('Accounts', function() {
           return query('SELECT * FROM AcctToProgram');
         })
         .then(function(data) {
-          assert.deepEqual(inita2p, data);
+          assert.deepEqual(initA2P, data);
           done();
         });
     });
@@ -579,7 +578,7 @@ describe('Accounts', function() {
         assert.equal(err.name, 'Unauthorized');
         assert.equal(err.status, 401);
         assert.equal(err.message, 'Request denied, insufficient authorization ' +
-        'supplied.');
+          'supplied.');
 
         return getAllAccounts();
       })
@@ -606,7 +605,7 @@ describe('Accounts', function() {
         assert.equal(err.name, 'Unauthorized');
         assert.equal(err.status, 401);
         assert.equal(err.message, 'Request denied, insufficient authorization ' +
-        'supplied.');
+          'supplied.');
 
         return getAllAccounts();
       })
@@ -619,361 +618,397 @@ describe('Accounts', function() {
           assert.deepEqual(initA2P, data);
           done();
         });
-      });
+    });
   });
 
   describe('getAccountsBySite(req)', function() {
-       it('it should get all accounts for a specific site', function(done) {
-         var promise = accounts.getAccountsBySite({
-           params: {
-             site_id: 1
-           },
-           user: accType.Admin
-         });
-
-         promise.then(function(data) {
-           assert.deepEqual([acc7, acc1, acc6], data);
-           done();
-         });
-       });
-
-       it('it should get 0 accounts when a site id that DNE is passed', function(done) {
-         var promise = accounts.getAccountsBySite({
-           params: {
-             site_id: 999
-           },
-           user: accType.Admin
-         });
-
-         promise.then(function(data) {
-           assert.deepEqual([], data);
-           done();
-         });
-       });
-
-      it('it should return a 401 error because staff cannot request accounts', function(done) {
-        var promise = accounts.getAccountsBySite({
-          params: {
-            site_id: 1
-          },
-          user: accType.Staff
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initacc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(inita2p, data);
-            done();
-          });
+    it('it should get all accounts for a specific site', function(done) {
+      var promise = accounts.getAccountsBySite({
+        params: {
+          site_id: 1
+        },
+        user: accType.Admin
       });
 
-      it('it should return a 401 error because coaches cannot request accounts', function(done) {
-        var promise = accounts.getAccountsBySite({
-          params: {
-            site_id: 1
-          },
-          user: accType.Coachach
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initAcc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(initA2P, data);
-            done();
-          });
-      });
-
-      it('it should return a 401 error because volunteers cannot request accounts', function(done) {
-        var promise = accounts.getAccountsBySite({
-          params: {
-            site_id: 1
-          },
-          user: accType.Volunteer
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'Unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initAcc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(initA2P, data);
-            done();
-          });
+      promise.then(function(data) {
+        assert.deepEqual([acc7, acc1, acc6], data);
+        done();
       });
     });
 
+    it('it should get 0 accounts when a site id that DNE is passed', function(done) {
+      var promise = accounts.getAccountsBySite({
+        params: {
+          site_id: 999
+        },
+        user: accType.Admin
+      });
+
+      promise.then(function(data) {
+        assert.deepEqual([], data);
+        done();
+      });
+    });
+
+    it('it should return a 401 error because staff cannot request accounts', function(done) {
+      var promise = accounts.getAccountsBySite({
+        params: {
+          site_id: 1
+        },
+        user: accType.Staff
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'request denied, insufficient authorization ' +
+          'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initacc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+    });
+
+    it('it should return a 401 error because coaches cannot request accounts', function(done) {
+      var promise = accounts.getAccountsBySite({
+        params: {
+          site_id: 1
+        },
+        user: accType.Coachach
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'request denied, insufficient authorization ' +
+          'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initAcc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+    });
+
+    it('it should return a 401 error because volunteers cannot request accounts', function(done) {
+      var promise = accounts.getAccountsBySite({
+        params: {
+          site_id: 1
+        },
+        user: accType.Volunteer
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'Request denied, insufficient authorization ' +
+          'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initAcc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+    });
+  });
+
   describe('updateAccount(req)', function() {
-    // the account for the user to be reset in Auth0, should be one of the init accounts
+    // the account within Auth0 to be updated as represented by one of the accX
+    // account objects
     var resetAcc;
     afterEach() {
-      var params = {id: resetID};
+      // resets an account within Auth0 using the initial data object
+      var params = {id: auth0ID(resetAcc.account_id)};
+      // Auth0 app_metadata object
       var app_metadata = {
         authorization: {
           group: resetAcc.type
         }
       };
+      // Auth0 user user_metadata object
+      var user_metadata = {
+        first_name: resetAcc.f_name,
+        last_name: resetAcc.l_name
+      }
+      // core Auth0 user data
+      var data = {
+        email: resetAcc.email
+      }
+
+      // reset user app_metadata
       mgmt.users.updateAppMetaData(params, app_metadata, function(err, user) {
         if (err) {
           console.error('Failed to update Auth0 app_metadata for user');
           console.error(err);
         }
-      })
-    }
-
-    it('it should update an account with all new fields', function(done) {
-      var req = {
-        params: {
-          account_id: 5
-        },
-        body: {
-          f_name: 'updatedFirst',
-          l_name: 'updatedLast',
-          email: 'updated@email.com',
-          type: 'Admin'
-        },
-        user: accType.Admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
-          // check that updated account is returned
-          assert.deepEqual(data, [acc5_upd]);
-
-          return getAccounts();
-        });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(5)), acc5_upd);
-        done();
+        // reset user user_metadata
+        mgmt.users.updateUserMetadata(params, user_metadata, function(err, user) {
+          if (err) {
+            console.error('Failed to update Auth0 user_metadata for user');
+            console.error(err);
+          }
+          // reset user core Auth0 data
+          mgmt.users.update(params, data, function(err, user) {
+            if(err) {
+              console.error('Failed to update Auth0 core data');
+              console.error(err);
+            }
+          });
         });
       });
 
-    it('it should update an account with a new first name', function(done) {
-      var req = {
-        params: {
-          account_id: 7
-        },
-        body: {
-          f_name: 'updatedFirst',
-        },
-        user: accType.Admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
-          // check that updated account is returned
-          assert.deepEqual(data, [acc7_fn_upd]);
+      it('it should update an account with all new fields', function(done) {
+        resetAcc = acc5; // account to be reset on Auth0 after update
+        var req = {
+          params: {
+            account_id: 5
+          },
+          body: {
+            f_name: 'updatedFirst',
+            l_name: 'updatedLast',
+            email: 'updated@email.com',
+            type: 'Admin'
+          },
+          user: accType.Admin
+        };
+        accounts.updateAccount(req)
+          .then(function(data) {
+            // check that updated account is returned
+            assert.deepEqual(data, [acc5_upd]);
 
-          return getAccounts();
-        });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_fn_upd);
-        done();
-        });
-      });
-
-    it('it should update an account with a new last name', function(done) {
-      var req = {
-        params: {
-          account_id: 7
-        },
-        body: {
-          l_name: 'updatedLast',
-        },
-        user: accType.Admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
-          // check that updated account is returned
-          assert.deepEqual(data, [acc7_ln_upd]);
-
-          return getAccounts();
-        });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_ln_upd);
-        done();
-        });
-      });
-
-    it('it should update an account with a new email', function(done) {
-      var req = {
-        params: {
-          account_id: 7
-        },
-        body: {
-          email: 'updated@americascores.org',
-        },
-        user: accType.Admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
-          // check that updated account is returned
-          assert.deepEqual(data, [acc7_email_upd]);
-
-          return getAccounts();
-        });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_email_upd);
-        done();
-        });
-      });
-
-    it('it should update an account with a new auth level', function(done) {
-      var req = {
-        params: {
-          account_id: 7
-        },
-        body: {
-          type: 'Staff',
-        },
-        user: accType.Admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
-          // check that updated account is returned
-          assert.deepEqual(data, [acc7_auth_upd]);
-
-          return getAccounts();
-        });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_auth_upd);
-        done();
-        });
-      });
-
-    it('it should return error err msg because body is missing', function(done) {
-      accounts.updateAccount({
-        params: {
-          account_id: 1
-        },
-        user: accType.Admin
-      }).catch(function(err) {
-        assert.equal(err.name, 'MissingFieldError');
-        assert.equal(err.status, 400);
-        assert.equal(err.message, 'Request must have body and params section. Within ' +
-        'params a valid account_id must be given. Body should contain updated values ' +
-        'for fields to be updated.');
-
-        return getAllAccounts();
-      })
-        .then(function(data) {
-          // confirm no updates were incurred
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
-          assert.deepEqual(initA2P, data);
-          // confirm account was not affected TODO
-          assert.isTrue(checkAuth0(auth0ID(1)), acc1);
+            return getAccounts();
+          });
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(5)), acc5_upd);
           done();
         });
-    });
+      });
 
-    it('should not update if request is missing params section', function(done) {
-      accounts.updateAccount({
-        body: {
-          f_name: 'Beezlebub'
-        },
-        user: accType.Admin
-      })
-        .catch(function(err) {
-          assert.equal(err.message, 'Request must have body and params section. Within ' +
-          'params a valid account_id must be given. Body should contain updated values ' +
-          'for fields to be updated.');
+      it('it should update an account with a new first name', function(done) {
+        resetAcc = acc7; // account to be reset on Auth0 after update
+        var req = {
+          params: {
+            account_id: 7
+          },
+          body: {
+            f_name: 'updatedFirst',
+          },
+          user: accType.Admin
+        };
+        accounts.updateAccount(req)
+          .then(function(data) {
+            // check that updated account is returned
+            assert.deepEqual(data, [acc7_fn_upd]);
+
+            return getAccounts();
+          });
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_fn_upd);
+          done();
+        });
+      });
+
+      it('it should update an account with a new last name', function(done) {
+        resetAcc = acc7; // account to be reset on Auth0 after update
+        var req = {
+          params: {
+            account_id: 7
+          },
+          body: {
+            l_name: 'updatedLast',
+          },
+          user: accType.Admin
+        };
+        accounts.updateAccount(req)
+          .then(function(data) {
+            // check that updated account is returned
+            assert.deepEqual(data, [acc7_ln_upd]);
+
+            return getAccounts();
+          });
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_ln_upd);
+          done();
+        });
+      });
+
+      it('it should update an account with a new email', function(done) {
+        resetAcc = acc7; // account to be reset on Auth0 after update
+        var req = {
+          params: {
+            account_id: 7
+          },
+          body: {
+            email: 'updated@americascores.org',
+          },
+          user: accType.Admin
+        };
+        accounts.updateAccount(req)
+          .then(function(data) {
+            // check that updated account is returned
+            assert.deepEqual(data, [acc7_email_upd]);
+
+            return getAccounts();
+          });
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_email_upd);
+          done();
+        });
+      });
+
+      it('it should update an account with a new auth level', function(done) {
+        resetAcc = acc7; // account to be reset on Auth0 after update
+        var req = {
+          params: {
+            account_id: 7
+          },
+          body: {
+            type: 'Staff',
+          },
+          user: accType.Admin
+        };
+        accounts.updateAccount(req)
+          .then(function(data) {
+            // check that updated account is returned
+            assert.deepEqual(data, [acc7_auth_upd]);
+
+            return getAccounts();
+          });
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_auth_upd);
+          done();
+        });
+      });
+
+      it('it should return error err msg because body is missing', function(done) {
+        resetAcc = acc1; // account to be reset on Auth0 after update
+        accounts.updateAccount({
+          params: {
+            account_id: 1
+          },
+          user: accType.Admin
+        }).catch(function(err) {
           assert.equal(err.name, 'MissingFieldError');
           assert.equal(err.status, 400);
+          assert.equal(err.message, 'Request must have body and params section. Within ' +
+            'params a valid account_id must be given. Body should contain updated values ' +
+            'for fields to be updated.');
 
           return getAllAccounts();
         })
-        .then(function(data) {
-          // confirm no changes were made to acc table
-          assert.deepEqual(data, initAcc);
+          .then(function(data) {
+            // confirm no updates were incurred
+            assert.deepEqual(data, initAcc);
 
-          return query('SELECT * FROM AcctToProgram');
+            return query('SELECT * FROM AcctToProgram');
+          })
+          .then(function(data) {
+            assert.deepEqual(initA2P, data);
+            // confirm account was not affected
+            assert.isTrue(checkAuth0(auth0ID(1)), acc1);
+            done();
+          });
+      });
+
+      it('should not update if request is missing params section', function(done) {
+        // TODO create test to ensure Auth0 is the same before and after
+        accounts.updateAccount({
+          body: {
+            f_name: 'Beezlebub'
+          },
+          user: accType.Admin
         })
-        .then(function(data) {
-          // confirm no change to acc-to-prog table
-          assert.deepEqual(initA2P, data);
-          done();
-        });
-    });
+          .catch(function(err) {
+            assert.equal(err.message, 'Request must have body and params section. Within ' +
+              'params a valid account_id must be given. Body should contain updated values ' +
+              'for fields to be updated.');
+            assert.equal(err.name, 'MissingFieldError');
+            assert.equal(err.status, 400);
 
-    it('should not update if request is missing account_id in params', function(done) {
-      accounts.updateAccount({
-        params: {
-          not_acc_id: 7
-        },
-        body: {
-          f_name: 'Beezlebub'
-        },
-        user: accType.Admin
-      })
-        .catch(function(err) {
-          assert.equal(err.message, 'Request must have body and params section. Within ' +
-          'params a valid account_id must be given. Body should contain updated values ' +
-          'for fields to be updated.');
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
+            return getAllAccounts();
+          })
+          .then(function(data) {
+            // confirm no changes were made to acc table
+            assert.deepEqual(data, initAcc);
 
-          return getAllAccounts();
+            return query('SELECT * FROM AcctToProgram');
+          })
+          .then(function(data) {
+            // confirm no change to acc-to-prog table
+              assert.deepEqual(initA2P, data);
+            done();
+          });
+      });
+
+      it('should not update if request is missing account_id in params', function(done) {
+        // TODO ensure entire Auth0 DB has not been affected
+        accounts.updateAccount({
+          params: {
+            not_acc_id: 7
+          },
+          body: {
+            f_name: 'Beezlebub'
+          },
+          user: accType.Admin
         })
-        .then(function(data) {
-          // confirm no changes were made to accounts table
-          assert.deepEqual(data, initAcc);
+          .catch(function(err) {
+            assert.equal(err.message, 'Request must have body and params section. Within ' +
+              'params a valid account_id must be given. Body should contain updated values ' +
+              'for fields to be updated.');
+            assert.equal(err.name, 'MissingFieldError');
+            assert.equal(err.status, 400);
 
-          return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
-          // confirm no changes were made to accounts-to-prog table
-          assert.deepEqual(data, initA2P);
-        });
+            return getAllAccounts();
+          })
+          .then(function(data) {
+            // confirm no changes were made to accounts table
+            assert.deepEqual(data, initAcc);
+
+            return query('SELECT * FROM AcctToProgram');
+          })
+          .then(function(data) {
+            // confirm no changes were made to accounts-to-prog table
+            assert.deepEqual(data, initA2P);
+          });
       });
 
       it('it should return a 401 error because staff cannot update other accounts', function(done) {
+        resetAcc = acc7; // account to be reset on Auth0 after update
         var promise = accounts.updateAccount({
           params: {
             acc_id: 7
@@ -985,20 +1020,21 @@ describe('Accounts', function() {
         });
 
         promise.catch(function(err) {
-          assert.equal(err.name, 'unauthorized');
+          assert.equal(err.name, 'Unauthorized');
           assert.equal(err.status, 401);
-          assert.equal(err.message, 'request denied, insufficient authorization ' +
-          'supplied.');
+          assert.equal(err.message, 'Request denied, insufficient authorization ' +
+            'supplied.');
 
           return getAllAccounts();
         })
           .then(function(data) {
-            assert.deepEqual(data, initacc);
+            assert.deepEqual(data, initAcc);
 
             return query('SELECT * FROM AcctToProgram');
           })
           .then(function(data) {
-            assert.deepEqual(inita2p, data);
+            // STOPPING POINT TODO TODO TODO
+            assert.deepEqual(initA2P, data);
             done();
           });
       });
@@ -1015,10 +1051,10 @@ describe('Accounts', function() {
         });
 
         promise.catch(function(err) {
-          assert.equal(err.name, 'unauthorized');
+          assert.equal(err.name, 'Unauthorized');
           assert.equal(err.status, 401);
-          assert.equal(err.message, 'request denied, insufficient authorization ' +
-          'supplied.');
+          assert.equal(err.message, 'Request denied, insufficient authorization ' +
+            'supplied.');
 
           return getAllAccounts();
         })
@@ -1048,7 +1084,7 @@ describe('Accounts', function() {
           assert.equal(err.name, 'Unauthorized');
           assert.equal(err.status, 401);
           assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
+            'supplied.');
 
           return getAllAccounts();
         })
@@ -1078,7 +1114,7 @@ describe('Accounts', function() {
           assert.equal(err.name, 'Unauthorized');
           assert.equal(err.status, 401);
           assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
+            'supplied.');
 
           return getAllAccounts();
         })
@@ -1108,7 +1144,7 @@ describe('Accounts', function() {
           assert.equal(err.name, 'Unauthorized');
           assert.equal(err.status, 401);
           assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
+            'supplied.');
 
           return getAllAccounts();
         })
@@ -1138,7 +1174,7 @@ describe('Accounts', function() {
           assert.equal(err.name, 'Unauthorized');
           assert.equal(err.status, 401);
           assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
+            'supplied.');
 
           return getAllAccounts();
         })
@@ -1180,11 +1216,11 @@ describe('Accounts', function() {
 
           return getAllAccounts();
         })
-        .then(function(data) {
-          // confirm all data in db is as expected, 3 has been updated
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
-          done();
-        });
+          .then(function(data) {
+            // confirm all data in db is as expected, 3 has been updated
+            assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
+            done();
+          });
       });
 
       it('it should allow coaches to update their own email and name', function(done) {
@@ -1213,11 +1249,11 @@ describe('Accounts', function() {
 
           return getAllAccounts();
         })
-        .then(function(data) {
-          // confirm all data in db is as expected, 1 has been updated
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
-          done();
-        });
+          .then(function(data) {
+            // confirm all data in db is as expected, 1 has been updated
+            assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
+            done();
+          });
       });
 
       it('it should allow staff to update their own email and name', function(done) {
@@ -1246,136 +1282,136 @@ describe('Accounts', function() {
 
           return getAllAccounts();
         })
-        .then(function(data) {
-          // confirm all data in db is as expected, 5 has been updated
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
+          .then(function(data) {
+            // confirm all data in db is as expected, 5 has been updated
+            assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
+            done();
+          });
+      });
+    });
+
+    describe('createAccount(req)', function() {
+      it('it should add an Admin account', function(done) {
+        accounts.createAccount(
+          {
+            body: {
+              f_name: 'first10',
+              l_name: 'last10',
+              email: '10@americascores.org',
+              type: 'Admin'
+            },
+            user: accType.Admin
+          })
+          .then(function(data) {
+            // confirm new user added
+            assert.deepEqual(newAdminRes, data);
+            // get contents of accounts table
+            return getAllAccounts();
+          })
+          .then(function(data) {
+            // confirm new account added to accounts table
+            initAcc.push(newAdminRes);
+            assert.deepEqual(data, initAcc);
+          });
+
+        var promise = accounts.getAccounts({});
+        promise.then(function(data) {
+          // get number of accounts in DB before addition
+          accCount = data.length;
+          // add account
+          return accounts.postAccount(req);
+        }).then(function(data) {
+          // get number of accounts after update
+          return accounts.getAccounts({});
+        }).then(function(data) {
+          // verify new row was added
+          assert.lengthOf(data, accCount + 1);
+          assert.deepEqual([first, second, newAccountResp], data);
+          done();
+        });
+      });
+
+      it('it should return missing argument error', function(done) {
+        // missing all fields
+        assert.throws(accounts.addAccount({}));
+
+        // missing fields
+        assert.throws(accounts.addAccount(noFNameReq));
+        assert.throws(accounts.addAccount(noLNameReq));
+        assert.throws(accounts.addAccount(noEmailReq));
+        assert.throws(accounts.addAccount(noTypeReq));
+
+        // malformed data
+        assert.throws(accounts.addAccount(badTypeReq));
+        assert.throws(accounts.addAccount(badEMailReq));
+        assert.throws(accounts.addAccount(malFormedDataReq));
+      });
+
+      it('it should throw error for trying to add an account that already exists',
+        function(done) {
+          accounts.addAccount(newAccountReq).then(function(data) {
+            assert.throws(accounts.addAccount(newAccountReq));
+            done();
+          });
+        });
+    });
+
+    describe('deleteAccount(req)', function() {
+      it('it should delete an account', function(done) {
+        var promise = deleteAccount({
+          params: {
+            account_id: '1'
+          },
+          user: accType.Admin
+        });
+
+        promise.then(function(data) {
+          // TODO verify delete
+          done();
+        });
+      });
+
+      it('it should return missing argument error', function(done) {
+        var promise = deleteAccount({
+          user: accType.Admin
+        });
+
+        promise.then(function(data) {
+          // TODO verify error
           done();
         });
       });
     });
 
-  describe('createAccount(req)', function() {
-    it('it should add an Admin account', function(done) {
-      accounts.createAccount(
-        {
-        body: {
-        f_name: 'first10',
-        l_name: 'last10',
-        email: '10@americascores.org',
-        type: 'Admin'
-      },
-      user: accType.Admin
-    })
-        .then(function(data) {
-          // confirm new user added
-          assert.deepEqual(newAdminRes, data);
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm new account added to accounts table
-          initAcc.push(newAdminRes);
-          assert.deepEqual(data, initAcc);
+    describe('getAccount(req)', function() {
+      it('it should retrieve a single account', function(done) {
+        var promise = accounts.getAccount({
+          query: {
+            account_id: 1
+          },
+          user: accType.Admin
         });
 
-      var promise = accounts.getAccounts({});
-      promise.then(function(data) {
-        // get number of accounts in DB before addition
-        accCount = data.length;
-        // add account
-        return accounts.postAccount(req);
-      }).then(function(data) {
-        // get number of accounts after update
-        return accounts.getAccounts({});
-      }).then(function(data) {
-        // verify new row was added
-        assert.lengthOf(data, accCount + 1);
-        assert.deepEqual([first, second, newAccountResp], data);
-        done();
-      });
-    });
-
-    it('it should return missing argument error', function(done) {
-      // missing all fields
-      assert.throws(accounts.addAccount({}));
-
-      // missing fields
-      assert.throws(accounts.addAccount(noFNameReq));
-      assert.throws(accounts.addAccount(noLNameReq));
-      assert.throws(accounts.addAccount(noEmailReq));
-      assert.throws(accounts.addAccount(noTypeReq));
-
-      // malformed data
-      assert.throws(accounts.addAccount(badTypeReq));
-      assert.throws(accounts.addAccount(badEMailReq));
-      assert.throws(accounts.addAccount(malFormedDataReq));
-    });
-
-    it('it should throw error for trying to add an account that already exists',
-    function(done) {
-      accounts.addAccount(newAccountReq).then(function(data) {
-        assert.throws(accounts.addAccount(newAccountReq));
-        done();
-      });
-    });
-  });
-
-  describe('deleteAccount(req)', function() {
-    it('it should delete an account', function(done) {
-      var promise = deleteAccount({
-        params: {
-          account_id: '1'
-        },
-        user: accType.Admin
+        promise.then(function(data) {
+          assert.deepEqual([acc1], data);
+          done();
+        });
       });
 
-      promise.then(function(data) {
-        // TODO verify delete
-        done();
-      });
-    });
+      it('it should retrieve an empty object as acc_id DNE', function(done) {
+        var promise = accounts.getAccount({
+          query: {
+            account_id: 404
+          },
+          user: accType.Admin
+        });
 
-    it('it should return missing argument error', function(done) {
-      var promise = deleteAccount({
-        user: accType.Admin
+        promise.then(function(data) {
+          assert.deepEqual([], data);
+          done();
+        });
       });
-
-      promise.then(function(data) {
-        // TODO verify error
-        done();
-      });
-    });
-  });
-
-  describe('getAccount(req)', function() {
-    it('it should retrieve a single account', function(done) {
-      var promise = accounts.getAccount({
-        query: {
-          account_id: 1
-        },
-        user: accType.Admin
-      });
-
-      promise.then(function(data) {
-        assert.deepEqual([acc1], data);
-        done();
-      });
-    });
-
-    it('it should retrieve an empty object as acc_id DNE', function(done) {
-      var promise = accounts.getAccount({
-        query: {
-          account_id: 404
-        },
-        user: accType.Admin
-      });
-
-      promise.then(function(data) {
-        assert.deepEqual([], data);
-        done();
-      });
-    });
-/* TODO - remove malformatting?
+      /* TODO - remove malformatting?
     it('it should return missing argument error', function(done) {
       assert.throw(accounts.getAccount({}));
       assert.throw(accounts.getAccount(malFormedDataReq));
@@ -1384,6 +1420,6 @@ describe('Accounts', function() {
           id: 'bad'
         }
       })); */
-    // });
+      // });
+    });
   });
-});
