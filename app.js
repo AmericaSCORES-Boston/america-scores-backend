@@ -159,7 +159,7 @@ app.route('/programs/:program_id/events')
     makeResponse(res, events.getEventsByProgram(req));
   });
 
-app.route('/accounts/:account_id/programs/:program_id/events')
+app.route('/programs/:program_id/events')
   .post(function(req, res, next) {
     makeResponse(res, events.createEvent(req));
   });
