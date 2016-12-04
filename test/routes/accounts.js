@@ -1,8 +1,8 @@
 'use strict';
-const chai = require('chai'); //testing modules
+const chai = require('chai'); // testing modules
 const assert = chai.assert;
-const accounts = require('../../routes/accounts'); //endpoint being tested
-const http = requre
+const accounts = require('../../routes/accounts'); // endpoint being tested
+// const http = requre
 // seed to reset db before each test
 const seed = require('../../lib/utils').seed;
 // constants specifying the given type of account performing the requets
@@ -41,6 +41,309 @@ function checkAuth0(userID, expected) {
 var initAcc;
 var initA2P;
 
+// starting data from /utils.js.seed()
+var acc1 = {
+  account_id: 1,
+  f_name: 'Ron',
+  l_name: 'Large',
+  email: 'ronlarge@americascores.org',
+  type: 'Coach'
+};
+
+var acc2 = {
+  account_id: 2,
+  f_name: 'Marcel',
+  l_name: 'Yogg',
+  email: 'myogg@americascores.org',
+  type: 'Coach'
+};
+
+var acc3 = {
+  account_id: 3,
+  f_name: 'Maggie',
+  l_name: 'Pam',
+  email: 'mp@americascores.org',
+  type: 'Volunteer'
+};
+
+var acc4 = {
+  account_id: 4,
+  f_name: 'Jeff',
+  l_name: 'Nguyen',
+  email: 'jnguyen@americascores.org',
+  type: 'Volunteer'
+};
+
+var acc5 = {
+  account_id: 5,
+  f_name: 'Larry',
+  l_name: 'Mulligan',
+  email: 'lmulligan@americascores.org',
+  type: 'Staff'
+};
+
+var acc6 = {
+  account_id: 6,
+  f_name: 'Jake',
+  l_name: 'Sky',
+  email: 'blue@americascores.org',
+  type: 'Staff'
+};
+
+var acc7 = {
+  account_id: 7,
+  f_name: 'Mark',
+  l_name: 'Pam',
+  email: 'redsoxfan@americascores.org',
+  type: 'Admin'
+};
+
+var acc8 = {
+  account_id: 8,
+  f_name: 'Amanda',
+  l_name: 'Diggs',
+  email: 'adiggs@americascores.org',
+  type: 'Admin'
+};
+
+var acc9 = {
+  account_id: 9,
+  f_name: 'Tom',
+  l_name: 'Lerner',
+  email: 'tlerner@americascores.org',
+  type: 'Coach'
+};
+
+// updated accounts
+var acc5_upd = {
+  account_id: 5,
+  f_name: 'updatedFirst',
+  l_name: 'updatedLast',
+  email: 'updated@email.com',
+  type: 'Admin'
+};
+
+
+var acc7_fn_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'Pam',
+  email: 'redsoxfan@americascores.org',
+  type: 'Admin'
+};
+
+var acc7_ln_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'updatedSecond',
+  email: 'redsoxfan@americascores.org',
+  type: 'Admin'
+};
+
+var acc7_email_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'updatedSecond',
+  email: 'updated@americascores.org',
+  type: 'Admin'
+};
+
+var acc7_auth_upd = {
+  account_id: 7,
+  f_name: 'updatedFirst',
+  l_name: 'updatedSecond',
+  email: 'updated@americascores.org',
+  type: 'Staff'
+};
+
+var newAdminRes = {
+  account_id: 10,
+  f_name: 'first10',
+  l_name: 'last10',
+  email: '10@email.com',
+  type: 'Admin'
+};
+
+var newStaffReq = {
+  data: {
+    f_name: 'first11',
+    l_name: 'last11',
+    email: '11@email.com',
+    type: 'Staff'
+  },
+  user: accType.Admin
+};
+
+var newStaffRes = {
+  account_id: 11,
+  f_name: 'first11',
+  l_name: 'last11',
+  email: '11@email.com',
+  type: 'Staff'
+};
+
+var newVolunteerReq = {
+  data: {
+    f_name: 'first12',
+    l_name: 'last12',
+    email: '12@email.com',
+    type: 'Volunteer'
+  },
+  user: accType.Admin
+};
+
+var newVolunteerRes = {
+  account_id: 12,
+  f_name: 'first12',
+  l_name: 'last12',
+  email: '12@email.com',
+  type: 'Volunteer'
+};
+
+var newCoachReq = {
+  data: {
+    f_name: 'first13',
+    l_name: 'last13',
+    email: '13@email.com',
+    type: 'Coach'
+  },
+  user: accType.Admin
+};
+
+var newCoachRes = {
+  account_id: 13,
+  f_name: 'first13',
+  l_name: 'last13',
+  email: '13@email.com',
+  type: 'Coach'
+};
+
+// bad put request data
+/* var noIDPutReq = {
+  data: {
+    account_id: '',
+    f_name: 'first',
+    l_name: 'last',
+    email: 'something@rob.com',
+    type: 'Staff'
+  }
+};
+
+var noFNamePutReq = {
+  data: {
+    account_id: 1,
+    f_name: '',
+    l_name: 'last',
+    email: 'something@rob.com',
+    type: 'Staff'
+  }
+};
+
+var noLNamePutReq = {
+  data: {
+    account_id: 1,
+    f_name: 'first',
+    l_name: '',
+    email: 'something@rob.com',
+    type: 'Staff'
+  }
+};
+
+var noEmailPutReq = {
+  data: {
+    account_id: 1,
+    f_name: 'first',
+    l_name: 'last',
+    email: '',
+    type: 'Staff'
+  }
+};
+
+var badtypePutReq = {
+  data: {
+    account_id: 1,
+    f_name: 'first',
+    l_name: 'last',
+    email: 'some@thing.com',
+    type: ''
+  }
+};
+
+var badEMailPutReq = {
+  data: {
+    account_id: 1,
+    f_name: 'first',
+    l_name: 'last',
+    email: 'something.com',
+    type: 'Staff'
+  }
+};
+*/
+// bad post request data
+var noFNameReq = {
+  data: {
+    f_name: '',
+    l_name: 'last',
+    email: 'something@rob.com',
+    type: 'Staff'
+  }
+};
+
+var noLNameReq = {
+  data: {
+    f_name: 'first',
+    l_name: '',
+    email: 'something@rob.com',
+    type: 'Staff'
+  }
+};
+
+var noEmailReq = {
+  data: {
+    f_name: 'first',
+    l_name: 'last',
+    email: '',
+    type: 'staff'
+  }
+};
+
+var notypeReq = {
+  data: {
+    f_name: 'first',
+    l_name: 'last',
+    email: 'some@thing.com',
+    type: ''
+  }
+};
+
+var badEMailReq = {
+  data: {
+    f_name: 'first',
+    l_name: 'last',
+    email: 'something.com',
+    type: 'staff'
+  }
+};
+
+var badtypeReq = {
+  data: {
+    f_name: 'first',
+    l_name: 'last',
+    email: 'something.com',
+    type: 'foo'
+  }
+};
+
+/* var malFormedDataReq = {
+  data: {
+    f_name: 'first',
+    l_name: 'last',
+    email: 'some@thing.com',
+    type: 'staff',
+    extra: 'thing'
+  }
+};*/
+
 // get original states of the database tables
 before(function() {
   // Acct table
@@ -55,315 +358,12 @@ before(function() {
      });
 });
 
-// Accounts testing block
+beforeEach(function() {
+  return seed();
+});
+
 describe('Accounts', function() {
-    beforeEach(function() {
-      return seed();
-
-      // starting data from /utils.js.seed()
-      var acc1 = {
-        account_id: 1,
-        f_name: 'Ron',
-        l_name: 'Large',
-        email: 'ronlarge@americascores.org',
-        type: 'Coach'
-      };
-
-      var acc2 = {
-        account_id: 2,
-        f_name: 'Marcel',
-        l_name: 'Yogg',
-        email: 'myogg@americascores.org',
-        type: 'Coach'
-      };
-
-      var acc3 = {
-        account_id: 3,
-        f_name: 'Maggie',
-        l_name: 'Pam',
-        email: 'mp@americascores.org',
-        type: 'Volunteer'
-      };
-
-      var acc4 = {
-        account_id: 4,
-        f_name: 'Jeff',
-        l_name: 'Nguyen',
-        email: 'jnguyen@americascores.org',
-        type: 'Volunteer'
-      };
-
-      var acc5 = {
-        account_id: 5,
-        f_name: 'Larry',
-        l_name: 'Mulligan',
-        email: 'lmulligan@americascores.org',
-        type: 'Staff'
-      };
-
-      var acc6 = {
-        account_id: 6,
-        f_name: 'Jake',
-        l_name: 'Sky',
-        email: 'blue@americascores.org',
-        type: 'Staff'
-      };
-
-      var acc7 = {
-        account_id: 7,
-        f_name: 'Mark',
-        l_name: 'Pam',
-        email: 'redsoxfan@americascores.org',
-        type: 'Admin'
-      };
-
-      var acc8 = {
-        account_id: 8,
-        f_name: 'Amanda',
-        l_name: 'Diggs',
-        email: 'adiggs@americascores.org',
-        type: 'Admin'
-      }
-      var acc9 = {
-        account_id: 9,
-        f_name: 'Tom',
-        l_name: 'Lerner',
-        email: 'tlerner@americascores.org',
-        type: 'Coach'
-      };
-
-      // updated accounts
-      var acc5_upd = {
-        account_id: 5,
-        f_name: 'updatedFirst',
-        l_name: 'updatedLast',
-        email: 'updated@email.com',
-        type: 'Admin'
-      };
-
-
-      var acc7_fn_upd = {
-        account_id: 7,
-        f_name: 'updatedFirst',
-        l_name: 'Pam',
-        email: 'redsoxfan@americascores.org',
-        type: 'Admin'
-      };
-
-      var acc7_ln_upd = {
-        account_id: 7,
-        f_name: 'updatedFirst',
-        l_name: 'updatedSecond',
-        email: 'redsoxfan@americascores.org',
-        type: 'Admin'
-      };
-
-      var acc7_email_upd = {
-        account_id: 7,
-        f_name: 'updatedFirst',
-        l_name: 'updatedSecond',
-        email: 'updated@americascores.org',
-        type: 'Admin'
-      };
-
-      var acc7_auth_upd = {
-        account_id: 7,
-        f_name: 'updatedFirst',
-        l_name: 'updatedSecond',
-        email: 'updated@americascores.org',
-        type: 'Staff'
-      };
-
-      var newAdminRes = {
-        account_id: 10,
-        f_name: 'first10',
-        l_name: 'last10',
-        email: '10@email.com',
-        type: 'Admin'
-      };
-
-      var newStaffReq = {
-        data: {
-          f_name: 'first11',
-          l_name: 'last11',
-          email: '11@email.com',
-          type: 'Staff'
-        },
-        user.accType.Admin
-      };
-
-      var newStaffRes = {
-        account_id: 11,
-        f_name: 'first11',
-        l_name: 'last11',
-        email: '11@email.com',
-        type: 'Staff'
-      };
-
-      var newVolunteerReq = {
-        data: {
-          f_name: 'first12',
-          l_name: 'last12',
-          email: '12@email.com',
-          type: 'Volunteer'
-        },
-        user: accType.Admin
-      };
-
-      var newVolunteerRes = {
-        account_id: 12,
-        f_name: 'first12',
-        l_name: 'last12',
-        email: '12@email.com',
-        type: 'Volunteer'
-      };
-
-      var newCoachReq = {
-        data: {
-          f_name: 'first13',
-          l_name: 'last13',
-          email: '13@email.com',
-          type: 'Coach'
-        },
-        user: accType.Admin
-      };
-
-      var newCoachRes = {
-        account_id: 13,
-        f_name: 'first13',
-        l_name: 'last13',
-        email: '13@email.com',
-        type: 'Coach'
-      };
-
-      // bad put request data
-      /*var noIDPutReq = {
-        data: {
-          account_id: '',
-          f_name: 'first',
-          l_name: 'last',
-          email: 'something@rob.com',
-          type: 'Staff'
-        }
-      };
-
-      var noFNamePutReq = {
-        data: {
-          account_id: 1,
-          f_name: '',
-          l_name: 'last',
-          email: 'something@rob.com',
-          type: 'Staff'
-        }
-      };
-
-      var noLNamePutReq = {
-        data: {
-          account_id: 1,
-          f_name: 'first',
-          l_name: '',
-          email: 'something@rob.com',
-          type: 'Staff'
-        }
-      };
-
-      var noEmailPutReq = {
-        data: {
-          account_id: 1,
-          f_name: 'first',
-          l_name: 'last',
-          email: '',
-          type: 'Staff'
-        }
-      };
-
-      var badtypePutReq = {
-        data: {
-          account_id: 1,
-          f_name: 'first',
-          l_name: 'last',
-          email: 'some@thing.com',
-          type: ''
-        }
-      };
-
-      var badEMailPutReq = {
-        data: {
-          account_id: 1,
-          f_name: 'first',
-          l_name: 'last',
-          email: 'something.com',
-          type: 'Staff'
-        }
-      };
-      */
-      // bad post request data
-      var noFNameReq = {
-        data: {
-          f_name: '',
-          l_name: 'last',
-          email: 'something@rob.com',
-          type: 'Staff'
-        }
-      };
-
-      var noLNameReq = {
-        data: {
-          f_name: 'first',
-          l_name: '',
-          email: 'something@rob.com',
-          type: 'Staff'
-        }
-      };
-
-      var noEmailReq = {
-        data: {
-          f_name: 'first',
-          l_name: 'last',
-          email: '',
-          type: 'staff'
-        }
-      };
-
-      var notypeReq = {
-        data: {
-          f_name: 'first',
-          l_name: 'last',
-          email: 'some@thing.com',
-          type: ''
-        }
-      };
-
-      var badEMailReq = {
-        data: {
-          f_name: 'first',
-          l_name: 'last',
-          email: 'something.com',
-          type: 'staff'
-        }
-      };
-
-      var badtypeReq = {
-        data: {
-          f_name: 'first',
-          l_name: 'last',
-          email: 'something.com',
-          type: 'foo'
-        }
-      };
-
-      /* var malFormedDataReq = {
-        data: {
-          f_name: 'first',
-          l_name: 'last',
-          email: 'some@thing.com',
-          type: 'staff',
-          extra: 'thing'
-        }
-      };*/
-    });
-
-    describe('getAccounts(req)', function() {
+  describe('getAccounts(req)', function() {
       it('it should get all accounts in DB when requested by an admin', function(done) {
         // Retrieve all students when req.query.type is empty
         var promise = accounts.getAccounts({
@@ -526,102 +526,100 @@ describe('Accounts', function() {
     });
 
   describe('getAccountsByProgram(req)', function() {
-      it('it should get all accounts for a specific program', function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.Admin
-        });
+    it('it should get all accounts for a specific program', function(done) {
+      var promise = accounts.getAccountsByProgram({
+        params: {
+          program_id: 1
+        },
+        user: accType.Admin
+      });
 
-         promise.then(function(data) {
-           assert.deepEqual([acc7, acc1, acc6], data);
-           done();
-         });
+       promise.then(function(data) {
+         assert.deepEqual([acc7, acc1, acc6], data);
+         done();
        });
+     });
+
+    it('it should return a 401 error because staff cannot request accounts', function(done) {
+      var promise = accounts.getAccountsByProgram({
+        params: {
+          program_id: 1
+        },
+        user: accType.Staff
       });
 
-      it('it should return a 401 error because staff cannot request accounts', function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.Staff
-        });
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'Request denied, insufficient authorization ' +
+        'supplied.');
 
-        promise.catch(function(err) {
-          assert.equal(err.name, 'Unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initacc);
 
-          return getAllAccounts();
+          return query('SELECT * FROM AcctToProgram');
         })
-          .then(function(data) {
-            assert.deepEqual(data, initacc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(inita2p, data);
-            done();
-          });
-      });
-
-      it('it should return a 401 error because coaches cannot request accounts', function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.Coachach
+        .then(function(data) {
+          assert.deepEqual(inita2p, data);
+          done();
         });
+    });
 
-        promise.catch(function(err) {
-          assert.equal(err.name, 'Unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initAcc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(initA2P, data);
-            done();
-          });
+    it('it should return a 401 error because coaches cannot request accounts', function(done) {
+      var promise = accounts.getAccountsByProgram({
+        params: {
+          program_id: 1
+        },
+        user: accType.Coachach
       });
 
-      it('it should return a 401 error because volunteers cannot request accounts', function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.Volunteer
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'Request denied, insufficient authorization ' +
+        'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initAcc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
         });
+    });
 
-        promise.catch(function(err) {
-          assert.equal(err.name, 'Unauthorized');
-          assert.equal(err.status, 401);
-          assert.equal(err.message, 'Request denied, insufficient authorization ' +
-          'supplied.');
-
-          return getAllAccounts();
-        })
-          .then(function(data) {
-            assert.deepEqual(data, initAcc);
-
-            return query('SELECT * FROM AcctToProgram');
-          })
-          .then(function(data) {
-            assert.deepEqual(initA2P, data);
-            done();
-          });
+    it('it should return a 401 error because volunteers cannot request accounts', function(done) {
+      var promise = accounts.getAccountsByProgram({
+        params: {
+          program_id: 1
+        },
+        user: accType.Volunteer
       });
 
+      promise.catch(function(err) {
+        assert.equal(err.name, 'Unauthorized');
+        assert.equal(err.status, 401);
+        assert.equal(err.message, 'Request denied, insufficient authorization ' +
+        'supplied.');
+
+        return getAllAccounts();
+      })
+        .then(function(data) {
+          assert.deepEqual(data, initAcc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          assert.deepEqual(initA2P, data);
+          done();
+        });
+      });
   });
 
   describe('getAccountsBySite(req)', function() {
@@ -902,7 +900,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('should not update if request is missing params section', function(done){
+    it('should not update if request is missing params section', function(done) {
       accounts.updateAccount({
         body: {
           f_name: 'Beezlebub'
@@ -931,7 +929,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('should not update if request is missing account_id in params', function(done){
+    it('should not update if request is missing account_id in params', function(done) {
       accounts.updateAccount({
         params: {
           not_acc_id: 7
@@ -1055,7 +1053,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because staff cannot update their own type', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 5;  // id for the accType.Staff constant
+            acc_id: 5  // id for the accType.Staff constant
           },
           body: {
             type: 'Admin'
@@ -1157,6 +1155,7 @@ describe('Accounts', function() {
           },
           user: accType.Volunteer
         });
+
         // update acc3 object to match
         acc3.f_name = newFName;
         acc3.l_name = newLName;
@@ -1244,7 +1243,7 @@ describe('Accounts', function() {
 
   describe('createAccount(req)', function() {
     it('it should add an Admin account', function(done) {
-      createAccount(
+      accounts.createAccount(
         {
         body: {
         f_name: 'first10',
@@ -1264,7 +1263,6 @@ describe('Accounts', function() {
           // confirm new account added to accounts table
           initAcc.push(newAdminRes);
           assert.deepEqual(data, initAcc);
-
         });
 
       var promise = accounts.getAccounts({});
@@ -1372,7 +1370,7 @@ describe('Accounts', function() {
         params: {
           id: 'bad'
         }
-      }));
-    });*/
+      })); */
+    // });
   });
 });
