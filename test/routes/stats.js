@@ -63,17 +63,6 @@ var fakeStat6 = {
   pacer: null
 };
 
-// This stat is added later
-// TODO delete this comment
-// var fakeStat7 = {
-//   measurement_id: 7,
-//   student_id: 2,
-//   event_id: 2,
-//   height: 320,
-//   weight: 54,
-//   pacer: 382,
-// };
-
 // Update Checking
 var fakeStat8 = {
   measurement_id: 1,
@@ -848,6 +837,68 @@ describe('stats', function() {
         return stats.updateStat(req);
       })
       .then(function() {
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        assert.lengthOf(data, statCount);
+        assert.deepEqual(data, oldDB);
+        done();
+      });
+    });
+
+    it('should give error if request is missing body', function(done) {
+      var req = {
+        params: {
+          stat_id: 2,
+        }
+      };
+
+      var promise = stats.getStats({});
+      var oldDB;
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        oldDB = data;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+          fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.updateStat(req);
+      })
+      .catch(function(err) {
+        assert.equal(err.message, 'Must provide height, weight or pacer values');
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        assert.lengthOf(data, statCount);
+        assert.deepEqual(data, oldDB);
+        done();
+      });
+    });
+
+    it('should give error if body is empty', function(done) {
+      var req = {
+        params: {
+          stat_id: 2,
+        },
+        body: {
+        }
+      };
+
+      var promise = stats.getStats({});
+      var oldDB;
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        oldDB = data;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+          fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.updateStat(req);
+      })
+      .catch(function(err) {
+        assert.equal(err.message, 'Must provide height, weight or pacer values');
         return stats.getStats({});
       })
       .then(function(data) {
