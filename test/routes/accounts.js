@@ -734,10 +734,23 @@ describe('Accounts', function() {
     });
 
   describe('updateAccount(req)', function() {
-    var resetAcc; // account to be reset in Auth0 after each test previous values on Auth0
+    // the account for the user to be reset in Auth0, should be one of the init accounts
+    var resetAcc;
     afterEach() {
-      //TODO reset accounts affected in Auth0
+      var params = {id: resetID};
+      var app_metadata = {
+        authorization: {
+          group: resetAcc.type
+        }
+      };
+      mgmt.users.updateAppMetaData(params, app_metadata, function(err, user) {
+        if (err) {
+          console.error('Failed to update Auth0 app_metadata for user');
+          console.error(err);
+        }
+      })
     }
+
     it('it should update an account with all new fields', function(done) {
       var req = {
         params: {
