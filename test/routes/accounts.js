@@ -24,12 +24,16 @@ function getAllAccounts() {
 }
 
 function checkAuth0(userID, expected) {
-  // confirm that the user is stored in Auth0s DB as exepcted
+  // confirms that the user is stored in Auth0s DB as exepcted
   mgmt.users.get({id: userID}, function(err, user) {
     if (user.email === expected.email &&
       user.user_metadata.first_name === expected.f_name &&
       user.user_metadata.last_name === expected.l_name &&
-      user.app_metadata.authorization.groups[0] === expected.type)
+      user.app_metadata.authorization.group === expected.type) {
+      return true;
+    } else {
+      return false;
+    }
   });
 }
 
@@ -732,6 +736,10 @@ describe('Accounts', function() {
     });
 
   describe('updateAccount(req)', function() {
+    var resetAcc; // account to be reset in Auth0 after each test previous values on Auth0
+    afterEach() {
+      //TODO reset accounts affected in Auth0
+    }
     it('it should update an account with all new fields', function(done) {
       var req = {
         params: {
@@ -755,6 +763,8 @@ describe('Accounts', function() {
       promise.then(function(data) {
         // confirm only expected entry was updatedd
         assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
+        // confirm update received in Auth0
+        assert.isTrue(checkAuth0(auth0ID(5)), acc5_upd);
         done();
         });
       });
@@ -779,6 +789,8 @@ describe('Accounts', function() {
       promise.then(function(data) {
         // confirm only expected entry was updatedd
         assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
+        // confirm update received in Auth0
+        assert.isTrue(checkAuth0(auth0ID(7)), acc7_fn_upd);
         done();
         });
       });
@@ -803,6 +815,8 @@ describe('Accounts', function() {
       promise.then(function(data) {
         // confirm only expected entry was updatedd
         assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
+        // confirm update received in Auth0
+        assert.isTrue(checkAuth0(auth0ID(7)), acc7_ln_upd);
         done();
         });
       });
@@ -826,7 +840,9 @@ describe('Accounts', function() {
         });
       promise.then(function(data) {
         // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_updd, acc8, acc9]);
+        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_upd, acc8, acc9]);
+        // confirm update received in Auth0
+        assert.isTrue(checkAuth0(auth0ID(7)), acc7_email_upd);
         done();
         });
       });
@@ -851,6 +867,8 @@ describe('Accounts', function() {
       promise.then(function(data) {
         // confirm only expected entry was updatedd
         assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
+        // confirm update received in Auth0
+        assert.isTrue(checkAuth0(auth0ID(7)), acc7_auth_upd);
         done();
         });
       });
@@ -878,6 +896,8 @@ describe('Accounts', function() {
         })
         .then(function(data) {
           assert.deepEqual(initA2P, data);
+          // confirm account was not affected TODO
+          assert.isTrue(checkAuth0(auth0ID(1)), acc1);
           done();
         });
     });
