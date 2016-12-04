@@ -92,7 +92,6 @@ function uploadPacerStats(req) {
     }
 
     if(!defined(req.body.stats)) {
-      // Missing necessary fields, throw error
       return Promise.reject({
         name: 'MissingFieldError',
         status: 400,
@@ -121,110 +120,82 @@ function uploadPacerStats(req) {
           // TODO: Student_id doesn't exist. Can't add due to referential integrity
         }
         // Check if stat already exists (search by student_id + event_id)
-        return query('SELECT * FROM Measurement WHERE student_id=? ' + 'AND event_id=?', [measurement.student_id, event_id])
+        return query('SELECT * FROM Measurement WHERE student_id=? AND event_id=?', [measurement.student_id, event_id])
           .then(function(data) {
             if (!defined(measurement.pacer) || !isPositiveInteger(measurement.pacer)) {
               // TODO: PACER data is invalid. Can't insert.
             }
             if (data.length === 0) {
-              return query('INSERT INTO Measurement (student_id, ' + 'event_id, pacer) VALUES (?, ?, ?)', [measurement.student_id, event_id, measurement.pacer]);
+              return query('INSERT INTO Measurement (student_id, event_id, pacer) VALUES (?, ?, ?)', [measurement.student_id, event_id, measurement.pacer]);
             }
-            return query('UPDATE Measurement SET pacer = ? WHERE ' + 'student_id = ? AND event_id = ?', [measurement.pacer, measurement.student_id, event_id]);
+            return query('UPDATE Measurement SET pacer = ? WHERE student_id = ? AND event_id = ?', [measurement.pacer, measurement.student_id, event_id]);
           });
       });
     });
   });
 }
 
-// Upload batch of height/weight stats. Update existing objects or create new
+/**
+ * Upload BMI stats.
+ *
+ * @param {Object} req The given request object
+ * @return {Promise} The promise
+ */
 function uploadBMIStats(req) {
   var event_id = req.params.event_id;
   var field = 'event_id';
 
-  if (isPositiveInteger(event_id)) {
-    return events.getEvent(req)
-    .then(function(data) {
-      if (data.length > 0) {
-        // Start looping through
-        if(defined(req.body.stats)) {
-          var statsList = req.body.stats;
-
-          return Promise.map(statsList, (measurement) => {
-            if(defined(measurement.student_id)) {
-              if(isPositiveInteger(measurement.student_id)) {
-                return students.getStudent({
-                  params: {
-                    student_id: measurement.student_id
-                  }
-                })
-                .then(function(data) {
-                  if (data.length > 0) {
-                    // Check if stat already exists (search by student_id + event_id)
-                    return query('SELECT * FROM Measurement WHERE student_id=? ' +
-                    'AND event_id=?', [measurement.student_id, event_id])
-                    .then(function(data) {
-                      if (data.length > 0) {
-                        // TODO: If it does, do an update
-                        if (defined(measurement.height) &&
-                        isPositiveInteger(measurement.height)
-                        && defined(measurement.weight)
-                        && isPositiveInteger(measurement.weight)) {
-                          // Update existing stat
-                          return query('UPDATE Measurement SET height = ?, ' +
-                          'weight = ? WHERE student_id = ? AND event_id = ?',
-                          [measurement.height,
-                            measurement.weight,
-                            measurement.student_id,
-                            event_id]);
-                        } else {
-                          // TODO: Height/weight data is invalid can't update
-                        }
-                      } else {
-                        if (defined(measurement.height) &&
-                        isPositiveInteger(measurement.height)
-                        && defined(measurement.weight)
-                        && isPositiveInteger(measurement.weight)) {
-                          // Otherwise, create a new stat
-                          return query('INSERT INTO Measurement (student_id, ' +
-                          'event_id, height, weight) VALUES (?, ?, ?, ?)',
-                          [measurement.student_id,
-                            event_id,
-                            measurement.height,
-                            measurement.weight]);
-                        } else {
-                          // TODO: Height/Weight data is invalid. Can't insert.
-                        }
-                      }
-                    });
-                  } else {
-                    // TODO: Student_id doesn't exist. Can't add due to referential integrity
-                  }
-                });
-              } else {
-                // TODO: Invalid student_id, can't insert.
-
-              }
-            } else {
-              // TODO: Missing student_id for this stat, can't insert
-            }
-          });
-        } else {
-          // Missing necessary fields, throw error
-          return Promise.reject({
-            name: 'MissingFieldError',
-            status: 400,
-            message: 'Request must have a stats section in the body' +
-            ' which contains a list of objects. Objects must have student_id ' +
-            'and either height and weight fields, pacer field, or all three'
-          });
-        }
-      } else {
-        return createArgumentNotFoundError(event_id, field);
-      }
-    });
-  } else {
+  if (!isPositiveInteger(event_id)) {
     return createInvalidArgumentError(event_id, field);
   }
+
+  return events.getEvent(req).then(function(data) {
+    if (data.length === 0) {
+      return createArgumentNotFoundError(event_id, field);
+    }
+
+    if(!defined(req.body.stats)) {
+      return Promise.reject({
+        name: 'MissingFieldError',
+        status: 400,
+        message: 'Request must have a stats section in the body' +
+        ' which contains a list of objects. Objects must have student_id ' +
+        'and either height and weight fields, pacer field, or all three'
+      });
+    }
+
+    var statsList = req.body.stats;
+
+    return Promise.map(statsList, (measurement) => {
+      if(!defined(measurement.student_id)) {
+        // TODO: Missing student_id for this stat, can't insert
+      }
+      if(isPositiveInteger(measurement.student_id)) {
+        // TODO: Invalid student_id, can't insert.
+      }
+      return students.getStudent({
+        params: {
+          student_id: measurement.student_id
+        }
+      })
+      .then(function(data) {
+        if (data.length === 0) {
+          // TODO: Student_id doesn't exist. Can't add due to referential integrity
+        }
+        // Check if stat already exists (search by student_id + event_id)
+        return query('SELECT * FROM Measurement WHERE student_id=? AND event_id=?', [measurement.student_id, event_id])
+          .then(function(data) {
+            if (!defined(measurement.height) || !isPositiveInteger(measurement.height) || !defined(measurement.weight) || !isPositiveInteger(measurement.weight)) {
+              // TODO: Height/Weight data is invalid. Can't insert.
+            }
+            if (data.length === 0) {
+              return query('INSERT INTO Measurement (student_id, event_id, height, weight) VALUES (?, ?, ?, ?)', [measurement.student_id, event_id, measurement.height, measurement.weight]);
+            }
+            return query('UPDATE Measurement SET height = ?, weight = ? WHERE student_id = ? AND event_id = ?', [measurement.height, measurement.weight, measurement.student_id, event_id]);
+          });
+        });
+    });
+  });
 }
 
  /**
