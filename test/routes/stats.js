@@ -234,6 +234,23 @@ describe('stats', function() {
     });
   });
 
+  describe('getStatsByProgram(req)', function() {
+    it('should get all stats for one program', function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        }
+      };
+
+      var promise = stats.getStatsByProgram(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat, fakeStat4]);
+        done();
+      });
+    });
+  });
+
   describe('getStat(req)', function() {
     it('should get a specific stat', function(done) {
       var req = {
