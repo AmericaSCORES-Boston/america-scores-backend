@@ -8,14 +8,11 @@ const utils = require('../../lib/utils');
 // The file to be tested
 var reports = require('../../routes/reports');
 
-
-
-
 // Reports testing block
 describe('Reports', function() {
   // ADD BEFORE EACH TO reseed
   beforeEach(function() {
-    return utils.seed();
+    return utils.reportSeed();
   });
 
   describe('getReports()', function() {
