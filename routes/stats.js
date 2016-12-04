@@ -235,35 +235,25 @@ function uploadBMIStats(req) {
  * @return {Promise} The promise
  */
  function updateStat(req) {
-   if (!req.body || !(req.body.height || req.body.weight || req.body.pacer)) {
+   if (!defined(req.body) || !defined(req.body.height) && !defined(req.body.weight) && !defined(req.body.pacer)) {
         return Promise.reject({
          status: 406,
-         message: 'Must provide height, weight and pacer values'
+         message: 'Must provide height, weight or pacer values'
        });
    }
-   if (!req.params.stat_id) {
+   if (!defined(req.params.stat_id)) {
         return Promise.reject({
          status: 406,
-         message: 'Must provide height, weight and pacer values'
+         message: 'Must provide height, weight or pacer values'
        });
    }
 
-   return Promise.resolve()
-    .then(function() {
-     if (req.body.measurement_height) {
-       return query('UPDATE Measurement SET height = ' + req.body.height + '" WHERE measurement_id = ' + req.params.stat_id);
-     }
-     })
-  .then(function() {
-     if (req.body.measurement_weight) {
-       return query('UPDATE Measurement SET weight = ' + req.body.weight + '" WHERE measurement_id = ' + req.params.stat_id);
-     }
-     })
-    .then(function() {
-     if (req.body.measurement_pacer) {
-       return query('UPDATE Measurement SET pacer = ' + req.body.pacer + '" WHERE measurement_id = ' + req.params.stat_id);
-     }
-     });
+   var queryComponents = createUpdateQuery(req.body);
+   queryComponents[1].push(req.params.stat_id);
+   return query(queryComponents[0], queryComponents[1])
+   .then(function() {
+     return getStat(req);
+   });
  }
 
 /**
@@ -300,6 +290,27 @@ function deleteStat(req) {
      propertyName: field,
      propertyValue: id
    });
+ }
+
+ function createUpdateQuery(body) {
+   var changes = '';
+   var fieldValues = [];
+
+   // Create a string of changes based on what is in the body
+   for (var field in body) {
+     if (field === 'pacer' || field === 'height' || field === 'weight') {
+       changes = changes + field + '= ?, ';
+       // Add to ordered list of field arguments
+       fieldValues.push(body[field]);
+     }
+   }
+
+   // Drop the extra comma
+   changes = changes.substring(0, changes.length - 2);
+
+   // Construct and return the final update query string
+   return ['UPDATE Measurement SET ' + changes + ' WHERE measurement_id = ?',
+    fieldValues];
  }
 
 module.exports = {

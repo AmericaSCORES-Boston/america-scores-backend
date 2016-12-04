@@ -234,6 +234,40 @@ describe('stats', function() {
     });
   });
 
+  describe('getStatsByProgram(req)', function() {
+    it('should get all stats for one program', function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        }
+      };
+
+      var promise = stats.getStatsByProgram(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat, fakeStat4]);
+        done();
+      });
+    });
+  });
+
+  describe('getStatsByEvent(req)', function() {
+    it('should get all stats for one event', function(done) {
+      var req = {
+        params: {
+          event_id: 4
+        }
+      };
+
+      var promise = stats.getStatsByEvent(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat4]);
+        done();
+      });
+    });
+  });
+
   describe('getStat(req)', function() {
     it('should get a specific stat', function(done) {
       var req = {
@@ -752,7 +786,7 @@ describe('stats', function() {
 
   describe('updateStat(req)', function() {
     // update existing stats
-    xit('should update stats in the database', function(done) {
+    it('should update stats in the database', function(done) {
       var req = {
         params: {
           stat_id: 1,
@@ -776,7 +810,8 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
-      .then(function() {
+      .then(function(data) {
+        assert.deepEqual([fakeStat8], data);
         return stats.getStats({});
       })
       .then(function(data) {
@@ -788,8 +823,7 @@ describe('stats', function() {
       });
     });
 
-    // update non existing stats should error
-    xit('should error updating non-existing stats', function(done) {
+    it('should not update non-existing stats', function(done) {
       var req = {
         params: {
           stat_id: 99999,
@@ -813,11 +847,8 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Can not update non-existing stats.');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
+      .then(function() {
+        return stats.getStats({})
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -829,7 +860,7 @@ describe('stats', function() {
 
   describe('deleteStat(req)', function() {
     // delete existing stats
-    xit('should delete stats in the database', function(done) {
+    it('should delete stats in the database', function(done) {
       var req = {
         params: {
           stat_id: 1
