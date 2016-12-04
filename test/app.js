@@ -5,20 +5,20 @@ const chai = require('chai');
 const assert = chai.assert;
 const request = require('supertest');
 const Promise = require('bluebird');
-const students = require('../../routes/students');
-const sites = require('../../routes/sites');
-const programs = require('../../routes/programs');
-const events = require('../../routes/events');
+const students = require('../routes/students');
+const sites = require('../routes/sites');
+const programs = require('../routes/programs');
+const events = require('../routes/events');
 
 
 describe('app.js', function() {
   var app;
 
-  beforeEach(function() {
-    app = require('../../app');
+  before(function() {
+    app = require('../app');
   });
 
-  afterEach(function() {
+  after(function() {
     app.close();
   });
 
@@ -45,7 +45,7 @@ describe('app.js', function() {
     var getStudentsBySiteStub;
     var getStudentsByEventStub;
 
-    beforeEach(function() {
+    before(function() {
       getStudentsStub = sinon.stub(students, 'getStudents', function() {
         return Promise.resolve('got the students');
       });
@@ -72,7 +72,7 @@ describe('app.js', function() {
       });
     });
 
-    afterEach(function() {
+    after(function() {
       students.getStudents.restore();
       students.getStudent.restore();
       students.deleteStudent.restore();
@@ -182,7 +182,7 @@ describe('app.js', function() {
     var updateSiteStub;
     var deleteSiteStub;
 
-    beforeEach(function() {
+    before(function() {
       getSitesStub = sinon.stub(sites, 'getSites', function() {
         return Promise.resolve('got the sites');
       });
@@ -202,7 +202,8 @@ describe('app.js', function() {
         return Promise.resolve('deleted the site');
       });
     });
-    afterEach(function() {
+
+    after(function() {
       sites.getSites.restore();
       sites.getSitesByAccount.restore();
       sites.createSite.restore();
@@ -282,7 +283,7 @@ describe('app.js', function() {
     var getProgramsByStudentStub;
     var getProgramsByAccountStub;
 
-    beforeEach(function() {
+    before(function() {
       getProgramsStub = sinon.stub(programs, 'getPrograms', function() {
         return Promise.resolve('got the programs');
       });
@@ -309,7 +310,7 @@ describe('app.js', function() {
       });
     });
 
-    afterEach(function() {
+    after(function() {
       programs.getPrograms.restore();
       programs.getProgram.restore();
       programs.updateProgram.restore();
