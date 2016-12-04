@@ -25,6 +25,8 @@ function updateAccount(req) {
 function deleteAccount(req) {
 }
 
-module.exports(
+module.exports = {
   getAccounts, getAccount, getAccountsByProgram, getAccountsBySite,
-  getAccountsByProgram, createAccount, updateAccount, deleteAccount);
+  getAccountsByProgram, createAccount, updateAccount, deleteAccount
+};
+

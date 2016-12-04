@@ -1,23 +1,20 @@
-// Set the env to test
-process.env.NODE_ENV = 'test';
-
-// require the testing dependencies
-const chai = require('chai');
+'use strict';
+const chai = require('chai'); //testing modules
 const assert = chai.assert;
-
-// endpoints being tested
-const accounts = require('../../routes/accounts');
-
+const accounts = require('../../routes/accounts'); //endpoint being tested
 // Require seed to reset db before each test
 const seed = require('../../lib/utils').seed;
 
 // Require query function for getAllAccounts check
 const query = require('../../lib/utils').query;
-
 // Get contents of Accounts table in DB, used for asserts
 function getAllAccounts() {
   return query('SELECT * FROM Acct');
 }
+
+// objects to store the initial database tables
+var initAcc;
+var initA2P;
 
 // starting data from /utils.js.seed()
 var acc1 = {
@@ -197,7 +194,7 @@ var newCoachRes = {
 };
 
 // bad put request data
-var noIDPutReq = {
+/*var noIDPutReq = {
   data: {
     account_id: '',
     f_name: 'first',
@@ -256,7 +253,7 @@ var badEMailPutReq = {
     authorization: 'Staff'
   }
 };
-
+*/
 // bad post request data
 var noFNameReq = {
   data: {
@@ -322,21 +319,24 @@ var badAuthorizationReq = {
   }
 };*/
 
-// get original states of the database
- before(function() {
-   getAllAccounts().then(function(data) {
-     initDB = data;
+// get original states of the database tables
+before(function() {
+  // Acct table
+  getAllAccounts().then(function(data) {
+    initAcc = data;
 
-     return query('SELECT * FROM AcctToProgram');
+    return query('SELECT * FROM AcctToProgram');
    })
      .then(function(data) {
+       // Acct to Program table
        initA2P = data;
      });
- });
+});
 
 // Accounts testing block
 describe('Accounts', function() {
     beforeEach(function() {
+      return seed();
     });
 
     describe('getAccounts(req)', function() {
@@ -350,7 +350,7 @@ describe('Accounts', function() {
 
         // Confirm entire DB retrieved
         promise.then(function(data) {
-          assert.deepEqual(initDB, data);
+          assert.deepEqual(initAcc, data);
           done();
         });
       });
@@ -628,7 +628,7 @@ describe('Accounts', function() {
       })
         .then(function(data) {
           // confirm no updates were incurred
-          assert.deepEqual(data, initDB);
+          assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
         })
@@ -638,29 +638,65 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return missing argument errors', function(done) {
-      // missing all fields
-      assert.throw(accounts.updateAccount({}));
+    it('should not update if request is missing params section', function(done){
+      accounts.updateAccount({
+        body: {
+          f_name: 'Beezlebub'
+        }
+      })
+        .catch(function(err) {
+          assert.equal(err.message, 'Request must have body and params section. Within ' +
+          'params a valid account_id must be given. Body should contain updated values ' +
+          'for fields to be updated.');
+          assert.equal(err.name, 'MissingFieldError');
+          assert.equal(err.status, 400);
 
-      // account DNE
-      assert.throw(accounts.updateAccount(idDNEPutReq));
+          return getAllAccounts();
+        })
+        .then(function(data) {
+          // confirm no changes were made to acc table
+          assert.deepEqual(data, initAcc);
 
-      // missing fields
-      assert.throw(accounts.updateAccount(noFNamePutReq));
-      assert.throw(accounts.updateAccount(noLNamePutReq));
-      assert.throw(accounts.updateAccount(noEmailPutReq));
-      assert.throw(accounts.updateAccount(noAuthorizationPutReq));
-      assert.throw(accounts.updateAccount(noIDPutReq));
-
-      // malformed data
-      assert.throw(accounts.updateAccount(badIDPutReq));
-      assert.throw(accounts.updateAccount(badEMailPutReq));
-      assert.throw(accounts.updateAccount(badAuthorizationPutReq));
-      assert.throw(accounts.updateAccount(malFormedDataPutReq));
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          // confirm no change to acc-to-prog table
+          assert.deepEqual(initA2P, data);
+          done();
+        });
     });
-  });
 
-  describe('/POST account', function() {
+    it('should not update if request is missing account_id in params', function(done){
+      accounts.updateAccount({
+        params: {
+          not_acc_id: 7
+        },
+        body: {
+          f_name: 'Beezlebub'
+        }
+      })
+        .catch(function(err) {
+          assert.equal(err.message, 'Request must have body and params section. Within ' +
+          'params a valid account_id must be given. Body should contain updated values ' +
+          'for fields to be updated.');
+          assert.equal(err.name, 'MissingFieldError');
+          assert.equal(err.status, 400);
+
+          return getAllAccounts();
+        })
+        .then(function(data) {
+          // confirm no changes were made to accounts table
+          assert.deepEqual(data, initAcc);
+
+          return query('SELECT * FROM AcctToProgram');
+        })
+        .then(function(data) {
+          // confirm no changes were made to accounts-to-prog table
+          assert.deepEqual(data, initA2P);
+        });
+    });
+
+  describe('createAccount(req)', function() {
     it('it should add an account', function(done) {
       var req = {data: newAccountReq};
       var accCount;
