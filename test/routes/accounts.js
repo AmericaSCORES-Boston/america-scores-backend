@@ -174,7 +174,7 @@ var acc5_upd = {
   account_id: 5,
   f_name: 'updatedFirst',
   l_name: 'updatedLast',
-  email: 'updated@email.com',
+  email: 'updated@email',
   type: 'Admin'
 };
 
@@ -213,63 +213,33 @@ var acc7_auth_upd = {
 
 var newAdminRes = {
   account_id: 10,
-  f_name: 'first10',
-  l_name: 'last10',
-  email: '10@email.com',
+  f_name: 'first',
+  l_name: 'last',
+  email: '10@americascores.org',
   type: 'Admin'
 };
 
-var newStaffReq = {
-  data: {
-    f_name: 'first11',
-    l_name: 'last11',
-    email: '11@email.com',
-    type: 'Staff'
-  },
-  user: accType.Admin
-};
-
 var newStaffRes = {
-  account_id: 11,
-  f_name: 'first11',
-  l_name: 'last11',
-  email: '11@email.com',
+  account_id: 10,
+  f_name: 'first',
+  l_name: 'last',
+  email: '10@americascores.org',
   type: 'Staff'
 };
 
-var newVolunteerReq = {
-  data: {
-    f_name: 'first12',
-    l_name: 'last12',
-    email: '12@email.com',
-    type: 'Volunteer'
-  },
-  user: accType.Admin
-};
-
 var newVolunteerRes = {
-  account_id: 12,
-  f_name: 'first12',
-  l_name: 'last12',
-  email: '12@email.com',
+  account_id: 10,
+  f_name: 'first',
+  l_name: 'last',
+  email: '10@americascores.org',
   type: 'Volunteer'
 };
 
-var newCoachReq = {
-  data: {
-    f_name: 'first13',
-    l_name: 'last13',
-    email: '13@email.com',
-    type: 'Coach'
-  },
-  user: accType.Admin
-};
-
 var newCoachRes = {
-  account_id: 13,
-  f_name: 'first13',
-  l_name: 'last13',
-  email: '13@email.com',
+  account_id: 10,
+  f_name: 'first',
+  l_name: 'last',
+  email: '10@americascores.org',
   type: 'Coach'
 };
 
@@ -388,16 +358,6 @@ var badtypeReq = {
     type: 'foo'
   }
 };
-
-/* var malFormedDataReq = {
-  data: {
-    f_name: 'first',
-    l_name: 'last',
-    email: 'some@thing.com',
-    type: 'staff',
-    extra: 'thing'
-  }
-};*/
 
 // get original states of the database tables
 before(function() {
@@ -797,7 +757,7 @@ describe('Accounts', function() {
           body: {
             f_name: 'updatedFirst',
             l_name: 'updatedLast',
-            email: 'updated@email.com',
+            email: 'updated@americascores.org',
             type: 'Admin'
           },
           user: accType.Admin
@@ -1341,42 +1301,57 @@ describe('Accounts', function() {
         accounts.createAccount(
           {
             body: {
-              f_name: 'first10',
-              l_name: 'last10',
+              f_name: 'first',
+              l_name: 'last',
               email: '10@americascores.org',
               type: 'Admin'
             },
             user: accType.Admin
           })
           .then(function(data) {
-            // confirm new user added
+            // confirm new user returned
             assert.deepEqual(newAdminRes, data);
             // get contents of accounts table
             return getAllAccounts();
           })
           .then(function(data) {
-            // confirm new account added to accounts table
+            // add newly created account to account list
             initAcc.push(newAdminRes);
-            // confirm new account added to table
+            // confirm account list matches what was found in db
             assert.deepEqual(data, initAcc);
             // confirm new account added to Auth0
             assert.isTrue(checkAuth0(auth0ID(newAdminRes.account_id), newAdminRes))
+            // remove account from Auth0
+            deleteAuth0Acc(newAdminRes.account_id);
           });
+        });
 
-        var promise = accounts.getAccounts({});
-        promise.then(function(data) {
-          // get number of accounts in DB before addition
-          accCount = data.length;
-          // add account
-          return accounts.postAccount(req);
-        }).then(function(data) {
-          // get number of accounts after update
-          return accounts.getAccounts({});
-        }).then(function(data) {
-          // verify new row was added
-          assert.lengthOf(data, accCount + 1);
-          assert.deepEqual([first, second, newAccountResp], data);
-          done();
+      it('it should add a volunteer account when requested', function(done) {
+        accounts.createAccount(
+          {
+            body: {
+              f_name: 'first',
+              l_name: 'last',
+              email: '10@americascores.org',
+              type: 'Admin'
+            },
+          })
+          .then(function(data) {
+            // confirm new user returned
+            assert.deepEqual(newAdminRes, data);
+            // get contents of accounts table
+            return getAllAccounts();
+          })
+          .then(function(data) {
+            // add newly created account to account list
+            initAcc.push(newAdminRes);
+            // confirm account list matches what was found in db
+            assert.deepEqual(data, initAcc);
+            // confirm new account added to Auth0
+            assert.isTrue(checkAuth0(auth0ID(newAdminRes.account_id), newAdminRes))
+            // remove account from Auth0
+            deleteAuth0Acc(newAdminRes.account_id);
+          });
         });
       });
 
