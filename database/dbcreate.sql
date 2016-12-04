@@ -63,21 +63,19 @@ CREATE TABLE Event
 (
     event_id int NOT NULL AUTO_INCREMENT,
     program_id int,
-    acct_id int,
     event_date date,
     PRIMARY KEY (event_id),
-    FOREIGN KEY (program_id) REFERENCES Program(program_id),
-    FOREIGN KEY (acct_id) REFERENCES Acct(acct_id)
+    FOREIGN KEY (program_id) REFERENCES Program(program_id)
 );
 
 CREATE TABLE Measurement
 (
     measurement_id int NOT NULL AUTO_INCREMENT,
     student_id int NOT NULL,
-    event_id int,
-    height int,
-    weight int,
-    pacer int,
+    event_id int NOT NULL,
+    height int NULL,
+    weight int NULL,
+    pacer int NULL,
     PRIMARY KEY (measurement_id),
     FOREIGN KEY (student_id) REFERENCES Student(student_id),
     FOREIGN KEY (event_id) REFERENCES Event(event_id)
