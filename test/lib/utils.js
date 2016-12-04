@@ -35,7 +35,7 @@ describe('utils', function() {
       });
     });
 
-    it('makes all other respones', function(done) {
+    it('makes all other responses', function(done) {
       var promise = Promise.reject({
         status: 404
       });
