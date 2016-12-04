@@ -36,6 +36,50 @@ function checkAuth0(userID, expected) {
     }
   });
 }
+
+function resetAuth0Acc(resetAcc) {
+  // updates the Auth0 account associated with the resetAcc setting all values
+  // to those found in resetAcc.
+  var params = {id: auth0ID(resetAcc.account_id)};
+  // Auth0 app_metadata object
+  var app_metadata = {
+    authorization: {
+      group: resetAcc.type
+    }
+  };
+  // Auth0 user user_metadata object
+  var user_metadata = {
+    first_name: resetAcc.f_name,
+    last_name: resetAcc.l_name
+  }
+  // core Auth0 user data
+  var data = {
+    email: resetAcc.email
+  }
+
+  // reset user app_metadata
+  mgmt.users.updateAppMetaData(params, app_metadata, function(err, user) {
+    if (err) {
+      console.error('Failed to update Auth0 app_metadata for user');
+      console.error(err);
+    }
+    // reset user user_metadata
+    mgmt.users.updateUserMetadata(params, user_metadata, function(err, user) {
+      if (err) {
+        console.error('Failed to update Auth0 user_metadata for user');
+        console.error(err);
+      }
+      // reset user core Auth0 data
+      mgmt.users.update(params, data, function(err, user) {
+        if(err) {
+          console.error('Failed to update Auth0 core data');
+          console.error(err);
+        }
+      });
+    });
+  });
+}
+
 // objects to store the initial database tables
 var initAcc;
 var initA2P;
@@ -409,7 +453,7 @@ describe('Accounts', function() {
     it('it should return a 401 error because coaches cannot request accounts', function(done) {
       var promise = accounts.getAccounts({
         params: {
-          not_acc_id: 7
+          account_id: 7
         },
         body: {
           f_name: 'Beezlebub'
@@ -733,52 +777,7 @@ describe('Accounts', function() {
   });
 
   describe('updateAccount(req)', function() {
-    // the account within Auth0 to be updated as represented by one of the accX
-    // account objects
-    var resetAcc;
-    afterEach() {
-      // resets an account within Auth0 using the initial data object
-      var params = {id: auth0ID(resetAcc.account_id)};
-      // Auth0 app_metadata object
-      var app_metadata = {
-        authorization: {
-          group: resetAcc.type
-        }
-      };
-      // Auth0 user user_metadata object
-      var user_metadata = {
-        first_name: resetAcc.f_name,
-        last_name: resetAcc.l_name
-      }
-      // core Auth0 user data
-      var data = {
-        email: resetAcc.email
-      }
-
-      // reset user app_metadata
-      mgmt.users.updateAppMetaData(params, app_metadata, function(err, user) {
-        if (err) {
-          console.error('Failed to update Auth0 app_metadata for user');
-          console.error(err);
-        }
-        // reset user user_metadata
-        mgmt.users.updateUserMetadata(params, user_metadata, function(err, user) {
-          if (err) {
-            console.error('Failed to update Auth0 user_metadata for user');
-            console.error(err);
-          }
-          // reset user core Auth0 data
-          mgmt.users.update(params, data, function(err, user) {
-            if(err) {
-              console.error('Failed to update Auth0 core data');
-              console.error(err);
-            }
-          });
-        });
-      });
-
       it('it should update an account with all new fields', function(done) {
-        resetAcc = acc5; // account to be reset on Auth0 after update
         var req = {
           params: {
             account_id: 5
@@ -803,12 +802,13 @@ describe('Accounts', function() {
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
           // confirm update received in Auth0
           assert.isTrue(checkAuth0(auth0ID(5)), acc5_upd);
+          // reset the account to previous Auth0 values
+          resetAuth0Acc(acc5);
           done();
         });
       });
 
       it('it should update an account with a new first name', function(done) {
-        resetAcc = acc7; // account to be reset on Auth0 after update
         var req = {
           params: {
             account_id: 7
@@ -830,12 +830,13 @@ describe('Accounts', function() {
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
           // confirm update received in Auth0
           assert.isTrue(checkAuth0(auth0ID(7)), acc7_fn_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
           done();
         });
       });
 
       it('it should update an account with a new last name', function(done) {
-        resetAcc = acc7; // account to be reset on Auth0 after update
         var req = {
           params: {
             account_id: 7
@@ -857,12 +858,13 @@ describe('Accounts', function() {
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
           // confirm update received in Auth0
           assert.isTrue(checkAuth0(auth0ID(7)), acc7_ln_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
           done();
         });
       });
 
       it('it should update an account with a new email', function(done) {
-        resetAcc = acc7; // account to be reset on Auth0 after update
         var req = {
           params: {
             account_id: 7
@@ -884,12 +886,13 @@ describe('Accounts', function() {
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_upd, acc8, acc9]);
           // confirm update received in Auth0
           assert.isTrue(checkAuth0(auth0ID(7)), acc7_email_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
           done();
         });
       });
 
       it('it should update an account with a new auth level', function(done) {
-        resetAcc = acc7; // account to be reset on Auth0 after update
         var req = {
           params: {
             account_id: 7
@@ -911,12 +914,13 @@ describe('Accounts', function() {
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
           // confirm update received in Auth0
           assert.isTrue(checkAuth0(auth0ID(7)), acc7_auth_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
           done();
         });
       });
 
       it('it should return error err msg because body is missing', function(done) {
-        resetAcc = acc1; // account to be reset on Auth0 after update
         accounts.updateAccount({
           params: {
             account_id: 1
@@ -941,6 +945,8 @@ describe('Accounts', function() {
             assert.deepEqual(initA2P, data);
             // confirm account was not affected
             assert.isTrue(checkAuth0(auth0ID(1)), acc1);
+            // reset the account to the previous Auth0 values
+            resetAuth0Acc(acc1);
             done();
           });
       });
@@ -1008,10 +1014,9 @@ describe('Accounts', function() {
       });
 
       it('it should return a 401 error because staff cannot update other accounts', function(done) {
-        resetAcc = acc7; // account to be reset on Auth0 after update
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 7
+            account_id: 7
           },
           body: {
             f_name: 'Beezlebub'
@@ -1033,8 +1038,10 @@ describe('Accounts', function() {
             return query('SELECT * FROM AcctToProgram');
           })
           .then(function(data) {
-            // STOPPING POINT TODO TODO TODO
+            // confirm table was unaffected
             assert.deepEqual(initA2P, data);
+            // reset the account to the previous Auth0 values
+            resetAuth0Acc(acc7);
             done();
           });
       });
@@ -1064,7 +1071,10 @@ describe('Accounts', function() {
             return query('select * from AcctToProgram');
           })
           .then(function(data) {
+            // confirm table was unaffected
             assert.deepEqual(initA2P, data);
+            // reset the account to the previous Auth0 values
+            resetAuth0Acc(acc7);
             done();
           });
       });
@@ -1094,7 +1104,10 @@ describe('Accounts', function() {
             return query('SELECT * FROM AcctToProgram');
           })
           .then(function(data) {
+            // confirm table was unaffected
             assert.deepEqual(initA2P, data);
+            // reset the account to the previous Auth0 values
+            resetAuth0Acc(acc7);
             done();
           });
       });
@@ -1125,6 +1138,8 @@ describe('Accounts', function() {
           })
           .then(function(data) {
             assert.deepEqual(inita2p, data);
+            // reset the account to the previous Auth0 values
+            resetAuth0Acc(acc5);
             done();
           });
       });
@@ -1132,7 +1147,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because coaches cannot update cannot update their own type', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            not_acc_id: 1 // id for the accType.Coach constant
+            acc_id: 1 // id for the accType.Coach constant
           },
           body: {
             f_name: 'Beezlebub'
@@ -1154,7 +1169,10 @@ describe('Accounts', function() {
             return query('SELECT * FROM AcctToProgram');
           })
           .then(function(data) {
+            // confirm table was unaffected
             assert.deepEqual(initA2P, data);
+            // reset the account to the previous Auth0 values
+            resetAuth0Acc(acc1);
             done();
           });
       });
@@ -1162,7 +1180,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because volunteers cannot update their own type', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            not_acc_id: 3 // id for the accType.Volunteer constant
+            acc_id: 3 // id for the accType.Volunteer constant
           },
           body: {
             f_name: 'Beezlebub'
@@ -1179,12 +1197,16 @@ describe('Accounts', function() {
           return getAllAccounts();
         })
           .then(function(data) {
+            // confirm table was unaffected
             assert.deepEqual(data, initAcc);
 
             return query('SELECT * FROM AcctToProgram');
           })
           .then(function(data) {
+            // confirm table was unaffectd
             assert.deepEqual(initA2P, data);
+            // reset the account to the previous Auth0 values
+            resetAuth0Acc(acc3);
             done();
           });
       });
@@ -1219,6 +1241,10 @@ describe('Accounts', function() {
           .then(function(data) {
             // confirm all data in db is as expected, 3 has been updated
             assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
+            // confirm updates received in Auth0
+            assert.isTrue(checkAuth0(auth0ID(3), acc3));
+            // reset Auth0 account to init values
+            resetAuth0Acc(acc3);
             done();
           });
       });
@@ -1252,6 +1278,10 @@ describe('Accounts', function() {
           .then(function(data) {
             // confirm all data in db is as expected, 1 has been updated
             assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
+            // confirm updates received in Auth0
+            assert.isTrue(checkAuth0(auth0ID(1), acc1));
+            // reset Auth0 account to init values
+            resetAuth0Acc(acc1);
             done();
           });
       });
@@ -1271,7 +1301,7 @@ describe('Accounts', function() {
           },
           user: accType.Staff
         });
-        // update acc3 object to match
+        // update acc5 object to match
         acc5.f_name = newFName;
         acc5.l_name = newLName;
         acc5.l_name = newEmail;
@@ -1285,6 +1315,10 @@ describe('Accounts', function() {
           .then(function(data) {
             // confirm all data in db is as expected, 5 has been updated
             assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
+            // confirm updates received in Auth0
+            assert.isTrue(checkAuth0(auth0ID(5), acc5));
+            // reset Auth0 account to init values
+            resetAuth0Acc(acc5);
             done();
           });
       });
@@ -1311,7 +1345,11 @@ describe('Accounts', function() {
           .then(function(data) {
             // confirm new account added to accounts table
             initAcc.push(newAdminRes);
+            // confirm new account added to table
             assert.deepEqual(data, initAcc);
+            // confirm new account added to Auth0
+            // TODO TODO TODO
+            assert.isTrue(checkAuth0(auth0ID(newAdminRes.acc_id), newAdminRes))
           });
 
         var promise = accounts.getAccounts({});
