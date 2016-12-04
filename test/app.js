@@ -470,9 +470,9 @@ describe('app.js', function() {
         });
     });
 
-    it('POST /accounts/:account_id/programs/:program_id/events', function(done) {
+    it('POST /programs/:program_id/events', function(done) {
       request(app)
-        .post('/accounts/1/programs/1/events')
+        .post('/programs/1/events')
         .expect('created an event', 200)
         .end(function() {
           assert.isTrue(createEventStub.called);

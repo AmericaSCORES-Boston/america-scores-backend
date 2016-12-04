@@ -3,15 +3,15 @@ const seed = require('../../lib/utils').seed;
 const chai = require('chai');
 const assert = chai.assert;
 
-const event1 = {event_id: 1, program_id: 1, acct_id: 1, event_date: new Date(2016, 4, 19)};
-const event2 = {event_id: 2, program_id: 2, acct_id: 1, event_date: new Date(2016, 4, 18)};
-const event3 = {event_id: 3, program_id: 1, acct_id: 2, event_date: new Date(2016, 4, 19)};
-const event4 = {event_id: 4, program_id: 1, acct_id: 1, event_date: new Date(2016, 11, 02)};
-const event5 = {event_id: 5, program_id: 3, acct_id: 1, event_date: new Date(2016, 4, 19)};
-const event6 = {event_id: 6, program_id: 4, acct_id: 1, event_date: new Date(2016, 4, 19)};
+const event1 = {event_id: 1, program_id: 1, event_date: new Date(2016, 4, 19)};
+const event2 = {event_id: 2, program_id: 2, event_date: new Date(2016, 4, 18)};
+const event3 = {event_id: 3, program_id: 1, event_date: new Date(2016, 4, 19)};
+const event4 = {event_id: 4, program_id: 1, event_date: new Date(2016, 11, 02)};
+const event5 = {event_id: 5, program_id: 3, event_date: new Date(2016, 4, 19)};
+const event6 = {event_id: 6, program_id: 4,  event_date: new Date(2016, 4, 19)};
 const allEvents = [event1, event2, event3, event4, event5, event6];
 const eventsDeleted = [event2, event3, event4, event5, event6];
-const newEvent = {event_id: 7, program_id: 1, acct_id: 1, event_date: new Date(2016, 4, 20)};
+const newEvent = {event_id: 7, program_id: 1, event_date: new Date(2016, 4, 20)};
 const eventsNew = [event1, event2, event3, event4, event5, event6, newEvent];
 
 describe('GET', function(done) {
@@ -150,7 +150,6 @@ describe('POST', function() {
   it('/accounts/:acct_id/programs/:program_id/events', function(done) {
     var req = {
       params: {
-        account_id: 1,
         program_id: 1
       },
       body: {
@@ -166,11 +165,10 @@ describe('POST', function() {
       done();
     });
   });
-  it('/accounts/:acct_id/programs/:program_id/events (account + program combo DNE)', function(done) {
+  it('/programs/:program_id/events (program DNE)', function(done) {
     var req = {
       params: {
-        account_id: 1,
-        program_id: 3
+        program_id: 8
       },
       body: {
         event_date: '2016-05-20'
@@ -187,7 +185,6 @@ describe('POST', function() {
   it('/accounts/:acct_id/programs/:program_id/events (invalid id)', function(done) {
     var req = {
       params: {
-        account_id: 'id',
         program_id: -3
       },
       body: {
@@ -205,7 +202,6 @@ describe('POST', function() {
   it('/accounts/:acct_id/programs/:program_id/events (Malformed date)', function(done) {
     var req = {
       params: {
-        account_id: 1,
         program_id: 1
       },
       body: {
@@ -222,7 +218,6 @@ describe('POST', function() {
   it('/accounts/:acct_id/programs/:program_id/events (No date)', function(done) {
     var req = {
       params: {
-        account_id: 1,
         program_id: 1
       },
       body: {
