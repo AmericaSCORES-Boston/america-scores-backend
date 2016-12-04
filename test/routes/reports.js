@@ -23,9 +23,9 @@ describe('Reports', function() {
         report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Data, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
-        'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, , 08/19/2016, 45, 18, 421\n' +
-        'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, , 08/19/2016, 40, 12, 500\n' +
-        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, , 05/19/2016, 7, 7, 7\n'
+        'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, 500, 08/19/2016, 45, 18, 421\n' +
+        'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
+        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 08/19/2016, 7, 7, 7\n'
       };
       var promise = reports.getReports({});
 
@@ -66,7 +66,7 @@ describe('Reports', function() {
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
         'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
-        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5 , , 05/19/2016, 7, 7, 7\n'
+        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 08/19/2016, 7, 7, 7\n'
       };
 
       var req = {
