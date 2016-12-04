@@ -16,6 +16,12 @@ files:
 #   in the "files" section as they are being copied over to
 #   the Amazon EC2 instance.
 #   For more information, see the documentation.
+permissions:
+  - object: /amscores/backend
+    pattern: "**"
+    owner: ubuntu
+    type:
+      - directory
 
 # If you are not running any commands on the Amazon EC2 instance, then remove
 #   the "hooks" section altogether. A blank or incomplete "hooks" section
@@ -28,9 +34,11 @@ hooks:
   BeforeInstall:
     - location: /scripts/cleanup-deploy.sh
       timeout: 60
+      runas: ubuntu
   AfterInstall:
     - location: /scripts/setup-server.sh
       timeout: 60
+      runas: ubuntu
   ApplicationStart:
     - location: /scripts/start-server.sh
       timeout: 60
@@ -38,3 +46,4 @@ hooks:
   ValidateService:
     - location: /scripts/hit-server.sh
       timeout: 60
+      runas: ubuntu
