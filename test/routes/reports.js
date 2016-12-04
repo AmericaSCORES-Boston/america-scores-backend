@@ -66,7 +66,7 @@ describe('Reports', function() {
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
         'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
-        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 08/19/2016, 7, 7, 7\n'
+        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5 , , 05/19/2016, 7, 7, 7\n'
       };
 
       var req = {
