@@ -106,7 +106,29 @@ var pacerNewBatch = [{
   pacer: 18
 }];
 
-var pacerUpdateBatch = [{
+var bmiNewBatch = [{
+  student_id: 1,
+  event_id: 3,
+  height: 71,
+  weight: 168,
+  pacer: null
+},
+{
+  student_id: 2,
+  event_id: 3,
+  height: 68,
+  weight: 140,
+  pacer: null
+},
+{
+  student_id: 4,
+  event_id: 3,
+  height: 62,
+  weight: 110,
+  pacer: null
+}];
+
+var updateBatch = [{
   student_id: 1,
   event_id: 3,
   height: 71,
@@ -330,14 +352,12 @@ describe('stats', function() {
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
           delete data[i].measurement_id;
-          assert.include(pacerUpdateBatch, data[i]);
+          assert.include(updateBatch, data[i]);
         }
         assert.lengthOf(data, statCount);
         done();
       });
     });
-
-    // Some mixture of create and updates (maybe some students did BMI before and some after PACER)
 
     // Fail if event_id is negative
     it('should give an error if event_id is negative', function(done) {
@@ -482,6 +502,252 @@ describe('stats', function() {
   });
 
   describe('uploadBMIStats(req)', function() {
+    // Create a brand new set of stats w/ height/weight data
+    it('should create stats with BMI data for multiple students',
+    function(done) {
+      req = {
+        params: {
+          event_id: 3
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
+        }
+      };
+
+      var promise = stats.getStats({});
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+           fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.uploadBMIStats(req);
+      })
+      .then(function() {
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(bmiNewBatch, data[i]);
+        }
+        assert.lengthOf(data, statCount + bmiNewBatch.length);
+        done();
+      });
+    });
+
+    it('should add height/weight data to existing set of stats',
+    function(done) {
+      req = {
+        params: {
+          event_id: 2
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
+        }
+      };
+
+      var promise = stats.getStats({});
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+           fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.uploadBMIStats(req);
+      })
+      .then(function() {
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(updateBatch, data[i]);
+        }
+        assert.lengthOf(data, statCount);
+        done();
+      });
+    });
+
+    // Fail if event_id is negative
+    it('should give an error if event_id is negative', function(done) {
+      req = {
+        params: {
+          event_id: -2
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
+        }
+      };
+
+      stats.uploadBMIStats(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if event_id is not an integer',
+    function(done) {
+      req = {
+        params: {
+          event_id: 'what'
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
+        }
+      };
+
+      stats.uploadBMIStats(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    it('should give an error if event_id is not in the database',
+    function(done) {
+      req = {
+        params: {
+          event_id: 423332
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
+        }
+      };
+
+      var promise = stats.uploadBMIStats(req);
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Invalid request: The given event_id does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 404);
+        done();
+      });
+    });
+
+    it('should give an error if body is missing stats field',
+    function(done) {
+      req = {
+        params: {
+          event_id: 3
+        },
+        body: {}
+      };
+
+      var promise = stats.uploadBMIStats(req);
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have a stats section in the body' +
+          ' which contains a list of objects. Objects must have student_id ' +
+          'and either height and weight fields, pacer field, or all three');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    // What to do if at least one student_id is not valid? Fail entire batch? Fail just that one?
+    // Should it make note and continue to the next one?
+
+    // ^^^ Same question if student_id is not in the db
+
+    // Pacer data is invalid
+
+    //
   });
 
   describe('updateStat(req)', function() {

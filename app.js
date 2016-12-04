@@ -195,6 +195,11 @@ app.route('/events/:event_id/stats/pacer')
     makeResponse(res, stats.uploadPacerStats(req));
   });
 
+app.route('/events/:event_id/stats/bmi')
+  .put(function(req, res, next) {
+    makeResponse(res, stats.uploadBMIStats(req));
+  });
+
 var server = app.listen(config.server.port);
 console.log('Listening on port ' + config.server.port);
 

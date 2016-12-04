@@ -508,6 +508,7 @@ describe('app.js', function() {
     var getStatsByEventStub;
     var getStatsByStudentStub;
     var uploadPacerStatsStub;
+    var uploadBMIStatsStub;
 
     before(function() {
       getStatsStub = sinon.stub(stats, 'getStats', function() {
@@ -528,6 +529,9 @@ describe('app.js', function() {
       uploadPacerStatsStub = sinon.stub(stats, 'uploadPacerStats', function() {
         return Promise.resolve('uploaded the pacer stats');
       });
+      uploadBMIStatsStub = sinon.stub(stats, 'uploadBMIStats', function() {
+        return Promise.resolve('uploaded the BMI stats');
+      });
     });
 
     after(function() {
@@ -537,6 +541,7 @@ describe('app.js', function() {
       stats.getStatsByEvent.restore();
       stats.getStatsByStudent.restore();
       stats.uploadPacerStats.restore();
+      stats.uploadBMIStats.restore();
     });
 
     it('get /stats', function(done) {
@@ -595,6 +600,16 @@ describe('app.js', function() {
         .expect('uploaded the pacer stats', 200)
         .end(function() {
           assert.isTrue(uploadPacerStatsStub.called);
+          done();
+        });
+    });
+
+    it('PUT /events/:event_id/stats/bmi', function(done) {
+      request(app)
+        .put('/events/1/stats/bmi')
+        .expect('uploaded the BMI stats', 200)
+        .end(function() {
+          assert.isTrue(uploadBMIStatsStub.called);
           done();
         });
     });
