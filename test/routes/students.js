@@ -351,7 +351,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([percy, annabeth, pam], data);
+        assert.deepEqual([annabeth], data);
         done();
       });
     });
