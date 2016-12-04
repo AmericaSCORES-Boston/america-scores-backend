@@ -251,6 +251,23 @@ describe('stats', function() {
     });
   });
 
+  describe('getStatsByEvent(req)', function() {
+    it('should get all stats for one event', function(done) {
+      var req = {
+        params: {
+          event_id: 4
+        }
+      };
+
+      var promise = stats.getStatsByEvent(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat4]);
+        done();
+      });
+    });
+  });
+
   describe('getStat(req)', function() {
     it('should get a specific stat', function(done) {
       var req = {
@@ -769,7 +786,7 @@ describe('stats', function() {
 
   describe('updateStat(req)', function() {
     // update existing stats
-    xit('should update stats in the database', function(done) {
+    it('should update stats in the database', function(done) {
       var req = {
         params: {
           stat_id: 1,
@@ -793,7 +810,8 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
-      .then(function() {
+      .then(function(data) {
+        assert.deepEqual([fakeStat8], data);
         return stats.getStats({});
       })
       .then(function(data) {
