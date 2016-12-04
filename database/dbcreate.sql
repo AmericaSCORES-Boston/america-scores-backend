@@ -74,10 +74,10 @@ CREATE TABLE Measurement
 (
     measurement_id int NOT NULL AUTO_INCREMENT,
     student_id int NOT NULL,
-    event_id int,
-    height int,
-    weight int,
-    pacer int,
+    event_id int NOT NULL,
+    height int NULL,
+    weight int NULL,
+    pacer int NULL,
     PRIMARY KEY (measurement_id),
     FOREIGN KEY (student_id) REFERENCES Student(student_id),
     FOREIGN KEY (event_id) REFERENCES Event(event_id)

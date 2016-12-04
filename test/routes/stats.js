@@ -10,7 +10,7 @@ const stats = require('../../routes/stats');
 
 // Create fake stats
 var fakeStat = {
-  stat_id: 1,
+  measurement_id: 1,
   student_id: 1,
   event_id: 1,
   height: 5,
@@ -19,16 +19,16 @@ var fakeStat = {
 };
 
 var fakeStat2 = {
-  stat_id: 2,
+  measurement_id: 2,
   student_id: 1,
   event_id: 2,
   height: 7,
   weight: 7,
-  pacer: 7
+  pacer: null
 };
 
 var fakeStat3 = {
-  stat_id: 3,
+  measurement_id: 3,
   student_id: 2,
   event_id: 6,
   height: 71,
@@ -37,7 +37,7 @@ var fakeStat3 = {
 };
 
 var fakeStat4 = {
-  stat_id: 4,
+  measurement_id: 4,
   student_id: 2,
   event_id: 4,
   height: 40,
@@ -46,42 +46,98 @@ var fakeStat4 = {
 };
 
 var fakeStat5 = {
-  stat_id: 5,
+  measurement_id: 5,
   student_id: 2,
   event_id: 2,
   height: 44,
   weight: 16,
-  pacer: 500
+  pacer: null
 };
 
 var fakeStat6 = {
-  stat_id: 6,
+  measurement_id: 6,
   student_id: 4,
   event_id: 2,
   height: 4,
   weight: 12,
-  pacer: 421
-};
-
-// This stat is added later
-var fakeStat7 = {
-  stat_id: 7,
-  student_id: 2,
-  event_id: 2,
-  height: 320,
-  weight: 54,
-  pacer: 382,
+  pacer: null
 };
 
 // Update Checking
 var fakeStat8 = {
-  stat_id: 1,
+  measurement_id: 1,
   student_id: 1,
   event_id: 1,
   height: 6,
   weight: 6,
   pacer: 6
 };
+
+var pacerNewBatch = [{
+  student_id: 1,
+  event_id: 3,
+  height: null,
+  weight: null,
+  pacer: 28
+},
+{
+  student_id: 2,
+  event_id: 3,
+  height: null,
+  weight: null,
+  pacer: 35
+},
+{
+  student_id: 4,
+  event_id: 3,
+  height: null,
+  weight: null,
+  pacer: 18
+}];
+
+var bmiNewBatch = [{
+  student_id: 1,
+  event_id: 3,
+  height: 71,
+  weight: 168,
+  pacer: null
+},
+{
+  student_id: 2,
+  event_id: 3,
+  height: 68,
+  weight: 140,
+  pacer: null
+},
+{
+  student_id: 4,
+  event_id: 3,
+  height: 62,
+  weight: 110,
+  pacer: null
+}];
+
+var updateBatch = [{
+  student_id: 1,
+  event_id: 3,
+  height: 71,
+  weight: 168,
+  pacer: 28
+},
+{
+  student_id: 2,
+  event_id: 3,
+  height: 68,
+  weight: 140,
+  pacer: 35
+},
+{
+  student_id: 4,
+  event_id: 3,
+  height: 62,
+  weight: 110,
+  pacer: 18
+}];
 
 // Add before each to reset database between tests
 beforeEach(function() {
@@ -90,7 +146,7 @@ beforeEach(function() {
 
 describe('stats', function() {
   describe('getStats(req)', function() {
-    xit('should get all the stats in the database', function(done) {
+    it('should get all the stats in the database', function(done) {
       // GET all doesn't need anything from the request, so pass in empty
       var promise = stats.getStats({});
 
@@ -103,14 +159,14 @@ describe('stats', function() {
     });
 
     // Get all stats at one site
-    xit('should get all stats for one site', function(done) {
+    it('should get all stats for one site', function(done) {
       var req = {
         params: {
           site_id: 1
         }
       };
 
-      var promise = stats.getStats(req);
+      var promise = stats.getStatsBySite(req);
 
       promise.then(function(data) {
         assert.deepEqual(data, [fakeStat, fakeStat4]);
@@ -119,7 +175,7 @@ describe('stats', function() {
     });
 
     // test for site_id not in database
-    xit('should return empty array if the site_id is not in database',
+    it('should return empty array if the site_id is not in database',
     function(done) {
       var req = {
         params: {
@@ -127,66 +183,22 @@ describe('stats', function() {
         }
       };
 
-      var promise = stats.getStats(req);
+      var promise = stats.getStatsBySite(req);
       promise.then(function(data) {
         assert.deepEqual(data, []);
         done();
       });
     });
 
-    xit('should give an error if the site_id is negative',
-    function(done) {
-      var req = {
-        params: {
-          site_id: -4
-        }
-      };
-
-      var promise = stats.getStats(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given site_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'site_id');
-        assert.equal(err.propertyValue, req.params.site_id);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
-    // test for error if site_id not an integer
-    xit('should give an error if the stat_id is not an integer',
-    function(done) {
-      var req = {
-        params: {
-          site_id: 'hi'
-        }
-      };
-
-      var promise = stats.getStats(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given site_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'site_id');
-        assert.equal(err.propertyValue, req.params.site_id);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
     // Get all stats of one student
-    xit('should get all stats for one student', function(done) {
+    it('should get all stats for one student', function(done) {
       var req = {
         params: {
           student_id: 1
         }
       };
 
-      var promise = stats.getStats(req);
+      var promise = stats.getStatsByStudent(req);
 
       promise.then(function(data) {
         assert.deepEqual(data, [fakeStat, fakeStat2]);
@@ -195,7 +207,7 @@ describe('stats', function() {
     });
 
     // test for student_id not in database
-    xit('should return empty array if the student_id is not in the database',
+    it('should return empty array if the student_id is not in the database',
     function(done) {
       var req = {
         params: {
@@ -203,60 +215,50 @@ describe('stats', function() {
         }
       };
 
-      var promise = stats.getStats(req);
+      var promise = stats.getStatsByStudent(req);
       promise.then(function(data) {
         assert.deepEqual(data, []);
         done();
       });
     });
+  });
 
-    xit('should give an error if the student_id is negative',
-    function(done) {
+  describe('getStatsByProgram(req)', function() {
+    it('should get all stats for one program', function(done) {
       var req = {
         params: {
-          student_id: -12
+          program_id: 1
         }
       };
 
-      var promise = stats.getStats(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given student_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
+      var promise = stats.getStatsByProgram(req);
 
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'student_id');
-        assert.equal(err.propertyValue, req.params.student_id);
-        assert.equal(err.status, 400);
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat, fakeStat4]);
         done();
       });
     });
+  });
 
-    // test for error if student_id not an integer
-    xit('should give an error if the student_id is not an integer',
-    function(done) {
+  describe('getStatsByEvent(req)', function() {
+    it('should get all stats for one event', function(done) {
       var req = {
         params: {
-          student_id: 'bob'
+          event_id: 4
         }
       };
 
-      var promise = stats.getStats(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given student_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'student_id');
-        assert.equal(err.propertyValue, req.params.student_id);
-        assert.equal(err.status, 400);
+      var promise = stats.getStatsByEvent(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat4]);
         done();
       });
     });
   });
 
   describe('getStat(req)', function() {
-    xit('should get a specific stat', function(done) {
+    it('should get a specific stat', function(done) {
       var req = {
         params: {
           // The student_id is contained in the request
@@ -268,56 +270,11 @@ describe('stats', function() {
 
       promise.then(function(data) {
         assert.deepEqual(data, [fakeStat4]);
-        assert.length(data, 1);
         done();
       });
     });
 
-    xit('should give an error if the stat_id is negative',
-    function(done) {
-      var req = {
-        params: {
-          stat_id: -5
-        }
-      };
-
-      var promise = stats.getStat(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given stat_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'stat_id');
-        assert.equal(err.propertyValue, req.params.stat_id);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
-    xit('should give an error if the stat_id is not an integer',
-    function(done) {
-      var req = {
-        params: {
-          stat_id: 'that stat'
-        }
-      };
-
-      var promise = stats.getStat(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given stat_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'stat_id');
-        assert.equal(err.propertyValue, req.params.stat_id);
-        assert.equal(err.status, 400);
-        done();
-      });
-    });
-
-    xit('should give an error if the stat_id is not in the database',
+    it('should return empty array if the stat_id is not in the database',
     function(done) {
       var req = {
         params: {
@@ -326,27 +283,34 @@ describe('stats', function() {
       };
 
       var promise = stats.getStat(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given stat_id is not found in the database');
-        assert.equal(err.status, 404);
+      promise.then(function(data) {
+        assert.deepEqual(data, []);
         done();
       });
     });
   });
 
-  describe('createStat(req)', function() {
-    // Post a new row of stats into stats database
-    xit('should add new stats to the database', function(done) {
-      var req = {
-        param: {
-          student_id: 2,
-          event_id: 2,
+  describe('uploadPacerStats(req)', function() {
+    // Create a brand new set of stats w/ PACER data
+    it('should create stats with PACER data for multiple students',
+    function(done) {
+      req = {
+        params: {
+          event_id: 3
         },
         body: {
-          height: 320,
-          weight: 54,
-          pacer: 382,
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
         }
       };
 
@@ -358,30 +322,40 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
            fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStat(req);
+        return stats.uploadPacerStats(req);
       })
       .then(function() {
         return stats.getStats({});
       })
       .then(function(data) {
-        assert.lengthOf(data, statCount + 1);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-           fakeStat4, fakeStat5, fakeStat6, fakeStat7]);
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(pacerNewBatch, data[i]);
+        }
+        assert.lengthOf(data, statCount + pacerNewBatch.length);
         done();
       });
     });
 
-    // Attempt to post existing stat
-    xit('adding an existing set of stat should do nothing', function(done) {
-      var req = {
-        param: {
-          student_id: 1,
-          event_id: 1,
+    it('should add PACER data to existing set of stats',
+    function(done) {
+      req = {
+        params: {
+          event_id: 2
         },
         body: {
-          height: 5,
-          weight: 5,
-          pacer: 5
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
         }
       };
 
@@ -393,177 +367,187 @@ describe('stats', function() {
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
            fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStat(req);
+        return stats.uploadPacerStats(req);
       })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Unable to add student because this set of stats already exists');
+      .then(function() {
         return stats.getStats({});
       })
       .then(function(data) {
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(updateBatch, data[i]);
+        }
         assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
     });
 
-    // check error is thrown if required component 'param' is missing in request
-    xit('attempting to post stats with missing param will result in an error',
-     function(done) {
-      var req = {
+    // Fail if event_id is negative
+    it('should give an error if event_id is negative', function(done) {
+      req = {
+        params: {
+          event_id: -3
+        },
         body: {
-          height: 44,
-          weight: 16,
-          pacer: 500
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
         }
       };
 
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStats(req);
-      })
+      stats.uploadPacerStats(req)
       .catch(function(err) {
         assert.equal(err.message,
-        'Could not post due to missing fields');
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
         assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
     });
 
-    // check error is thrown if required component 'param' is missing in request
-    xit('attempting to post stats with missing body will result in an error',
+    it('should give an error if event_id is not an integer',
     function(done) {
-      var req = {
-        param: {
-          student_id: 2,
-          event_id: 2,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStats(req);
-      })
-      .catch(function() {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // check error is thrown if required field 'student_id' is missing in request
-    xit('attempting to post stats with missing params "student_id" will ' +
-    'result in an error', function(done) {
-      var req = {
-        param: {
-          event_id: 2,
+      req = {
+        params: {
+          event_id: 2.3
         },
         body: {
-          height: 44,
-          weight: 16,
-          pacer: 500
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
         }
       };
 
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStats(req);
-      })
+      stats.uploadPacerStats(req)
       .catch(function(err) {
         assert.equal(err.message,
-        'Could not post due to missing fields');
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
         assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
     });
 
-    // check error is thrown if required field 'event_id' is missing in request
-    xit('attempting to post stats with missing params "event_id" will ' +
-    'result in an error', function(done) {
-      var req = {
-        param: {
-          student_id: 2,
+    it('should give an error if event_id is not in the database',
+    function(done) {
+      req = {
+        params: {
+          event_id: 39328
         },
         body: {
-          height: 44,
-          weight: 16,
-          pacer: 500
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
         }
       };
 
-      var promise = stats.getStats({});
-      var statCount;
+      var promise = stats.uploadPacerStats(req);
 
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStats(req);
-      })
-      .catch(function(err) {
+      promise.catch(function(err) {
         assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
+        'Invalid request: The given event_id does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 404);
         done();
       });
     });
 
-    // check error is thrown if required field 'pacer' is missing in request
-    xit('attempting to post stats with missing field "pacer" will ' +
-    'result in an error', function(done) {
-      var req = {
-        param: {
-          student_id: 1,
-          event_id: 1,
+    it('should give an error if body is missing stats field',
+    function(done) {
+      req = {
+        params: {
+          event_id: 3
+        },
+        body: {}
+      };
+
+      var promise = stats.uploadPacerStats(req);
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have a stats section in the body' +
+          ' which contains a list of objects. Objects must have student_id ' +
+          'and either height and weight fields, pacer field, or all three');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    // What to do if at least one student_id is not valid? Fail entire batch? Fail just that one?
+    // Should it make note and continue to the next one?
+
+    // ^^^ Same question if student_id is not in the db
+
+    // Pacer data is invalid
+
+    //
+  });
+
+  describe('uploadBMIStats(req)', function() {
+    // Create a brand new set of stats w/ height/weight data
+    it('should create stats with BMI data for multiple students',
+    function(done) {
+      req = {
+        params: {
+          event_id: 3
         },
         body: {
-          height: 5,
-          weight: 5,
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
         }
       };
 
@@ -573,35 +557,45 @@ describe('stats', function() {
       promise.then(function(data) {
         statCount = data.length;
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
+           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.uploadBMIStats(req);
       })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
+      .then(function() {
         return stats.getStats({});
       })
       .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(bmiNewBatch, data[i]);
+        }
+        assert.lengthOf(data, statCount + bmiNewBatch.length);
         done();
       });
     });
 
-    // check error is thrown if required field 'weight' is missing in request
-    xit('attempting to post stats with missing field "weight" will ' +
-    'result in an error', function(done) {
-      var req = {
-        param: {
-          student_id: 1,
-          event_id: 1,
+    it('should add height/weight data to existing set of stats',
+    function(done) {
+      req = {
+        params: {
+          event_id: 2
         },
         body: {
-          height: 5,
-          pacer: 5,
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
         }
       };
 
@@ -611,143 +605,179 @@ describe('stats', function() {
       promise.then(function(data) {
         statCount = data.length;
         assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
+           fakeStat4, fakeStat5, fakeStat6]);
 
-        return stats.createStats(req);
+        return stats.uploadBMIStats(req);
       })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
+      .then(function() {
         return stats.getStats({});
       })
       .then(function(data) {
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(updateBatch, data[i]);
+        }
         assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
     });
 
-    // check error is thrown if required field 'height' is missing in request
-    xit('attempting to post stats with missing field "height" will ' +
-    'result in an error', function(done) {
-      var req = {
-        param: {
-          student_id: 1,
-          event_id: 1,
+    // Fail if event_id is negative
+    it('should give an error if event_id is negative', function(done) {
+      req = {
+        params: {
+          event_id: -2
         },
         body: {
-          weight: 5,
-          pacer: 5,
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
         }
       };
 
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStats(req);
-      })
+      stats.uploadBMIStats(req)
       .catch(function(err) {
         assert.equal(err.message,
-        'Could not post due to missing fields');
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
         assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
     });
 
-    // check error is thrown if required field 'event_id' is missing in request
-    xit('attempting to post stats with missing field event_id will ' +
-    'result in an error', function(done) {
-      var req = {
-        param: {
-          student_id: 1,
+    it('should give an error if event_id is not an integer',
+    function(done) {
+      req = {
+        params: {
+          event_id: 'what'
         },
         body: {
-          pacer: 5,
-          height: 5,
-          weight: 5,
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
         }
       };
 
-      var promise = stats.getStats({});
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStats(req);
-      })
+      stats.uploadBMIStats(req)
       .catch(function(err) {
         assert.equal(err.message,
-        'Could not post due to missing fields');
+        'Given event_id is of invalid format (e.g. not an integer or' +
+        ' negative)');
+
+        assert.equal(err.name, 'InvalidArgumentError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
         assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
         done();
       });
     });
 
-    xit('attempting to post stats with missing field student_id will ' +
-    'result in an error', function(done) {
-      var req = {
-        param: {
-          event_id: 1,
+    it('should give an error if event_id is not in the database',
+    function(done) {
+      req = {
+        params: {
+          event_id: 423332
         },
         body: {
-          pacer: 5,
-          height: 5,
-          weight: 5,
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
         }
       };
 
-      var promise = stats.getStats({});
-      var statCount;
+      var promise = stats.uploadBMIStats(req);
 
-      promise.then(function(data) {
-        statCount = data.length;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.createStats(req);
-      })
-      .catch(function(err) {
+      promise.catch(function(err) {
         assert.equal(err.message,
-        'Could not post due to missing fields');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
+        'Invalid request: The given event_id does not exist in the' +
+        ' database');
+
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.propertyName, 'event_id');
+        assert.equal(err.propertyValue, req.params.event_id);
+        assert.equal(err.status, 404);
         done();
       });
     });
+
+    it('should give an error if body is missing stats field',
+    function(done) {
+      req = {
+        params: {
+          event_id: 3
+        },
+        body: {}
+      };
+
+      var promise = stats.uploadBMIStats(req);
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+          'Request must have a stats section in the body' +
+          ' which contains a list of objects. Objects must have student_id ' +
+          'and either height and weight fields, pacer field, or all three');
+
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        done();
+      });
+    });
+
+    // What to do if at least one student_id is not valid? Fail entire batch? Fail just that one?
+    // Should it make note and continue to the next one?
+
+    // ^^^ Same question if student_id is not in the db
+
+    // Pacer data is invalid
+
+    //
   });
 
   describe('updateStat(req)', function() {
     // update existing stats
-    xit('should update stats in the database', function(done) {
+    it('should update stats in the database', function(done) {
       var req = {
-        param: {
+        params: {
           stat_id: 1,
         },
         body: {
@@ -769,7 +799,8 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
-      .then(function() {
+      .then(function(data) {
+        assert.deepEqual([fakeStat8], data);
         return stats.getStats({});
       })
       .then(function(data) {
@@ -781,10 +812,9 @@ describe('stats', function() {
       });
     });
 
-    // update non existing stats should error
-    xit('should error updating non-existing stats', function(done) {
+    it('should not update non-existing stats', function(done) {
       var req = {
-        param: {
+        params: {
           stat_id: 99999,
         },
         body: {
@@ -806,10 +836,69 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
+      .then(function() {
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        assert.lengthOf(data, statCount);
+        assert.deepEqual(data, oldDB);
+        done();
+      });
+    });
+
+    it('should give error if request is missing body', function(done) {
+      var req = {
+        params: {
+          stat_id: 2,
+        }
+      };
+
+      var promise = stats.getStats({});
+      var oldDB;
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        oldDB = data;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+          fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.updateStat(req);
+      })
       .catch(function(err) {
-        assert.equal(err.message,
-        'Can not update non-existing stats.');
-        assert.equal(err.status, 400);
+        assert.equal(err.message, 'Must provide height, weight or pacer values');
+        return stats.getStats({});
+      })
+      .then(function(data) {
+        assert.lengthOf(data, statCount);
+        assert.deepEqual(data, oldDB);
+        done();
+      });
+    });
+
+    it('should give error if body is empty', function(done) {
+      var req = {
+        params: {
+          stat_id: 2,
+        },
+        body: {
+        }
+      };
+
+      var promise = stats.getStats({});
+      var oldDB;
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        oldDB = data;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+          fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.updateStat(req);
+      })
+      .catch(function(err) {
+        assert.equal(err.message, 'Must provide height, weight or pacer values');
         return stats.getStats({});
       })
       .then(function(data) {
@@ -822,9 +911,9 @@ describe('stats', function() {
 
   describe('deleteStat(req)', function() {
     // delete existing stats
-    xit('should delete stats in the database', function(done) {
+    it('should delete stats in the database', function(done) {
       var req = {
-        param: {
+        params: {
           stat_id: 1
         }
       };
@@ -849,61 +938,6 @@ describe('stats', function() {
         assert.notDeepEqual(data, oldDB);
         assert.deepEqual(data, [fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
-        done();
-      });
-    });
-
-    // delete non existing stats should error
-    xit('should error delete non-existing stats', function(done) {
-      var req = {
-        param: {
-          stat_id: 99999,
-        }
-      };
-
-      var promise = stats.getStats({});
-      var oldDB;
-      var statCount;
-
-      promise.then(function(data) {
-        statCount = data.length;
-        oldDB = data;
-        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
-          fakeStat4, fakeStat5, fakeStat6]);
-
-        return stats.deleteStat(req);
-      })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Can not delete non-existing stats.');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
-      })
-      .then(function(data) {
-        assert.lengthOf(data, statCount);
-        assert.deepEqual(data, oldDB);
-        done();
-      });
-    });
-
-    xit('should give an error if the stat_id is negative',
-    function(done) {
-      var req = {
-        params: {
-          site_id: -4
-        }
-      };
-
-      var promise = stats.deleteStat(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Given stat_id is of invalid format (e.g. not an integer or' +
-        ' negative)');
-
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.propertyName, 'stat_id');
-        assert.equal(err.propertyValue, req.params.stat_id);
-        assert.equal(err.status, 400);
         done();
       });
     });
