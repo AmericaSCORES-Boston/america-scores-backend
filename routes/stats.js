@@ -85,42 +85,59 @@ function uploadPacerStats(req) {
         if(defined(req.body.stats)) {
           var statsList = req.body.stats;
 
-          for (var i = 0; i < statsList.length; i++) {
-            var measurement = statsList[i];
-
-            // What if the id is negative or undefined? $$$
+          return Promise.map(statsList, (measurement) => {
             if(defined(measurement.student_id)) {
-              // Check if stat already exists (search by student_id + event_id)
-              return query('SELECT * FROM Measurement WHERE student_id=? ' +
-              'AND event_id=?', [measurement.student_id, event_id])
-              .then(function(data) {
-                if (data.length > 0) {
-                  // If it does, do an update
-                  console.log('mew');
-                  console.log(measurement);
-                } else {
-                  console.log('woof');
-                  if (defined(measurement.pacer))
-                  // Otherwise, create a new stat
-                  return query('INSERT INTO Measurement (student_id, ' +
-                  'event_id, pacer) VALUES (?, ?, ?)',
-                  [measurement.student_id,
-                    event_id,
-                    measurement.pacer]);
-                }
-              });
+              if(isPositiveInteger(measurement.student_id)) {
+                return students.getStudent({
+                  params: {
+                    student_id: measurement.student_id
+                  }
+                })
+                .then(function(data) {
+                  if (data.length > 0) {
+                    // Check if stat already exists (search by student_id + event_id)
+                    return query('SELECT * FROM Measurement WHERE student_id=? ' +
+                    'AND event_id=?', [measurement.student_id, event_id])
+                    .then(function(data) {
+                      if (data.length > 0) {
+                        // TODO: If it does, do an update
+                        if (defined(measurement.pacer) &&
+                        isPositiveInteger(measurement.pacer)) {
+                          // Update existing stat
+                          return query('UPDATE Measurement SET pacer = ? WHERE '
+                          + 'student_id = ? AND event_id = ?',
+                          [measurement.pacer,
+                            measurement.student_id,
+                            event_id]);
+                        } else {
+                          // TODO: PACER data is invalid can't insert
+                        }
+                      } else {
+                        if (defined(measurement.pacer) &&
+                        isPositiveInteger(measurement.pacer)) {
+                          // Otherwise, create a new stat
+                          return query('INSERT INTO Measurement (student_id, ' +
+                          'event_id, pacer) VALUES (?, ?, ?)',
+                          [measurement.student_id,
+                            event_id,
+                            measurement.pacer]);
+                        } else {
+                          // TODO: PACER data is invalid. Can't insert.
+                        }
+                      }
+                    });
+                  } else {
+                    // TODO: Student_id doesn't exist. Can't add due to referential integrity
+                  }
+                });
+              } else {
+                // TODO: Invalid student_id, can't insert.
+
+              }
             } else {
-              // Missing necessary fields, throw error
-              // return Promise.reject({
-              //   name: 'MissingFieldError',
-              //   status: 400,
-              //   message: 'Request must have a stats section in the body' +
-              //   ' which contains a list of objects. Objects must have student_id ' +
-              //   'and either height and weight fields, pacer field, or all three'
-              // });
-              //Should this error? Or just give a warning and add other stats?
+              // TODO: Missing student_id for this stat, can't insert
             }
-          }
+          });
         } else {
           // Missing necessary fields, throw error
           return Promise.reject({
@@ -214,43 +231,6 @@ function deleteStat(req) {
      propertyValue: id
    });
  }
-
- // function bulkStatsUpload(statsList) {
- //   var deferred = Promise.defer();
- //
- //   if (statsList.length > 1) {
- //     var measurement = statsList[1];
- //
- //     // What if the id is not a positive integer?
- //     if(defined(measurement.student_id)) {
- //       // Check if stat already exists (search by student_id + event_id)
- //       query('SELECT * FROM Measurement WHERE student_id=? ' +
- //       'AND event_id=?', [measurement.student_id, event_id])
- //       .then(function(data) {
- //         if (data.length > 0) {
- //           // If it does, do an update
- //           console.log('mew');
- //           console.log(measurement);
- //         } else {
- //           console.log('woof');
- //           if (defined(measurement.pacer))
- //           // Otherwise, create a new stat
- //           query('INSERT INTO Measurement (student_id, ' +
- //           'event_id, pacer) VALUES (?, ?, ?)',
- //           [measurement.student_id,
- //             event_id,
- //             measurement.pacer]);
- //         }
- //       });
- //     } else {
- //       // student_id is missing
- //     }
- //   } else if (statsList.length == 1) {
- //
- //   } else {
- //     // You don't insert if you get an empty list... do you just return?
- //   }
- // }
 
 module.exports = {
   getStats,
