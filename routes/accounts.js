@@ -7,10 +7,14 @@ const defined = utils.defined;
 
 function getAccounts(req) {
   if (req.user.authorization == 'Admin') {
-    if (defined(req.query.first_name) && defined(req.query.last_name)
-     && defined(req.query.email)) {
-      return query('SELECT * FROM Acct WHERE first_name = ? AND last_name = ? ' +
-       'AND email = ?', [req.query.first_name, req.query.last_name, req.query.email]);
+    if (defined(req.query.auth0_id)) {
+      return query('SELECT * FROM Acct WHERE auth0_id = ?',
+      [req.query.auth0_id]);
+    }
+
+    if (defined(req.query.type)) {
+      return query('SELECT * FROM Acct WHERE acct_type = ?',
+      [req.query.type]);
     }
 
     return query('SELECT * FROM Acct');
@@ -18,6 +22,12 @@ function getAccounts(req) {
     return createAccessDeniedError();
   }
 }
+
+accounts.getAccounts({
+  query: {
+    auth0_id: req.user.auth0_id
+  }
+});
 
 function getAccount(req) {
 }
