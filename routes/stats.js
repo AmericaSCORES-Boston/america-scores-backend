@@ -157,6 +157,97 @@ function uploadPacerStats(req) {
   }
 }
 
+// Upload batch of height/weight stats. Update existing objects or create new
+function uploadBMIStats(req) {
+  var event_id = req.params.event_id;
+  var field = 'event_id';
+
+  if (isPositiveInteger(event_id)) {
+    return events.getEvent(req)
+    .then(function(data) {
+      if (data.length > 0) {
+        // Start looping through
+        if(defined(req.body.stats)) {
+          var statsList = req.body.stats;
+
+          return Promise.map(statsList, (measurement) => {
+            if(defined(measurement.student_id)) {
+              if(isPositiveInteger(measurement.student_id)) {
+                return students.getStudent({
+                  params: {
+                    student_id: measurement.student_id
+                  }
+                })
+                .then(function(data) {
+                  if (data.length > 0) {
+                    // Check if stat already exists (search by student_id + event_id)
+                    return query('SELECT * FROM Measurement WHERE student_id=? ' +
+                    'AND event_id=?', [measurement.student_id, event_id])
+                    .then(function(data) {
+                      if (data.length > 0) {
+                        // TODO: If it does, do an update
+                        if (defined(measurement.height) &&
+                        isPositiveInteger(measurement.height)
+                        && defined(measurement.weight)
+                        && isPositiveInteger(measurement.weight)) {
+                          // Update existing stat
+                          return query('UPDATE Measurement SET height = ?, ' +
+                          'weight = ? WHERE student_id = ? AND event_id = ?',
+                          [measurement.height,
+                            measurement.weight,
+                            measurement.student_id,
+                            event_id]);
+                        } else {
+                          // TODO: Height/weight data is invalid can't update
+                        }
+                      } else {
+                        if (defined(measurement.height) &&
+                        isPositiveInteger(measurement.height)
+                        && defined(measurement.weight)
+                        && isPositiveInteger(measurement.weight)) {
+                          // Otherwise, create a new stat
+                          return query('INSERT INTO Measurement (student_id, ' +
+                          'event_id, height, weight) VALUES (?, ?, ?, ?)',
+                          [measurement.student_id,
+                            event_id,
+                            measurement.height,
+                            measurement.weight]);
+                        } else {
+                          // TODO: Height/Weight data is invalid. Can't insert.
+                        }
+                      }
+                    });
+                  } else {
+                    // TODO: Student_id doesn't exist. Can't add due to referential integrity
+                  }
+                });
+              } else {
+                // TODO: Invalid student_id, can't insert.
+
+              }
+            } else {
+              // TODO: Missing student_id for this stat, can't insert
+            }
+          });
+        } else {
+          // Missing necessary fields, throw error
+          return Promise.reject({
+            name: 'MissingFieldError',
+            status: 400,
+            message: 'Request must have a stats section in the body' +
+            ' which contains a list of objects. Objects must have student_id ' +
+            'and either height and weight fields, pacer field, or all three'
+          });
+        }
+      } else {
+        return createArgumentNotFoundError(event_id, field);
+      }
+    });
+  } else {
+    return createInvalidArgumentError(event_id, field);
+  }
+}
+
  /**
  * PUT
  * /stats/id : Update stat with given id
@@ -240,6 +331,7 @@ module.exports = {
   getStatsByStudent,
   getStat,
   uploadPacerStats,
+  uploadBMIStats,
   updateStat,
   deleteStat,
 };
