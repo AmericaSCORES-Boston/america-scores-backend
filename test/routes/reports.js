@@ -3,19 +3,21 @@ var chai = require('chai');
 var assert = chai.assert;
 
 // Require seed to reset database before each test
-const reportSeed = require('../../lib/utils').reportSeed;
+const utils = require('../../lib/utils');
 
 // The file to be tested
 var reports = require('../../routes/reports');
 
 
-// ADD BEFORE EACH TO reseed
-beforeEach(function() {
-  return seed();
-});
+
 
 // Reports testing block
 describe('Reports', function() {
+  // ADD BEFORE EACH TO reseed
+  beforeEach(function() {
+    return utils.seed();
+  });
+
   describe('getReports()', function() {
     xit('should successfully generate a CSV report of all students and their stats', function(done) {
       // NOTE: the third column is intentionally left empty, as per request from Alicia
