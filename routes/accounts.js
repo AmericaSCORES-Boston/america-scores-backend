@@ -23,12 +23,6 @@ function getAccounts(req) {
   }
 }
 
-accounts.getAccounts({
-  query: {
-    auth0_id: req.user.auth0_id
-  }
-});
-
 function getAccount(req) {
 }
 
