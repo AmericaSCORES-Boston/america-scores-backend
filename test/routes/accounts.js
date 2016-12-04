@@ -37,6 +37,18 @@ function checkAuth0(userID, expected) {
   });
 }
 
+function deleteAuth0Acc(accID) {
+  // delete the auth0 account for the supplied account_id
+  var params =  {id: auth0ID(acc.account_id)};
+
+  mgmt.users.delete(params, function(err) {
+    if (err) {
+    console.error('Failed to remove user from Auth0');
+    console.log(err);
+    }
+  });
+}
+
 function resetAuth0Acc(resetAcc) {
   // updates the Auth0 account associated with the resetAcc setting all values
   // to those found in resetAcc.
@@ -1325,7 +1337,7 @@ describe('Accounts', function() {
     });
 
     describe('createAccount(req)', function() {
-      it('it should add an Admin account', function(done) {
+      it('it should add an Admin account when requested by an existing admin', function(done) {
         accounts.createAccount(
           {
             body: {
@@ -1348,7 +1360,6 @@ describe('Accounts', function() {
             // confirm new account added to table
             assert.deepEqual(data, initAcc);
             // confirm new account added to Auth0
-            // TODO TODO TODO
             assert.isTrue(checkAuth0(auth0ID(newAdminRes.account_id), newAdminRes))
           });
 
