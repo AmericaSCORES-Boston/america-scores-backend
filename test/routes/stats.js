@@ -823,8 +823,7 @@ describe('stats', function() {
       });
     });
 
-    // update non existing stats should error
-    xit('should error updating non-existing stats', function(done) {
+    it('should not update non-existing stats', function(done) {
       var req = {
         params: {
           stat_id: 99999,
@@ -848,11 +847,8 @@ describe('stats', function() {
 
         return stats.updateStat(req);
       })
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Can not update non-existing stats.');
-        assert.equal(err.status, 400);
-        return stats.getStats({});
+      .then(function() {
+        return stats.getStats({})
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -864,7 +860,7 @@ describe('stats', function() {
 
   describe('deleteStat(req)', function() {
     // delete existing stats
-    xit('should delete stats in the database', function(done) {
+    it('should delete stats in the database', function(done) {
       var req = {
         params: {
           stat_id: 1
