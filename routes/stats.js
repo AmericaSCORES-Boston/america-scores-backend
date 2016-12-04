@@ -319,9 +319,11 @@ function deleteStat(req) {
 
    // Create a string of changes based on what is in the body
    for (var field in body) {
-     changes = changes + field + '= ?, ';
-     // Add to ordered list of field arguments
-     fieldValues.push(body[field]);
+     if (field === 'pacer' || field === 'height' || field === 'weight') {
+       changes = changes + field + '= ?, ';
+       // Add to ordered list of field arguments
+       fieldValues.push(body[field]);
+     }
    }
 
    // Drop the extra comma
