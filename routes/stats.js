@@ -127,7 +127,7 @@ function uploadPacerStats(req) {
                       if (data.length > 0) {
                         // TODO: If it does, do an update
                         if (defined(measurement.pacer) &&
-                        isPositiveInteger(measurement.pacer)){
+                        isPositiveInteger(measurement.pacer)) {
                           // Update existing stat
                           return query('UPDATE Measurement SET pacer = ? WHERE '
                           + 'student_id = ? AND event_id = ?',
