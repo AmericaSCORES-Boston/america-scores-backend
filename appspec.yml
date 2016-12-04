@@ -28,11 +28,9 @@ hooks:
   BeforeInstall:
     - location: /scripts/cleanup-deploy.sh
       timeout: 60
-      runas: ubuntu
   AfterInstall:
     - location: /scripts/setup-server.sh
       timeout: 60
-      runas: ubuntu
   ApplicationStart:
     - location: /scripts/start-server.sh
       timeout: 60
@@ -40,4 +38,3 @@ hooks:
   ValidateService:
     - location: /scripts/hit-server.sh
       timeout: 60
-      runas: ubuntu
