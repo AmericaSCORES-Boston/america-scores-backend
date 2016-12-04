@@ -13,88 +13,63 @@ var events = require('../routes/events');
 var students = require('../routes/students');
 
 /**
- * GET
- * /stats : Gets all stats.
- * /sites/id/stats : Get all stats for a site
- * /programs/id/stats : Get all stats for a program
- * /events/id/stats : Get all stats for an event
- * /students/id/stats : Get all stats for a student
+ * Get all stats.
  *
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
- function getStats(req) {
-   if (defined(req.params)) {
-     if (req.params.site_id) {
-       if (!isPositiveInteger(req.params.site_id)) {
-         return Promise.reject({
-           status: 400,
-           name: 'InvalidArgumentError',
-           propertyName: 'site_id',
-           propertyValue: req.params.site_id,
-           message: 'Given site_id is of invalid format (e.g. not an integer or negative)'
-         });
-       }
-       return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN Site WHERE site_id = ' + req.params.site_id);
-     }
-     if (defined(req.params.program_id)) {
-       if (!isPositiveInteger(req.params.program_id)) {
-         return Promise.reject({
-           status: 400,
-           name: 'InvalidArgumentError',
-           propertyName: 'program_id',
-           propertyValue: req.params.program_id,
-           message: 'Given program_id is of invalid format (e.g. not an integer or negative)'
-         });
-       }
-       return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program WHERE program_id = ' + req.params.program_id);
-     }
-     if (defined(req.params.event_id)) {
-       if (!isPositiveInteger(req.params.event_id)) {
-         return Promise.reject({
-           status: 400,
-           name: 'InvalidArgumentError',
-           propertyName: 'event_id',
-           propertyValue: req.params.event_id,
-           message: 'Given event_id is of invalid format (e.g. not an integer or negative)'
-         });
-       }
-       return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event WHERE event_id = ' + req.params.event_id);
-     }
-     if (defined(req.params.student_id)) {
-       if (!isPositiveInteger(req.params.student_id)) {
-         return Promise.reject({
-           status: 400,
-           name: 'InvalidArgumentError',
-           propertyName: 'student_id',
-           propertyValue: req.params.student_id,
-           message: 'Given student_id is of invalid format (e.g. not an integer or negative)'
-         });
-       }
-       return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Student WHERE student_id = ' + req.params.student_id);
-     }
-   }
-   return query('SELECT * FROM Measurement');
- }
+function getStats(req) {
+  return query('SELECT * FROM Measurement');
+}
 
- /**
- * GET
- * /stats/id : Get stat for an id
+/**
+ * Get all stats for a site.
  *
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
- function getStat(req) {
-   if (!isPositiveInteger(req.params.stat_id)) {
-     return Promise.reject({
-     status: 400,
-     name: 'InvalidArgumentError',
-     propertyName: 'stat_id',
-     propertyValue: req.params.stat_id,
-     message: 'Given stat_id is of invalid format (e.g. not an integer or negative)'
-   });
-   }
-   return query('SELECT * FROM Measurement WHERE measurement_id = ' + req.params.stat_id);
+function getStatsBySite(req) {
+  return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN Site WHERE site_id = ' + req.params.site_id);
+}
+
+/**
+ * Get all stats for a program.
+ *
+ * @param {Object} req The given request object
+ * @return {Promise} The promise
+ */
+function getStatsByProgram(req) {
+  return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program WHERE program_id = ' + req.params.program_id);
+}
+
+/**
+ * Get all stats for an event.
+ *
+ * @param {Object} req The given request object
+ * @return {Promise} The promise
+ */
+function getStatsByEvent(req) {
+  return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event WHERE event_id = ' + req.params.event_id);
+}
+
+/**
+ * Get all stats for a student.
+ *
+ * @param {Object} req The given request object
+ * @return {Promise} The promise
+ */
+function getStatsByStudent(req) {
+    return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Student WHERE student_id = ' + req.params.student_id);
+}
+
+/**
+ * Get a stat.
+ *
+ * @param {Object} req The given request object
+ * @return {Promise} The promise
+ */
+function getStat(req) {
+  return query('SELECT * FROM Measurement WHERE measurement_id = ' + req.params.stat_id);
 }
 
 // Upload batch of PACER stats. Update existing stats objects or create new ones
@@ -165,32 +140,6 @@ function uploadPacerStats(req) {
   }
 }
 
-  /**
- * POST
- * /events/id/students/id/stats : Create a new stat associated with a student in an event
- *
- * @param {Object} req The given request object
- * @return {Promise} The promise
- */
- function createStat(req) {
-   if (!req.params || !req.params.event_id || !req.params.student_id) {
-         return Promise.reject({
-         status: 400,
-         message: 'Could not post due to missing fields'
-       });
-   }
-   if (!req.body || !req.body.height || !req.body.weight || !req.body.pacer) {
-       return Promise.reject({
-         status: 400,
-         message: 'Could not post due to missing fields'
-       });
-   }
-
-   return query('INSERT INTO Measurement (student_id, event_id, height, weight, pacer) VALUES ('
-          + req.params.student_id + ', ' + req.params.event_id + ', ' + req.body.height + ', '
-          + req.body.weight + ', ' + req.body.pacer + ')');
- }
-
  /**
  * PUT
  * /stats/id : Update stat with given id
@@ -230,33 +179,16 @@ function uploadPacerStats(req) {
      });
  }
 
- /**
+/**
  * DELETE
  * /stats/id : Delete stat with given id
  *
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
- function deleteStat(req) {
-   return idChecking(req.params.stat_id, 'stat_id')
-   .then(function(data) {
-     return query('DELETE FROM Measurement WHERE measurement_id = ' + req.params.stat_id);
-   })
-   .catch(function(err) {
-     return err;
-   });
-
-  //  if (Number(req.params.stat_id) < 0 || !Number.isInteger(Number(req.params.stat_id))) {
-  //    return Promise.reject({
-  //    status: 400,
-  //    name: 'InvalidArgumentError',
-  //    propertyName: 'stat_id',
-  //    propertyValue: req.params.stat_id,
-  //    message: 'Given stat_id is of invalid format (e.g. not an integer or negative)'
-  //  });
-  //  }
-
- }
+function deleteStat(req) {
+  return query('DELETE FROM Measurement WHERE measurement_id = ' + req.params.stat_id);
+}
 
  function createInvalidArgumentError(id, field, message) {
    var defaultIdError = 'Given ' + field + ' is of invalid format (e.g. not' +
@@ -322,9 +254,12 @@ function uploadPacerStats(req) {
 
 module.exports = {
   getStats,
+  getStatsBySite,
+  getStatsByProgram,
+  getStatsByEvent,
+  getStatsByStudent,
   getStat,
   uploadPacerStats,
-  createStat,
   updateStat,
   deleteStat,
 };
