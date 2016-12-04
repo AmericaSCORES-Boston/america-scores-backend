@@ -241,12 +241,6 @@ function uploadBMIStats(req) {
          message: 'Must provide height, weight or pacer values'
        });
    }
-   if (!defined(req.params.stat_id)) {
-        return Promise.reject({
-         status: 406,
-         message: 'Must provide height, weight or pacer values'
-       });
-   }
 
    var queryComponents = createUpdateQuery(req.body);
    queryComponents[1].push(req.params.stat_id);
