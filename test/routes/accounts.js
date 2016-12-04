@@ -985,7 +985,7 @@ describe('Accounts', function() {
         // TODO ensure entire Auth0 DB has not been affected
         accounts.updateAccount({
           params: {
-            not_acc_id: 7
+            not_`acc_id`: 7
           },
           body: {
             f_name: 'Beezlebub'
@@ -1049,7 +1049,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because coaches cannot update other accounts', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 7
+            account_id: 7
           },
           body: {
             f_name: 'Beezlebub'
@@ -1082,7 +1082,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because volunteers cannot update other accounts', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 7
+            account_id: 7
           },
           body: {
             f_name: 'Beezlebub'
@@ -1115,7 +1115,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because staff cannot update their own type', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 5  // id for the accType.Staff constant
+            account_id: 5  // id for the accType.Staff constant
           },
           body: {
             type: 'Admin'
@@ -1147,7 +1147,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because coaches cannot update cannot update their own type', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 1 // id for the accType.Coach constant
+            account_id: 1 // id for the accType.Coach constant
           },
           body: {
             f_name: 'Beezlebub'
@@ -1180,7 +1180,7 @@ describe('Accounts', function() {
       it('it should return a 401 error because volunteers cannot update their own type', function(done) {
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 3 // id for the accType.Volunteer constant
+            account_id: 3 // id for the accType.Volunteer constant
           },
           body: {
             f_name: 'Beezlebub'
@@ -1217,7 +1217,7 @@ describe('Accounts', function() {
         var newEmail = 'updated@americascores.org';
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 3 // id for the accType.Volunteer constant
+            account_id: 3 // id for the accType.Volunteer constant
           },
           body: {
             f_name: newFName,
@@ -1255,7 +1255,7 @@ describe('Accounts', function() {
         var newEmail = 'updated@americascores.org';
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 1 // id for the accType.Coach constant
+            account_id: 1 // id for the accType.Coach constant
           },
           body: {
             f_name: newFName,
@@ -1292,7 +1292,7 @@ describe('Accounts', function() {
         var newEmail = 'updated@americascores.org';
         var promise = accounts.updateAccount({
           params: {
-            acc_id: 5 // id for the accType.Staff constant
+            account_id: 5 // id for the accType.Staff constant
           },
           body: {
             f_name: newFName,
@@ -1349,7 +1349,7 @@ describe('Accounts', function() {
             assert.deepEqual(data, initAcc);
             // confirm new account added to Auth0
             // TODO TODO TODO
-            assert.isTrue(checkAuth0(auth0ID(newAdminRes.acc_id), newAdminRes))
+            assert.isTrue(checkAuth0(auth0ID(newAdminRes.account_id), newAdminRes))
           });
 
         var promise = accounts.getAccounts({});
@@ -1436,7 +1436,7 @@ describe('Accounts', function() {
         });
       });
 
-      it('it should retrieve an empty object as acc_id DNE', function(done) {
+      it('it should retrieve an empty object as account_id DNE', function(done) {
         var promise = accounts.getAccount({
           query: {
             account_id: 404
