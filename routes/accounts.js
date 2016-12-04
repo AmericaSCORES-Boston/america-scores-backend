@@ -6,7 +6,7 @@ const query = utils.query;
 const defined = utils.defined;
 
 function getAccounts(req) {
-  if (!req.user.authorization === 'Admin') {
+  if (req.user.authorization !== 'Admin') {
     return createAccessDeniedError();
   }
 
