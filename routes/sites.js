@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const utils = require('../lib/utils');
 const query = utils.query;
 const defined = utils.defined;
+const getAccountID = utils.getAccountID;
 
 /**
  * Gets all sites.
@@ -12,7 +13,14 @@ const defined = utils.defined;
  * @return {Promise} The promise
  */
 function getSites(req) {
-  return query('SELECT * FROM Site');
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT * FROM Site');
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return getSitesByAccount(data);
+    });
 }
 
 /**
@@ -21,8 +29,8 @@ function getSites(req) {
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
-function getSitesByAccount(req) {
-  return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ?', [req.params.account_id]);
+function getSitesByAccount(accountID) {
+  return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ?', [accountID]);
 }
 
 /**
@@ -32,6 +40,10 @@ function getSitesByAccount(req) {
  * @return {Promise} The promise
  */
 function createSite(req) {
+  if (req.user.authorization == 'Coach' || req.user.authorization == 'Volunteer') {
+    return Promise.reject({status: 403, message: 'Access denied'});
+  }
+
   if (!defined(req.body) || !defined(req.body.site_name) || !defined(req.body.site_address)) {
     return Promise.reject({
       status: 406,
@@ -59,7 +71,21 @@ function createSite(req) {
  * @return {Promise} The promise
  */
 function getSite(req) {
-  return query('SELECT * FROM Site WHERE site_id = ?', [req.params.site_id]);
+  var site_id = req.params.site_id;
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT * FROM Site WHERE site_id = ?', [site_id]);
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return query('SELECT site_id, site_name, site_address FROM Acct NATURAL JOIN AcctToProgram NATURAL JOIN Program NATURAL JOIN Site WHERE acct_id = ? AND Site.site_id = ?', [data, site_id]);
+    })
+    .then(function(data) {
+      if (data.length !== 1) {
+        return Promise.reject({status: 403, message: "Access denied or program not found"})
+      }
+      return data;
+    });
 }
 
 /**
@@ -69,6 +95,10 @@ function getSite(req) {
  * @return {Promise} The promise
  */
 function updateSite(req) {
+  if (req.user.authorization == 'Coach' || req.user.authorization == 'Volunteer') {
+    return Promise.reject({status: 403, message: 'Access denied'});
+  }
+
   if (!defined(req.body) || (!defined(req.body.site_name) && !defined(req.body.site_address))) {
     return Promise.reject({
       status: 406,
@@ -96,6 +126,10 @@ function updateSite(req) {
  * @return {Promise} The promise
  */
 function deleteSite(req) {
+  if (req.user.authorization !== 'Admin') {
+    return Promise.reject({status: 403, message: 'Acces denied'});
+  }
+
   return query('DELETE FROM Site WHERE site_id = ?', [req.params.site_id]);
 }
 

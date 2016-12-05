@@ -176,7 +176,6 @@ describe('app.js', function() {
 
   describe('sites endpoint', function() {
     var getSitesStub;
-    var getSitesByAccountStub;
     var createSiteStub;
     var getSiteStub;
     var updateSiteStub;
@@ -185,9 +184,6 @@ describe('app.js', function() {
     before(function() {
       getSitesStub = sinon.stub(sites, 'getSites', function() {
         return Promise.resolve('got the sites');
-      });
-      getSitesByAccountStub = sinon.stub(sites, 'getSitesByAccount', function() {
-        return Promise.resolve('got the students for an account');
       });
       createSiteStub = sinon.stub(sites, 'createSite', function() {
         return Promise.resolve('create a site');
@@ -205,7 +201,6 @@ describe('app.js', function() {
 
     after(function() {
       sites.getSites.restore();
-      sites.getSitesByAccount.restore();
       sites.createSite.restore();
       sites.getSite.restore();
       sites.updateSite.restore();
@@ -218,16 +213,6 @@ describe('app.js', function() {
         .expect('got the sites', 200)
         .end(function() {
           assert.isTrue(getSitesStub.called);
-          done();
-        });
-    });
-
-    it('GET /accounts/:account_id/sites', function(done) {
-      request(app)
-        .get('/accounts/:account_id/sites')
-        .expect('got the sites for an account', 200)
-        .end(function() {
-          assert.isTrue(getSitesByAccountStub.called);
           done();
         });
     });

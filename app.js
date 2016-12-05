@@ -84,11 +84,6 @@ app.route('/sites')
     makeResponse(res, sites.createSite(req));
   });
 
-app.route('/accounts/:account_id/sites')
-  .get(function(req, res, next) {
-    makeResponse(res, sites.getSitesByAccount(req));
-  });
-
 app.route('/sites/:site_id')
   .get(function(req, res, next) {
     makeResponse(res, sites.getSite(req));
