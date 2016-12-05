@@ -190,7 +190,7 @@ function createStudent(req) {
       // Check if the given program_id exists in the database
       return programs.getProgram({
         params: {
-          program_id: id
+          program_id: req.params.program_id
         },
         user: {
           authorization: 'Admin'
