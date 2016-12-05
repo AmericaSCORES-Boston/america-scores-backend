@@ -1,6 +1,6 @@
 // Require the testing dependencies
-var chai = require('chai');
-var assert = chai.assert;
+const chai = require('chai');
+const assert = chai.assert;
 
 // Require query function for getAllStudents check
 const query = require('../../lib/utils').query;
@@ -8,8 +8,11 @@ const query = require('../../lib/utils').query;
 // Require seed to reset database before each test
 const seed = require('../../lib/utils').seed;
 
+// Require test accounts
+// const constants = require('../../lib/constants');
+
 // The file to be tested
-var students = require('../../routes/students');
+const students = require('../../routes/students');
 
 // Get contents of Students table in DB for use in asserts
 function getAllStudents() {
@@ -35,6 +38,13 @@ var perseus = {
   'first_name': 'Perseus',
   'last_name': 'Jackson',
   'dob': new Date(93, 7, 18)
+};
+
+var percyNewDob = {
+  'student_id': 1,
+  'first_name': 'Percy',
+  'last_name': 'Jackson',
+  'dob': new Date(90, 2, 15)
 };
 
 var annabethURL = {
@@ -82,6 +92,20 @@ var pam = {
   'first_name': 'Pam',
   'last_name': 'Ho',
   'dob': new Date(93, 3, 12)
+};
+
+var poseidonsson = {
+  'student_id': 1,
+  'first_name': 'Percy',
+  'last_name': 'Poseidonsson',
+  'dob': new Date(93, 7, 18)
+};
+
+var hazel = {
+  'student_id': 1,
+  'first_name': 'Hazel',
+  'last_name': 'Levesque',
+  'dob': new Date(28, 11, 17)
 };
 
 // ADD BEFORE EACH TO reseed
@@ -224,7 +248,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data);
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
@@ -327,7 +351,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data);
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
@@ -660,25 +684,18 @@ describe('Students', function() {
       });
     });
 
-    it('should give an error if the student_id is not in the database',
+    it('should return an empty array if the student_id is not in the database',
     function(done) {
       var req = {
         params: {
-          // The student_id is contained in the request
-          student_id: 617
+          student_id: 5736
         }
       };
 
-      var promise = students.getStudent(req);
-      promise.catch(function(err) {
-        assert.equal(err.message,
-        'Invalid request: The given student_id does not exist' +
-        ' in the database');
-
-        assert.equal(err.name, 'ArgumentNotFoundError');
-        assert.equal(err.propertyName, 'student_id');
-        assert.equal(err.propertyValue, req.params.student_id);
-        assert.equal(err.status, 404);
+      students.getStudent(req)
+      .then(function(data) {
+        assert.deepEqual(data, []);
+        assert.lengthOf(data, 0);
         done();
       });
     });
@@ -694,7 +711,9 @@ describe('Students', function() {
       };
 
       students.createStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the new student is returned
+        assert.deepEqual(data, [dave]);
         // Get the contents of the database after calling createStudent
         return getAllStudents();
       })
@@ -1201,7 +1220,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [perseus]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1227,7 +1249,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [poseidonsson]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1237,12 +1262,7 @@ describe('Students', function() {
         // Assert that the old data and new data aren't the same
         assert.notDeepEqual(oldDB, data);
         // Assert that the new data reflects the update changes
-        assert.deepEqual([{
-          'student_id': 1,
-          'first_name': 'Percy',
-          'last_name': 'Poseidonsson',
-          'dob': new Date(93, 7, 18)
-        }, annabeth, brian, pam], data);
+        assert.deepEqual([poseidonsson, annabeth, brian, pam], data);
         done();
       });
     });
@@ -1258,7 +1278,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [percyNewDob]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1268,12 +1291,7 @@ describe('Students', function() {
         // Assert that the old data and new data aren't the same
         assert.notDeepEqual(oldDB, data);
         // Assert that the new data reflects the update changes
-        assert.deepEqual([{
-          'student_id': 1,
-          'first_name': 'Percy',
-          'last_name': 'Jackson',
-          'dob': new Date(90, 2, 15)
-        }, annabeth, brian, pam], data);
+        assert.deepEqual([percyNewDob, annabeth, brian, pam], data);
         done();
       });
     });
@@ -1291,7 +1309,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [hazel]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1534,12 +1555,15 @@ describe('Students', function() {
           student_id: 2,
           program_id: 3
         },
-        body: { // NOTE: Do requests to JUST do programs still send a body?
+        body: {
         }
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [annabeth]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1572,7 +1596,10 @@ describe('Students', function() {
       };
 
       students.updateStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [magnus]);
+
         // Get the DB after the update
         return getAllStudents();
       })
@@ -1683,7 +1710,10 @@ describe('Students', function() {
       };
 
       students.deleteStudent(req)
-      .then(function() {
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [annabeth]);
+
         // Get the current student data in the database
         return getAllStudents();
       })
@@ -1702,7 +1732,17 @@ describe('Students', function() {
         assert.notDeepEqual(oldPrograms, data);
         assert.lengthOf(data, programMatchCount - 1);
         assert.deepEqual(data, [{
-          id: 2,
+          id: 1,
+          student_id: 1,
+          program_id: 1
+        },
+        {
+          id: 3,
+          student_id: 4,
+          program_id: 1
+        },
+        {
+          id: 4,
           student_id: 3,
           program_id: 2
         }]);
@@ -1725,7 +1765,7 @@ describe('Students', function() {
           event_id: 2,
           height: 7,
           weight: 7,
-          pacer: 7
+          pacer: null
         },
         {
           measurement_id: 6,
@@ -1733,7 +1773,7 @@ describe('Students', function() {
           event_id: 2,
           height: 4,
           weight: 12,
-          pacer: 421
+          pacer: null
         }]);
         done();
       });

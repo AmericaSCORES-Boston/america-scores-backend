@@ -1,10 +1,10 @@
 {
   "name": "america-scores-backend",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "The backend for the America SCORES data collection app.",
   "main": "index.js",
   "scripts": {
-    "test": "gulp test",
+    "test": "gulp seed && gulp test",
     "eslint": "gulp eslint",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
     "seed": "gulp seed",
@@ -21,6 +21,7 @@
     "bluebird": "^3.4.6",
     "body-parser": "^1.15.2",
     "cookie-parser": "~1.4.3",
+    "cors": "^2.8.1",
     "debug": "~2.2.0",
     "express": "^4.14.0",
     "morgan": "~1.7.0",

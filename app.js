@@ -1,17 +1,25 @@
 'use strict';
 
-const env = 'development';
+const env = process.env.NODE_ENV || 'development';
 const config = require('./config/config.js')[env];
 
 var express = require('express');
 var bodyParser = require('body-parser');
 var request = require('request')
-var app = express();
+const express = require('express');
+const bodyParser = require('body-parser');
+const makeResponse = require('./lib/utils').makeResponse;
+// var cors = require('cors');
+const app = express();
+
+// app.use(cors());
 
 // Routes
-var students = require('./routes/students');
-var sites = require('./routes/sites');
-var programs = require('./routes/programs');
+const students = require('./routes/students');
+const sites = require('./routes/sites');
+const programs = require('./routes/programs');
+const events = require('./routes/events');
+const stats = require('./routes/stats');
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -42,21 +50,18 @@ app.use(function(req, res, next) {
         next();
     }
   });
+// app.options('*', cors());
+
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
 });
 
 app.get('/', function(req, res) {
   res.status(405);
   res.send('Route not implemented');
 });
-
-function makeResponse(res, promise) {
-  promise.then(function(data) {
-    res.send(data);
-  })
-  .catch(function(err) {
-    res.status(err.status).send(err);
-  });
-}
 
 // Students
 app.route('/students')
@@ -104,7 +109,12 @@ app.route('/sites')
     makeResponse(res, sites.getSites(req));
   })
   .post(function(req, res, next) {
-    makeResponse(res, sites.createSites(req));
+    makeResponse(res, sites.createSite(req));
+  });
+
+app.route('/accounts/:account_id/sites')
+  .get(function(req, res, next) {
+    makeResponse(res, sites.getSitesByAccount(req));
   });
 
 app.route('/sites/:site_id')
@@ -112,7 +122,7 @@ app.route('/sites/:site_id')
     makeResponse(res, sites.getSite(req));
   })
   .put(function(req, res, next) {
-    makeResponse(res, sites.updateSites(req));
+    makeResponse(res, sites.updateSite(req));
   })
   .delete(function(req, res, next) {
     makeResponse(res, sites.deleteSite(req));
@@ -148,12 +158,77 @@ app.route('/students/:student_id/programs')
     makeResponse(res, programs.getProgramsByStudent(req));
   });
 
-app.route('/account/:account_id/programs')
+app.route('/accounts/:account_id/programs')
   .get(function(req, res, next) {
     makeResponse(res, programs.getProgramsByAccount(req));
   });
 
-app.listen(config.server.port);
+// Events
+app.route('/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEvents(req));
+  });
+
+app.route('/events/:event_id')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEvent(req));
+  })
+  .delete(function(req, res, next) {
+    makeResponse(res, events.deleteEvent(req));
+  });
+
+app.route('/students/:student_id/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEventsByStudent(req));
+  });
+
+app.route('/programs/:program_id/events')
+  .get(function(req, res, next) {
+    makeResponse(res, events.getEventsByProgram(req));
+  });
+
+app.route('/programs/:program_id/events')
+  .post(function(req, res, next) {
+    makeResponse(res, events.createEvent(req));
+  });
+
+// Stats
+ app.route('/stats')
+   .get(function(req, res, next) {
+    makeResponse(res, stats.getStats(req));
+  });
+
+app.route('/sites/:site_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsBySite(req));
+  });
+
+app.route('/programs/:program_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsByProgram(req));
+  });
+
+app.route('/events/:event_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsByEvent(req));
+  });
+
+app.route('/students/:student_id/stats')
+  .get(function(req, res, next) {
+    makeResponse(res, stats.getStatsByStudent(req));
+  });
+
+app.route('/events/:event_id/stats/pacer')
+  .put(function(req, res, next) {
+    makeResponse(res, stats.uploadPacerStats(req));
+  });
+
+app.route('/events/:event_id/stats/bmi')
+  .put(function(req, res, next) {
+    makeResponse(res, stats.uploadBMIStats(req));
+  });
+
+var server = app.listen(config.server.port);
 console.log('Listening on port ' + config.server.port);
 
-module.exports = app;  // for testing
+module.exports = server;  // for testing

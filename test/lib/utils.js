@@ -1,10 +1,51 @@
 'use strict';
 
+const Promise = require('bluebird');
 const chai = require('chai');
+const sinon = require('sinon');
 const assert = chai.assert;
 const utils = require('../../lib/utils');
 
+const res = {
+  send: function(data) {},
+  status: function(status) {}
+};
+
 describe('utils', function() {
+  describe('makeResponse(res, promise)', function() {
+    var resSendSpy;
+    var resStatusSpy;
+
+    before(function() {
+      resSendSpy = sinon.spy(res, 'send');
+      resStatusSpy = sinon.spy(res, 'status');
+    });
+
+    after(function() {
+      res.send.restore();
+      res.status.restore();
+    });
+
+    it('makes a 200 response', function(done) {
+      var promise = Promise.resolve('data');
+
+      utils.makeResponse(res, promise).then(function() {
+        assert.isTrue(resSendSpy.calledWith('data'));
+        done();
+      });
+    });
+
+    it('makes all other responses', function(done) {
+      var promise = Promise.reject({
+        status: 404
+      });
+
+      utils.makeResponse(res, promise).catch(function() {
+        assert.isTrue(resStatusSpy.calledWith(404));
+        done();
+      });
+    });
+  });
   describe('isValidDate(date)', function() {
     it('returns true because the date is valid', function() {
       assert.isTrue(utils.isValidDate('2017-01-01'));
@@ -58,66 +99,6 @@ describe('utils', function() {
     });
   });
 
-  describe('query(queryString, args)', function() {
-    xit('should error if the query has an invalid argument',
-    function(done) {
-      var queryString = 'INSERT INTO Student (first_name, last_name, dob) ' +
-      'VALUES (?, ?, DATE(?))';
-      var args = ['Newt', 'Scamander', '087718/1993'];
-
-      utils.query(queryString, args)
-      .then(function(data) {
-        utils.query('SELECT student_id FROM Student WHERE ' +
-          'first_name = ? AND last_name = ? AND dob = ?', args)
-        .then(function(data) {
-          console.log(data);
-          done(new Error('Query did not fail as expected'));
-        });
-      })
-      .catch(function(err) {
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.status, 400);
-        assert.equal(err.message, 'ID type error');
-        done();
-      });
-    });
-
-    it('should error if the query references an id that does not exist',
-    function(done) {
-      var queryString = 'INSERT INTO StudentToProgram ' +
-      '(student_id, program_id) VALUES (?, ?)';
-      var args = [12213, 2333];
-
-      utils.query(queryString, args)
-      .then(function(data) {
-        done(new Error('Query did not fail as expected'));
-      })
-      .catch(function(err) {
-        assert.equal(err.name, 'ArgumentNotFound');
-        assert.equal(err.status, 404);
-        assert.equal(err.message, 'ID not found in DB');
-        done();
-      });
-    });
-
-    it('should error if the query has missing parts',
-    function(done) {
-      var queryString = 'INSERT INTO Student (first_name, last_name, dob) ' +
-      'VALUES (?, ?, DATE(?))';
-      var args = [undefined, undefined, undefined];
-
-      utils.query(queryString, args)
-      .then(function(data) {
-        done(new Error('Query did not fail as expected'));
-      })
-      .catch(function(err) {
-        assert.equal(err.name, 'InvalidArgumentError');
-        assert.equal(err.status, 400);
-        assert.equal(err.message, 'Body error');
-        done();
-      });
-    });
-  });
   describe('define(value)', function() {
     it('returns false because the value is undefined', function() {
       assert.isFalse(utils.defined(undefined));
@@ -145,6 +126,42 @@ describe('utils', function() {
         value: 4
       };
       assert.isTrue(utils.defined(testObject.value));
+    });
+  });
+
+  describe('demoSeed()', function() {
+    it('seeds the db with demo data', function(done) {
+      utils.demoSeed().then(function() {
+        return utils.query('SELECT * FROM Site');
+      })
+      .then(function(rows) {
+        assert.equal(rows.length, 11);
+        return utils.query('SELECT * FROM Program');
+      })
+      .then(function(rows) {
+        assert.equal(rows.length, 4);
+        return utils.query('SELECT * FROM Student');
+      })
+      .then(function(rows) {
+        assert.equal(rows.length, 6);
+        return utils.query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(rows) {
+        assert.equal(rows.length, 7);
+        return utils.query('SELECT * FROM Acct');
+      })
+      .then(function(rows) {
+        assert.equal(rows.length, 9);
+        return utils.query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(rows) {
+        assert.equal(rows.length, 7);
+        return utils.query('SELECT * FROM Event');
+      })
+      .then(function(rows) {
+        assert.equal(rows.length, 6);
+        done();
+      });
     });
   });
 });

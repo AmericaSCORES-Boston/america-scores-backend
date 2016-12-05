@@ -7,9 +7,8 @@ const defined = utils.defined;
 
 // Require other routes called
 var sites = require('../routes/sites');
-// TODO Uncomment these as they get implemented
-// var programs = require('../routes/programs');
-// var events = require('../routes/events');
+var programs = require('../routes/programs');
+var events = require('../routes/events');
 
 // Require isPositiveInteger for argument checking
 const isPositiveInteger = require('../lib/utils').isPositiveInteger;
@@ -45,28 +44,26 @@ function getStudents(req) {
   }
 }
 
-// TODO: Delete this function and use the following one once programs is
-// implemented
 function getStudentsByProgram(req) {
-  var id = req.params.program_id;
-  var table = 'Program';
-  var field = 'program_id';
-  var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-  '(SELECT student_id FROM StudentToProgram ' +
-  'WHERE program_id = ?)';
+    var id = req.params.program_id;
+    var field = 'program_id';
+    var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
+    '(SELECT student_id FROM StudentToProgram ' +
+    'WHERE program_id = ?)';
 
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return countInDB(id, table, field)
-    .then(function(count) {
-      if (count > 0) {
+    return programs.getProgram(req)
+    .then(function(data) {
+      if (data.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
         return createArgumentNotFoundError(id, field);
       }
-    }).then(function(data) {
+    })
+    .then(function(data) {
       return data;
     });
   } else {
@@ -75,38 +72,8 @@ function getStudentsByProgram(req) {
   }
 }
 
-// TODO USE THIS FUNCTION ONCE PROGRAMS IS IMPLEMENTED. DELETE OLD ONE.
-// function getStudentsByProgram(req) {
-//     var id = req.params.program_id;
-//     var field = 'program_id';
-//     var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-//     '(SELECT student_id FROM StudentToProgram ' +
-//     'WHERE program_id = ?)';
-//
-//   // Check if the id is an integer > 0
-//   if (isPositiveInteger(id)) {
-//     // Check if the id is in the related table
-//     return programs.getProgram(req)
-//     .then(function(idLookup) {
-//       if (idLookup.length > 0) {
-//         return query(queryString, [id]);
-//       } else {
-//         // Given id does not exist, give error.
-//         return createArgumentNotFoundError(id, field);
-//       }
-//     })
-//     .then(function(data) {
-//       return data;
-//     });
-//   } else {
-//     // id is not a number or is negative (invalid)
-//     return createInvalidArgumentError(id, field);
-//   }
-// }
-
 function getStudentsByEvent(req) {
   var id = req.params.event_id;
-  var table = 'Event';
   var field = 'event_id';
   var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
   '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
@@ -115,15 +82,16 @@ function getStudentsByEvent(req) {
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return countInDB(id, table, field)
-    .then(function(count) {
-      if (count > 0) {
+    return events.getEvent(req)
+    .then(function(data) {
+      if (data.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
         return createArgumentNotFoundError(id, field);
       }
-    }).then(function(data) {
+    })
+    .then(function(data) {
       return data;
     });
   } else {
@@ -131,36 +99,6 @@ function getStudentsByEvent(req) {
     return createInvalidArgumentError(id, field);
   }
 }
-
-// TODO USE THIS FUNCTION ONCE EVENTS IS IMPLEMENTED. DELETE OLD ONE.
-// function getStudentsByEvent(req) {
-//   var id = req.params.event_id;
-//   var table = 'Event';
-//   var field = 'event_id';
-//   var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-//   '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-//   '(SELECT program_id FROM Event WHERE event_id = ?))';
-//
-//   // Check if the id is an integer > 0
-//   if (isPositiveInteger(id)) {
-//     // Check if the id is in the related table
-//     return events.getEvent(req)
-//     .then(function(idLookup) {
-//       if (idLookup.length > 0) {
-//         return query(queryString, [id]);
-//       } else {
-//         // Given id does not exist, give error.
-//         return createArgumentNotFoundError(id, field);
-//       }
-//     })
-//     .then(function(data) {
-//       return data;
-//     });
-//   } else {
-//     // id is not a number or is negative (invalid)
-//     return createInvalidArgumentError(id, field);
-//   }
-// }
 
 function getStudentsBySite(req) {
   var id = req.params.site_id;
@@ -173,8 +111,8 @@ function getStudentsBySite(req) {
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
     return sites.getSite(req)
-    .then(function(idLookup) {
-      if (idLookup.length > 0) {
+    .then(function(data) {
+      if (data.length > 0) {
         return query(queryString, [id]);
       } else {
         // Given id does not exist, give error.
@@ -205,16 +143,7 @@ function getStudent(req) {
 
   // Check if student is a positive integer
   if (isPositiveInteger(id)) {
-    // Check if the student is in the database
-    return countInDB(id, 'Student', field)
-    .then(function(count) {
-      if (count > 0) {
-        // The id is in the database. Fetch the student
-        return query('SELECT * FROM Student WHERE student_id=?', [id]);
-      } else {
-        return createArgumentNotFoundError(id, field);
-      }
-    });
+    return query('SELECT * FROM Student WHERE student_id=?', [id]);
   } else {
     // Error for invalid id format
     // id is not a number or is negative (invalid)
@@ -238,9 +167,11 @@ function createStudent(req) {
       }
 
       // Check if the given program_id exists in the database
-      return countInDB(req.params.program_id, 'Program', 'program_id')
-      .then(function(count) {
-        if (count > 0) {
+      return programs.getProgram(req)
+      .then(function(data) {
+        if (data.length > 0) {
+          var student_id;
+
           // The program_id is valid, add the student to the database
           var promise = getStudents({
             query: {
@@ -266,10 +197,18 @@ function createStudent(req) {
                 });
               })
               .then(function(data) {
+                student_id = data[0].student_id;
                 // Then, link student to the program in StudentToProgram table
                 return query('INSERT INTO StudentToProgram ' +
                 '(student_id, program_id) VALUES (?, ?)',
-                  [data[0].student_id, req.params.program_id]);
+                  [student_id, req.params.program_id]);
+              })
+              .then(function() {
+                return getStudent({
+                  params: {
+                    student_id: student_id
+                  }
+                });
               });
             } else {
               // Student already exists
@@ -321,20 +260,23 @@ function updateStudent(req) {
     }
 
     // Check if the given student_id exists in the database
-    return countInDB(req.params.student_id, 'Student', 'student_id')
-    .then(function(count) {
-      if (count > 0) {
+    return getStudent(req)
+    .then(function(data) {
+      if (data.length > 0) {
         // The student exists. Next, check if a program update was requested
         if (!defined(req.params.program_id)) {
           // No program update requested. Update students table.
           var queryComponents = createUpdateQuery(req.body);
           queryComponents[1].push(req.params.student_id);
-          return query(queryComponents[0], queryComponents[1]);
+          return query(queryComponents[0], queryComponents[1])
+          .then(function() {
+            return getStudent(req);
+          });
         } else {
           // Program update requested. Check if the new program exists.
-          return countInDB(req.params.program_id, 'Program', 'program_id')
-          .then(function(count) {
-            if (count > 0) {
+          return programs.getProgram(req)
+          .then(function(data) {
+            if (data.length > 0) {
               // The program exists. Update the student's program
               return query('UPDATE StudentToProgram SET program_id = ? ' +
               'WHERE student_id = ?', [req.params.program_id,
@@ -347,6 +289,9 @@ function updateStudent(req) {
                   queryComponents[1].push(req.params.student_id);
                   return query(queryComponents[0], queryComponents[1]);
                 }
+              })
+              .then(function() {
+                return getStudent(req);
               });
             } else {
               // The program does not exist
@@ -374,9 +319,10 @@ function updateStudent(req) {
 function deleteStudent(req) {
   if (defined(req.params) && defined(req.params.student_id)) {
     if (isPositiveInteger(req.params.student_id)) {
-      return countInDB(req.params.student_id, 'Student', 'student_id')
-      .then(function(count) {
-        if (count > 0) {
+      return getStudent(req)
+      .then(function(data) {
+        var student = data;
+        if (data.length > 0) {
           return query('DELETE FROM Measurement WHERE student_id=?',
            [req.params.student_id])
           .then(function() {
@@ -386,6 +332,9 @@ function deleteStudent(req) {
           .then(function() {
             return query('DELETE FROM Student WHERE student_id=?',
              [req.params.student_id]);
+          })
+          .then(function() {
+            return student;
           });
         } else {
           return createArgumentNotFoundError(req.params.student_id,
@@ -403,14 +352,6 @@ function deleteStudent(req) {
       message: 'Request must have a params section with a valid student_id'
     });
   }
-}
-
-function countInDB(id, table, field) {
-  return query('SELECT COUNT(*) FROM ' + table + ' WHERE ' + field + ' = ?',
-  [id])
-  .then(function(data) {
-    return data[0]['COUNT(*)'];
-  });
 }
 
 function createUpdateQuery(body) {
