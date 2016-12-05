@@ -9,7 +9,7 @@ const students = require('../routes/students');
 const sites = require('../routes/sites');
 const programs = require('../routes/programs');
 const events = require('../routes/events');
-
+const stats = require('../routes/stats');
 
 describe('app.js', function() {
   var app;
@@ -470,9 +470,9 @@ describe('app.js', function() {
         });
     });
 
-    it('POST /accounts/:account_id/programs/:program_id/events', function(done) {
+    it('POST /programs/:program_id/events', function(done) {
       request(app)
-        .post('/accounts/1/programs/1/events')
+        .post('/programs/1/events')
         .expect('created an event', 200)
         .end(function() {
           assert.isTrue(createEventStub.called);
@@ -496,6 +496,120 @@ describe('app.js', function() {
         .expect('got the events for a program', 200)
         .end(function() {
           assert.isTrue(getEventsByProgramStub.called);
+          done();
+        });
+    });
+  });
+
+  describe('stats endpoint', function() {
+    var getStatsStub;
+    var getStatsBySiteStub;
+    var getStatsByProgramStub;
+    var getStatsByEventStub;
+    var getStatsByStudentStub;
+    var uploadPacerStatsStub;
+    var uploadBMIStatsStub;
+
+    before(function() {
+      getStatsStub = sinon.stub(stats, 'getStats', function() {
+        return Promise.resolve('got the stats');
+      });
+      getStatsBySiteStub = sinon.stub(stats, 'getStatsBySite', function() {
+        return Promise.resolve('got the stats for a site');
+      });
+      getStatsByProgramStub = sinon.stub(stats, 'getStatsByProgram', function() {
+        return Promise.resolve('got the stats for a program');
+      });
+      getStatsByEventStub = sinon.stub(stats, 'getStatsByEvent', function() {
+        return Promise.resolve('got the stats for an event');
+      });
+      getStatsByStudentStub = sinon.stub(stats, 'getStatsByStudent', function() {
+        return Promise.resolve('got the stats for a student');
+      });
+      uploadPacerStatsStub = sinon.stub(stats, 'uploadPacerStats', function() {
+        return Promise.resolve('uploaded the pacer stats');
+      });
+      uploadBMIStatsStub = sinon.stub(stats, 'uploadBMIStats', function() {
+        return Promise.resolve('uploaded the BMI stats');
+      });
+    });
+
+    after(function() {
+      stats.getStats.restore();
+      stats.getStatsBySite.restore();
+      stats.getStatsByProgram.restore();
+      stats.getStatsByEvent.restore();
+      stats.getStatsByStudent.restore();
+      stats.uploadPacerStats.restore();
+      stats.uploadBMIStats.restore();
+    });
+
+    it('get /stats', function(done) {
+      request(app)
+        .get('/stats')
+        .expect('got the stats', 200)
+        .end(function() {
+          assert.isTrue(getStatsStub.called);
+          done();
+        });
+    });
+
+    it('GET /sites/:site_id/stats', function(done) {
+      request(app)
+        .get('/sites/1/stats')
+        .expect('got the stats for a site', 200)
+        .end(function() {
+          assert.isTrue(getStatsBySiteStub.called);
+          done();
+        });
+    });
+
+    it('GET /programs/:program_id/stats', function(done) {
+      request(app)
+        .get('/programs/1/stats')
+        .expect('got the stats for a program', 200)
+        .end(function() {
+          assert.isTrue(getStatsByProgramStub.called);
+          done();
+        });
+    });
+
+    it('GET /events/:event_id/stats', function(done) {
+      request(app)
+        .get('/events/1/stats')
+        .expect('got the stats for an event', 200)
+        .end(function() {
+          assert.isTrue(getStatsByEventStub.called);
+          done();
+        });
+    });
+
+    it('GET /students/:student_id/stats', function(done) {
+      request(app)
+        .get('/students/1/stats')
+        .expect('got the stats for a student', 200)
+        .end(function() {
+          assert.isTrue(getStatsByStudentStub.called);
+          done();
+        });
+    });
+
+    it('PUT /events/:event_id/stats/pacer', function(done) {
+      request(app)
+        .put('/events/1/stats/pacer')
+        .expect('uploaded the pacer stats', 200)
+        .end(function() {
+          assert.isTrue(uploadPacerStatsStub.called);
+          done();
+        });
+    });
+
+    it('PUT /events/:event_id/stats/bmi', function(done) {
+      request(app)
+        .put('/events/1/stats/bmi')
+        .expect('uploaded the BMI stats', 200)
+        .end(function() {
+          assert.isTrue(uploadBMIStatsStub.called);
           done();
         });
     });

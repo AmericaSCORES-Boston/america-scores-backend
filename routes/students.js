@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const utils = require('../lib/utils');
 const query = utils.query;
 const defined = utils.defined;
+const getAccountID = utils.getAccountID;
 
 // Require other routes called
 var sites = require('../routes/sites');
@@ -33,11 +34,11 @@ function getStudents(req) {
       }
   } else if (!req.query.hasOwnProperty('first_name') &&
   !req.query.hasOwnProperty('last_name') && !req.query.hasOwnProperty('dob')) {
-    if (req.user.authorization == 'Admin' || req.user.authorization == 'Staff') {
-      return query('SELECT * FROM Student');
-    } else {
+    if (req.user.authorization !== 'Admin' && req.user.authorization !== 'Staff') {
       return createAccessDeniedError();
     }
+
+    return query('SELECT * FROM Student');
   } else {
     return Promise.reject({
       name: 'UnsupportedRequest',
@@ -57,18 +58,35 @@ function getStudentsByProgram(req) {
 
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
-    // Check if the id is in the related table
-    return programs.getProgram(req)
-    .then(function(data) {
-      if (data.length > 0) {
-        return query(queryString, [id]);
-      } else {
-        // Given id does not exist, give error.
-        return createArgumentNotFoundError(id, field);
-      }
-    })
-    .then(function(data) {
-      return data;
+    if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+      // Check if the id is in the related table
+      return programs.getProgram(req)
+      .then(function(data) {
+        if (data.length > 0) {
+          return query(queryString, [id]);
+        } else {
+          // Given id does not exist, give error.
+          return createArgumentNotFoundError(id, field);
+        }
+      })
+      .then(function(data) {
+        return data;
+      });
+    }
+
+    return getAccountID(req.user.auth0_id)
+    .then(function(acct_id) {
+      return query('SELECT * FROM Student WHERE student_id IN (SELECT ' +
+      'student_id FROM StudentToProgram WHERE program_id IN (SELECT ' +
+      'program_id FROM AcctToProgram WHERE acct_id = ? AND program_id = ?))',
+      [acct_id, id])
+      .then(function(data) {
+        if (data.length === 0) {
+          return createAccessDeniedError();
+        }
+
+        return data;
+      });
     });
   } else {
     // id is not a number or is negative (invalid)
@@ -80,10 +98,8 @@ function getStudentsByEvent(req) {
   var id = req.params.event_id;
   var field = 'event_id';
   var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-  '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-  '(SELECT program_id FROM Event WHERE event_id = ?))';
-  // $$$ this is wrong, you should be linking from event, to measurement, to student.
-  // TODO: fix this query + results in tests
+  '(SELECT student_id FROM Measurement WHERE measurement_id IN ' +
+  '(SELECT measurement_id FROM Measurement WHERE event_id = ?))';
 
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {

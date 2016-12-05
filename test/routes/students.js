@@ -387,7 +387,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data);
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
@@ -406,7 +406,7 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data);
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
@@ -431,7 +431,7 @@ describe('Students', function() {
       });
     });
 
-    xit('should give an error if the volunteer does not have permissions for the program',
+    it('should give an error if the volunteer does not have permissions for the program',
     function(done) {
       var req = {
         params: {
@@ -467,12 +467,12 @@ describe('Students', function() {
 
       promise.then(function(data) {
         // Check that we received the correct students
-        assert.deepEqual([annabeth], data);
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
 
-    xit('should give an error if the coach does not have permissions for the program',
+    it('should give an error if the coach does not have permissions for the program',
     function(done) {
       var req = {
         params: {
@@ -491,7 +491,6 @@ describe('Students', function() {
         assert.equal(err.status, 403);
         done();
       });
-
     });
 
     it('should give an error if the program_id is negative',
@@ -640,26 +639,22 @@ describe('Students', function() {
       var promise = students.getStudentsByEvent(req);
 
       promise.then(function(data) {
-        console.log(data);
-        // $$$ THIS IS BROKEN TILL YOU FIX THE EVENTS QUERY
-        // Check that we received the correct students
         assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
 
-    // $$$ DO THIS NEXT
-    xit('should give an error if the volunteer does not have permissions for the program',
+    xit('should give an error if the volunteer does not have permissions for the event',
     function(done) {
       var req = {
         params: {
-          program_id: 1
+          event_id: 1
         },
         body: {},
         user: constants.volunteer
       };
 
-      students.getStudentsByProgram(req)
+      students.getStudentsByEvent(req)
       .catch(function(err) {
         assert.equal(err.message,
         'Access denied: this account does not have permission for this action');
@@ -2102,7 +2097,17 @@ describe('Students', function() {
         assert.notDeepEqual(oldPrograms, data);
         assert.lengthOf(data, programMatchCount - 1);
         assert.deepEqual(data, [{
-          id: 2,
+          id: 1,
+          student_id: 1,
+          program_id: 1
+        },
+        {
+          id: 3,
+          student_id: 4,
+          program_id: 1
+        },
+        {
+          id: 4,
           student_id: 3,
           program_id: 2
         }]);
@@ -2125,7 +2130,7 @@ describe('Students', function() {
           event_id: 2,
           height: 7,
           weight: 7,
-          pacer: 7
+          pacer: null
         },
         {
           measurement_id: 6,
@@ -2133,7 +2138,7 @@ describe('Students', function() {
           event_id: 2,
           height: 4,
           weight: 12,
-          pacer: 421
+          pacer: null
         }]);
         done();
       });
