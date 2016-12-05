@@ -957,7 +957,7 @@ describe('Accounts', function() {
       // TODO ensure entire Auth0 DB has not been affected
       accounts.updateAccount({
         params: {
-          not_`acc_id`: 7
+          something_stupid: 7
         },
         body: {
           f_name: 'Beezlebub'
@@ -1610,9 +1610,9 @@ describe('Accounts', function() {
     accounts.createAccount(
       {
         body: {
-          f_name: 'Agent'
+          f_name: 'Agent',
           l_name: 'Smith',
-          type: 'Volunteer'
+          type: 'Volunteer',
           password: 'Password123'
         }
       })
@@ -1634,7 +1634,7 @@ describe('Accounts', function() {
     accounts.createAccount(
       {
         body: {
-          f_name: 'Agent'
+          f_name: 'Agent',
           l_name: 'Smith',
           email: 'garbage@americascores.org',
           password: 'Password123'
@@ -1658,7 +1658,7 @@ describe('Accounts', function() {
     accounts.createAccount(
       {
         body: {
-          f_name: 'Agent'
+          f_name: 'Agent',
           l_name: 'Smith',
           email: 'garbage@americascores.org',
           type: 'Staff'
@@ -1682,7 +1682,7 @@ describe('Accounts', function() {
     accounts.createAccount(
       {
         body: {
-          f_name: ''
+          f_name: '',
           l_name: 'Smith',
           email: 'garbage@americascores.org',
           type: 'Staff',
@@ -1707,7 +1707,7 @@ describe('Accounts', function() {
     accounts.createAccount(
       {
         body: {
-          f_name: 'Agent'
+          f_name: 'Agent',
           l_name: '',
           email: 'garbage@americascores.org',
           type: 'Staff',
@@ -1732,7 +1732,7 @@ describe('Accounts', function() {
     accounts.createAccount(
       {
         body: {
-          f_name: 'Agent'
+          f_name: 'Agent',
           l_name: 'Smith',
           email: 'garbage.at.americascores.org',
           type: 'Staff',
@@ -1761,7 +1761,7 @@ describe('Accounts', function() {
     accounts.createAccount(
       {
         body: {
-          f_name: 'Agent'
+          f_name: 'Agent',
           l_name: 'Smith',
           email: 'garbage@americascores.org',
           type: 'Staff',
@@ -1878,5 +1878,5 @@ describe('Accounts', function() {
         }
       })); */
     // });
-  });
+//  });
 });
