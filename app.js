@@ -9,9 +9,9 @@ var request = require('request')
 const express = require('express');
 const bodyParser = require('body-parser');
 const makeResponse = require('./lib/utils').makeResponse;
+const jwt = require('jsonwebtoken');
 // var cors = require('cors');
 const app = express();
-
 // app.use(cors());
 
 // Routes
@@ -27,28 +27,58 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 // exchange access_token for user info
 app.use(function(req, res, next) {
+  // verify authorization and connection suppiled in request
   if (!req.hasOwnProperty('authorization')) {
     res.status(400);
-    res.send('authorization field not found in request');
+    res.send('No authorization provied');
+  } else if (!req.hasOwnProperty('connection')) {
+    res.status(400);
+    res.send('No connection type supplied');
   }
 
-  var options = { method: 'GET',
- 	 url: 'https://asbadmin.auth0.com/userinfo',
-   headers: { authorization: 'Bearer ' + req.authorization }
+  var client_secret;
+  var client_id;
+  // set parameters for JWT check depending upon connection type supplied
+  if (req.connection === 'mobile'){
+    client_secret = process.env.AUTH0_MOBILE_SECRET;
+    // android and mobile do not share same client_id (stored in 'aud').
+    // update accordingly.
+    var unverified = jwt.decode(req.authorization);
+    client_id = unverified.aud === process.env.AUTH0_IOS_CLIENT_ID ? process.env.AUTH0_IOS_CLIENT_ID : process.env.AUTH0_ANDROID_CLIENT_ID;
+  } else if (req.connection === 'web_app') {
+    client_secret = process.env.AUTH0_WEBAPP_SECRET;
+    client_id = process.env.AUTH0_WEBAPP_CLIENT_ID;
+  } else {
+    res.status(400);
+    res.send('Bad connection type supplied');
+  }
+
+  // convert secret into a base64 encoded buffer
+  client_secret = new Buffer(client_secret, 'base64');
+
+  // set options for verify function to check within jwt
+  var options = {
+    algorithms: 'HS256',
+    audience: client_id,
+    issuer: 'https://' + process.env.AUTH0_DOMAIN + '/',
+    ignoreExpiration: false
   };
 
-  request(options, function (err, response, body) {
-    if(err) {
-      //unsure if this is how we want to
-      //throw new Error(error);
-      res.status = response.status;
-      res.send('Unable to retrieve user info from Auth0');
-    } else {
-        parsedBody = JSON.parse(body);
-        req.user = parsedBody;
-        if(body.has)
-        next();
-    }
+  try {
+    // verify token with provided parameters
+    var decoded = jwt.verify(req.authorization, client_secret, options);
+    req.user = {
+      authorization: decoded.app_metadata.authorization.group,
+      f_name: decoded.first_name,
+      l_name: decoded.last_name,
+      email: email,
+      auth0_id: user_id
+    };
+    next();
+  } catch(err) {
+    res.status(401);
+    res.send('Authorization failed');
+  }
   });
 // app.options('*', cors());
 
