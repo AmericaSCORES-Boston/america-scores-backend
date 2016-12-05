@@ -103,19 +103,24 @@ function getStudentsByEvent(req) {
 
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
-    // Check if the id is in the related table
-    return events.getEvent(req)
-    .then(function(data) {
-      if (data.length > 0) {
-        return query(queryString, [id]);
-      } else {
-        // Given id does not exist, give error.
-        return createArgumentNotFoundError(id, field);
-      }
-    })
-    .then(function(data) {
-      return data;
-    });
+    if (req.user.authorization === 'Admin' ||
+    req.user.authorization === 'Staff' ||
+    req.user.authorization === 'Coach' ||
+    req.user.authorization === 'Volunteer') {
+      // Check if the id is in the related table
+      return events.getEvent(req)
+      .then(function(data) {
+        if (data.length > 0) {
+          return query(queryString, [id]);
+        } else {
+          // Given id does not exist, give error.
+          return createArgumentNotFoundError(id, field);
+        }
+      })
+      .then(function(data) {
+        return data;
+      });
+    }
   } else {
     // id is not a number or is negative (invalid)
     return createInvalidArgumentError(id, field);
@@ -129,6 +134,9 @@ function getStudentsBySite(req) {
   '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
   '(SELECT program_id FROM Program WHERE site_id = ?))';
 
+  if (req.user.authorization !== 'Admin' && req.user.authorization !== 'Staff') {
+    return createAccessDeniedError();
+  }
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
@@ -165,7 +173,23 @@ function getStudent(req) {
 
   // Check if student is a positive integer
   if (isPositiveInteger(id)) {
-    return query('SELECT * FROM Student WHERE student_id=?', [id]);
+    if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+      return query('SELECT * FROM Student WHERE student_id=?', [id]);
+    }
+
+    return getAccountID(req.user.auth0_id)
+    .then(function(acct_id) {
+      return query('SELECT program_id FROM AcctToProgram WHERE acct_id=? ' +
+      'AND program_id IN (SELECT program_id FROM StudentToProgram ' +
+      'WHERE student_id = ?)', [acct_id, id])
+      .then(function(data) {
+        if (data.length === 0) {
+          return createAccessDeniedError();
+        }
+
+        return query('SELECT * FROM Student WHERE student_id=?', [id]);
+      });
+    });
   } else {
     // Error for invalid id format
     // id is not a number or is negative (invalid)
@@ -229,6 +253,9 @@ function createStudent(req) {
                 return getStudent({
                   params: {
                     student_id: student_id
+                  },
+                  user: {
+                    authorization: 'Admin'
                   }
                 });
               });

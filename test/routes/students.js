@@ -625,8 +625,7 @@ describe('Students', function() {
       });
     });
 
-    it('should get all the students for a given event only if the'
-    + ' volunteer has permission',
+    it('should get all the students associated with a given event (volunteer)',
     function(done) {
       var req = {
         params: {
@@ -644,23 +643,20 @@ describe('Students', function() {
       });
     });
 
-    xit('should give an error if the volunteer does not have permissions for the event',
+    it('should get all the students associated with a given event (coach)',
     function(done) {
       var req = {
         params: {
-          event_id: 1
+          event_id: 2
         },
         body: {},
-        user: constants.volunteer
+        user: constants.coach
       };
 
-      students.getStudentsByEvent(req)
-      .catch(function(err) {
-        assert.equal(err.message,
-        'Access denied: this account does not have permission for this action');
+      var promise = students.getStudentsByEvent(req);
 
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
+      promise.then(function(data) {
+        assert.deepEqual([percy, annabeth, pam], data);
         done();
       });
     });
@@ -759,7 +755,7 @@ describe('Students', function() {
   });
 
   describe('getStudentsBySite(req)', function() {
-    it('should get all the students for a given site',
+    it('should get all the students for a given site (admin)',
     function(done) {
       var req = {
         params: {
@@ -773,6 +769,68 @@ describe('Students', function() {
       .then(function(data) {
         // Check that we received the correct students
         assert.deepEqual([brian], data);
+        done();
+      });
+    });
+
+    it('should get all the students for a given site (staff)',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 2
+        },
+        body: {},
+        user: constants.staff
+      };
+
+      students.getStudentsBySite(req)
+      .then(function(data) {
+        // Check that we received the correct students
+        assert.deepEqual([brian], data);
+        done();
+      });
+    });
+
+    it('should not get all the students for a given site (coach)',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 2
+        },
+        body: {},
+        user: constants.coach
+      };
+
+      students.getStudentsBySite(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
+        done();
+      });
+    });
+
+    it('should not get all the students for a given site (volunteer)',
+    function(done) {
+      var req = {
+        params: {
+          site_id: 2
+        },
+        body: {},
+        user: constants.volunteer
+      };
+
+      students.getStudentsBySite(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
         done();
       });
     });
@@ -871,7 +929,7 @@ describe('Students', function() {
   });
 
   describe('getStudent(req)', function() {
-    it('should get an existing student by id', function(done) {
+    it('should get an existing student by id (admin)', function(done) {
       var req = {
         params: {
           // The student_id is contained in the request
@@ -886,6 +944,86 @@ describe('Students', function() {
       promise.then(function(data) {
         // Check that we received the correct student
         assert.deepEqual([percy], data);
+        done();
+      });
+    });
+
+    it('should get an existing student by id (staff)', function(done) {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 1
+        },
+        body: {},
+        user: constants.staff
+      };
+
+      var promise = students.getStudent(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual([percy], data);
+        done();
+      });
+    });
+
+    it('should get an existing student by id if the coach has permission', function(done) {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 1
+        },
+        body: {},
+        user: constants.coach
+      };
+
+      var promise = students.getStudent(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual([percy], data);
+        done();
+      });
+    });
+
+    it('should get an existing student by id if the volunteer has permission', function(done) {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 3
+        },
+        body: {},
+        user: constants.volunteer
+      };
+
+      var promise = students.getStudent(req);
+
+      promise.then(function(data) {
+        // Check that we received the correct student
+        assert.deepEqual([brian], data);
+        done();
+      });
+    });
+
+    it('should give an error if volunteer does not have permission', function(done) {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          student_id: 1
+        },
+        body: {},
+        user: constants.volunteer
+      };
+
+      var promise = students.getStudent(req);
+
+      promise.catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
         done();
       });
     });
