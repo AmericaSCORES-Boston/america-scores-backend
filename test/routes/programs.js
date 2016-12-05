@@ -43,22 +43,22 @@ describe('GET', function(done) {
       params: {},
       user: constants.coach
     };
-    programs.getPrograms(req).catch(function(err) {
-      assert.equal(err.status, 403)
+    programs.getPrograms(req).then(function(data) {
+      assert.deepEqual([program1, program2], data)
       done();
     });
   });
   it('/programs (volunteer)', function(done) {
     var req = {
       params: {},
-      user: constants.coach
+      user: constants.volunteer
     };
-    programs.getPrograms(req).catch(function(err) {
-      assert.equal(err.status, 403)
+    programs.getPrograms(req).then(function(data) {
+      assert.deepEqual([program2], data)
       done();
     });
   });
-  it('/programs/:program_id', function(done) {
+  it('/programs/:program_id (admin)', function(done) {
     var req = {
       params: {
         program_id: 1
@@ -71,6 +71,66 @@ describe('GET', function(done) {
       done();
     });
   });
+  it('/programs/:program_id (staff)', function(done) {
+    var req = {
+      params: {
+        program_id: 1
+      },
+      user: constants.staff
+    };
+    programs.getProgram(req).then(function(data) {
+      assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/programs/:program_id (coach)', function(done) {
+    var req = {
+      params: {
+        program_id: 1
+      },
+      user: constants.coach
+    };
+    programs.getProgram(req).then(function(data) {
+      assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/programs/:program_id (coach innaccesible program)', function(done) {
+    var req = {
+      params: {
+        program_id: 3
+      },
+      user: constants.coach
+    };
+    programs.getProgram(req).catch(function(err) {
+      assert.equal(403, err.status);
+      done();
+    });
+  });
+  it('/programs/:program_id (volunteer)', function(done) {
+    var req = {
+      params: {
+        program_id: 2
+      },
+      user: constants.volunteer
+    };
+    programs.getProgram(req).then(function(data) {
+      assert.deepEqual([program2], data);
+      done();
+    });
+  });
+  it('/programs/:program_id (volunteer innaccesible program)', function(done) {
+    var req = {
+      params: {
+        program_id: 1
+      },
+      user: constants.volunteer
+    };
+    programs.getProgram(req).catch(function(err) {
+      assert.equal(403, err.status);
+      done();
+    });
+  });
   it('/programs/:program_id (nonexistent program_id)', function(done) {
     var req = {
       params: {
@@ -78,8 +138,7 @@ describe('GET', function(done) {
       },
       user: constants.admin
     };
-    var promise = programs.getProgram(req);
-    promise.then(function(data) {
+    programs.getProgram(req).then(function(data) {
       assert.deepEqual([], data);
       done();
     });
@@ -91,22 +150,80 @@ describe('GET', function(done) {
       },
       user: constants.admin
     };
-    var promise = programs.getProgram(req);
-    promise.then(function(data) {
+    programs.getProgram(req).then(function(data) {
       assert.deepEqual([], data);
       done();
     });
   });
-  it('/sites/:site_id/programs', function(done) {
+  it('/sites/:site_id/programs (admin)', function(done) {
     var req = {
       params: {
         site_id: 1
       },
       user: constants.admin
     };
-    var promise = programs.getProgramsBySite(req);
-    promise.then(function(data) {
+    programs.getProgramsBySite(req).then(function(data) {
       assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/sites/:site_id/programs (staff)', function(done) {
+    var req = {
+      params: {
+        site_id: 1
+      },
+      user: constants.staff
+    };
+    programs.getProgramsBySite(req).then(function(data) {
+      assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/sites/:site_id/programs (coach)', function(done) {
+    var req = {
+      params: {
+        site_id: 1
+      },
+      user: constants.coach
+    };
+    programs.getProgramsBySite(req).then(function(data) {
+      assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/sites/:site_id/programs (coach innaccesible program)', function(done) {
+    var req = {
+      params: {
+        site_id: 3
+      },
+      user: constants.coach
+    };
+    programs.getProgramsBySite(req).then(function(data) {
+      assert.deepEqual([], data);
+      done();
+    });
+  });
+  it('/sites/:site_id/programs (volunteer)', function(done) {
+    var req = {
+      params: {
+        site_id: 2
+      },
+      user: constants.volunteer
+    };
+    programs.getProgramsBySite(req).then(function(data) {
+      assert.deepEqual([program2], data);
+      done();
+    });
+  });
+  it('/sites/:site_id/programs (volunteer innaccesible program)', function(done) {
+    var req = {
+      params: {
+        site_id: 1
+      },
+      user: constants.volunteer
+    };
+    programs.getProgramsBySite(req).then(function(data) {
+      assert.deepEqual([], data);
       done();
     });
   });
@@ -136,7 +253,7 @@ describe('GET', function(done) {
       done();
     });
   });
-  it('/students/:student_id/programs', function(done) {
+  it('/students/:student_id/programs (admin)', function(done) {
     var req = {
       params: {
         student_id: 2
@@ -146,6 +263,58 @@ describe('GET', function(done) {
     var promise = programs.getProgramsByStudent(req);
     promise.then(function(data) {
       assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/students/:student_id/programs (staff)', function(done) {
+    var req = {
+      params: {
+        student_id: 2
+      },
+      user: constants.staff
+    };
+    var promise = programs.getProgramsByStudent(req);
+    promise.then(function(data) {
+      assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/students/:student_id/programs (coach)', function(done) {
+    var req = {
+      params: {
+        student_id: 4
+      },
+      user: constants.coach
+    };
+    var promise = programs.getProgramsByStudent(req);
+    promise.then(function(data) {
+      assert.deepEqual([program1], data);
+      done();
+    });
+  });
+  it('/students/:student_id/programs (coach innaccesible program)', function(done) {
+    var req = {
+      params: {
+        student_id: 5
+      },
+      user: constants.coach
+    };
+    var promise = programs.getProgramsByStudent(req);
+    promise.then(function(data) {
+      assert.deepEqual([], data);
+      done();
+    });
+  });
+  it('/students/:student_id/programs (volunteer)', function(done) {
+    var req = {
+      params: {
+        student_id: 3
+      },
+      user: constants.coach
+    };
+    var promise = programs.getProgramsByStudent(req);
+    promise.then(function(data) {
+      assert.deepEqual([program2], data);
       done();
     });
   });

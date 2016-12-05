@@ -2,21 +2,21 @@ const utils = require('../lib/utils');
 const query = utils.query;
 const defined = utils.defined;
 const getAccountID = utils.getAccountID;
-const accounts = require('./accounts');
 
 function getPrograms(req) {
   if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
     return query('SELECT * FROM Program');
   }
-
-
-  return Promise.reject({status: 403, message: "Access denied"});
+  return getAccountID(req.user.auth0_id)
+  .then(function(data) {
+    return query('SELECT * FROM Program WHERE program_id IN (Select program_id FROM AcctToProgram WHERE acct_id = ?)', [data]);
+  });
 }
 
 function getProgram(req) {
   var program_id = req.params.program_id;
   if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
-    return query('SELECT * FROM Program WHERE program_id = ?', [id]);
+    return query('SELECT * FROM Program WHERE program_id = ?', [program_id]);
   }
   return getAccountID(req.user.auth0_id)
   .then(function(data) {
@@ -26,17 +26,30 @@ function getProgram(req) {
     if (data.length != 1) {
       return Promise.reject({status: 403, message: "Access denied or program not found"})
     }
-  })
+    return data;
+  });
 }
 
 function getProgramsBySite(req) {
-  var id = req.params.site_id;
-  return query('SELECT * FROM Program WHERE site_id = ?', [id]);
+  var site_id = req.params.site_id;
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT * FROM Program WHERE site_id = ?', [site_id]);
+  }
+  return getAccountID(req.user.auth0_id)
+  .then(function(data) {
+    return query('SELECT * FROM Program WHERE site_id = ? AND program_id IN (Select program_id FROM AcctToProgram WHERE acct_id = ?)', [site_id, data]);
+  });
 }
 
 function getProgramsByStudent(req) {
-  var id = req.params.student_id;
-  return query('SELECT * FROM Program WHERE program_id IN (Select program_id FROM StudentToProgram WHERE student_id = ?)', [id]);
+  var student_id = req.params.student_id;
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT * FROM Program WHERE program_id IN (Select program_id FROM StudentToProgram WHERE student_id = ?)', [student_id]);
+  }
+  return getAccountID(req.user.auth0_id)
+  .then(function(data) {
+    return query('SELECT * FROM Program WHERE program_id IN (Select program_id FROM StudentToProgram WHERE student_id = ?) AND program_id IN (SELECT program_id FROM AcctToProgram WHERE acct_id = ?)', [student_id, data]);
+  });
 }
 
 function getProgramsByAccount(req) {
