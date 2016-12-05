@@ -2,16 +2,16 @@
 const chai = require('chai'); // testing modules
 const assert = chai.assert;
 const accounts = require('../../routes/accounts'); // endpoint being tested
-// const http = requre
+const utils = require('../../lib/utils');
 // seed to reset db before each test
-const seed = require('../../lib/utils').seed;
+const seed = utils.seed;
 // constants specifying the given type of account performing the requets
 const accType = require('../../lib/constants');
 // query function for getAllAccounts check
-const query = require('../../lib/utils').query;
+const query = utils.query;
 const ManagementClient = require('auth0').ManagementClient;
-const auth0ID = require('../../lib/utils').getAuth0ID;
-const creds = require('./../../config/creds');
+const auth0ID = utils.getAuth0ID;
+const creds = require('../../config/creds');
 
 var mgmt = new ManagementClient({
   token: creds.auth0.AUTH0_MANAGEMENT_TOKEN,
