@@ -164,4 +164,20 @@ describe('utils', function() {
       });
     });
   });
+
+  describe('getAccountID()', function() {
+    it('gets the account id for a auth0_id', function(done) {
+      utils.getAccountID('auth0|584377c428be27504a2bcf92').then(function(data) {
+        assert.equal(data, 1);
+        done();
+      });
+    });
+
+    it('returns an error for an invalid auth0_id', function(done) {
+      utils.getAccountID('invalid').catch(function(err) {
+        assert.equal(err.status, 403);
+        done();
+      });
+    });
+  });
 });
