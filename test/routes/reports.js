@@ -22,7 +22,7 @@ describe('Reports', function() {
     xit('should successfully generate a CSV report of all students and their stats', function(done) {
       // NOTE: the third column is intentionally left empty, as per request from Alicia
       var expectedCSV = {
-        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Data, ' +
+        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
         'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, , 08/19/2016, 45, 18, 421\n' +
@@ -42,7 +42,7 @@ describe('Reports', function() {
     xit('should successfully generate a CSV report of students and their stats', function(done) {
         // NOTE: the third column is intentionally left empty, as per request from Alicia
       var expectedCSV = {
-        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Data, ' +
+        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
         'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, 500, 08/19/2016, 45, 18, 421\n'
@@ -64,7 +64,7 @@ describe('Reports', function() {
 
     xit('should successfully generate a CSV report of students and their stats 2', function(done) {
       var expectedCSV = {
-        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Data, ' +
+        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
         'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
