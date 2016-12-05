@@ -6,21 +6,21 @@ const query = utils.query;
 const defined = utils.defined;
 
 function getAccounts(req) {
-  if (req.user.authorization == 'Admin') {
-    if (defined(req.query.auth0_id)) {
-      return query('SELECT * FROM Acct WHERE auth0_id = ?',
-      [req.query.auth0_id]);
-    }
-
-    if (defined(req.query.type)) {
-      return query('SELECT * FROM Acct WHERE acct_type = ?',
-      [req.query.type]);
-    }
-
-    return query('SELECT * FROM Acct');
-  } else {
+  if (req.user.authorization !== 'Admin') {
     return createAccessDeniedError();
   }
+
+  if (defined(req.query.auth0_id)) {
+    return query('SELECT * FROM Acct WHERE auth0_id = ?',
+    [req.query.auth0_id]);
+  }
+
+  if (defined(req.query.type)) {
+    return query('SELECT * FROM Acct WHERE acct_type = ?',
+    [req.query.type]);
+  }
+
+  return query('SELECT * FROM Acct');
 }
 
 function getAccount(req) {
