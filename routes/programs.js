@@ -79,6 +79,9 @@ function createProgram(req) {
 }
 
 function updateProgram(req) {
+  if (req.user.authorization === 'Coach' || req.user.authorization === 'Volunteer') {
+    return Promise.reject({status: 403, message: 'Acces denied'});
+  }
   var program_id = req.params.program_id;
   var program_name = req.body.program_name;
   if(!defined(program_name)) {

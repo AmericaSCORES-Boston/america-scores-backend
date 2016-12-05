@@ -521,7 +521,7 @@ describe('PUT', function() {
       done();
     });
   });
-  it('/programs/:program_id', function(done) {
+  it('/programs/:program_id (admin)', function(done) {
     var req = {
       params: {
         program_id: 1,
@@ -538,6 +538,55 @@ describe('PUT', function() {
     }).then(function(data) {
         assert.deepEqual(programsUpdated, data);
         done();
+    });
+  });
+  it('/programs/:program_id (staff)', function(done) {
+    var req = {
+      params: {
+        program_id: 1,
+      },
+      body: {
+        program_name: 'Updated'
+      },
+      user: constants.staff
+    };
+    programs.updateProgram(req).then(function(data) {
+      assert.equal(req.body.program_name, data[0].program_name);
+      assert.deepEqual([updatedProgram], data);
+      return programs.getPrograms(req);
+    }).then(function(data) {
+        assert.deepEqual(programsUpdated, data);
+        done();
+    });
+  });
+  it('/programs/:program_id (coach)', function(done) {
+    var req = {
+      params: {
+        program_id: 1,
+      },
+      body: {
+        program_name: 'coach'
+      },
+      user: constants.coach
+    };
+    programs.updateProgram(req).catch(function(err) {
+      assert.equal(403, err.status);
+      done();
+    });
+  });
+  it('/programs/:program_id (volunteer)', function(done) {
+    var req = {
+      params: {
+        program_id: 1,
+      },
+      body: {
+        program_name: 'coach'
+      },
+      user: constants.volunteer
+    };
+    programs.updateProgram(req).catch(function(err) {
+      assert.equal(403, err.status);
+      done();
     });
   });
   it('/programs/:program_id (nonexistent program_id)', function(done) {
