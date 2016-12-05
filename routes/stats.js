@@ -113,6 +113,9 @@ function uploadPacerStats(req) {
       return students.getStudent({
         params: {
           student_id: measurement.student_id
+        },
+        user: {
+          authorization: 'Admin'
         }
       })
       .then(function(data) {
@@ -176,6 +179,9 @@ function uploadBMIStats(req) {
       return students.getStudent({
         params: {
           student_id: measurement.student_id
+        },
+        user: {
+          authorization: 'Admin'
         }
       })
       .then(function(data) {

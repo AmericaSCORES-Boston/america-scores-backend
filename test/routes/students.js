@@ -1176,7 +1176,7 @@ describe('Students', function() {
   });
 
   describe('createStudent(req)', function() {
-    it('should add a new student to the database', function(done) {
+    it('should add a new student to the database (admin)', function(done) {
       var req = {
         params: {
           program_id: 2
@@ -1207,6 +1207,155 @@ describe('Students', function() {
         assert.deepEqual(data, [{
           program_id: req.params.program_id
         }]);
+        done();
+      });
+    });
+
+    it('should add a new student to the database (staff)', function(done) {
+      var req = {
+        params: {
+          program_id: 2
+        },
+        body: daveURL,
+        user: constants.staff
+      };
+
+      students.createStudent(req)
+      .then(function(data) {
+        // Check that the new student is returned
+        assert.deepEqual(data, [dave]);
+        // Get the contents of the database after calling createStudent
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Verify that the number of students in the DB increased by one
+        assert.lengthOf(data, studentCount + 1);
+        // Verify that the correct student data was added
+        assert.deepEqual([percy, annabeth, brian, pam, dave], data);
+        // Verify the old data wasn't received
+        assert.notDeepEqual(oldDB, data);
+
+        return query('SELECT program_id FROM StudentToProgram ' +
+        'WHERE student_id=5');
+      })
+      .then(function(data) {
+        assert.deepEqual(data, [{
+          program_id: req.params.program_id
+        }]);
+        done();
+      });
+    });
+
+    it('should add a new student to the database if coach is authorized', function(done) {
+      var req = {
+        params: {
+          program_id: 2
+        },
+        body: daveURL,
+        user: constants.coach
+      };
+
+      students.createStudent(req)
+      .then(function(data) {
+        // Check that the new student is returned
+        assert.deepEqual(data, [dave]);
+        // Get the contents of the database after calling createStudent
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Verify that the number of students in the DB increased by one
+        assert.lengthOf(data, studentCount + 1);
+        // Verify that the correct student data was added
+        assert.deepEqual([percy, annabeth, brian, pam, dave], data);
+        // Verify the old data wasn't received
+        assert.notDeepEqual(oldDB, data);
+
+        return query('SELECT program_id FROM StudentToProgram ' +
+        'WHERE student_id=5');
+      })
+      .then(function(data) {
+        assert.deepEqual(data, [{
+          program_id: req.params.program_id
+        }]);
+        done();
+      });
+    });
+
+    it('should return an error if the coach does not have permission',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 3
+        },
+        body: daveURL,
+        user: constants.coach
+      };
+
+      students.createStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
+        done();
+      });
+    });
+
+    it('should add a new student to the database if volunteer is authorized', function(done) {
+      var req = {
+        params: {
+          program_id: 2
+        },
+        body: daveURL,
+        user: constants.volunteer
+      };
+
+      students.createStudent(req)
+      .then(function(data) {
+        // Check that the new student is returned
+        assert.deepEqual(data, [dave]);
+        // Get the contents of the database after calling createStudent
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Verify that the number of students in the DB increased by one
+        assert.lengthOf(data, studentCount + 1);
+        // Verify that the correct student data was added
+        assert.deepEqual([percy, annabeth, brian, pam, dave], data);
+        // Verify the old data wasn't received
+        assert.notDeepEqual(oldDB, data);
+
+        return query('SELECT program_id FROM StudentToProgram ' +
+        'WHERE student_id=5');
+      })
+      .then(function(data) {
+        assert.deepEqual(data, [{
+          program_id: req.params.program_id
+        }]);
+        done();
+      });
+    });
+
+    it('should return an error if the volunteer does not have permission',
+    function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        body: daveURL,
+        user: constants.volunteer
+      };
+
+      students.createStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
         done();
       });
     });

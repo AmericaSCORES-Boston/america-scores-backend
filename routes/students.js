@@ -60,7 +60,14 @@ function getStudentsByProgram(req) {
   if (isPositiveInteger(id)) {
     if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
       // Check if the id is in the related table
-      return programs.getProgram(req)
+      return programs.getProgram({
+       params: {
+         program_id: id
+       },
+       user: {
+         authorization: 'Admin'
+       }
+     })
       .then(function(data) {
         if (data.length > 0) {
           return query(queryString, [id]);
@@ -108,7 +115,14 @@ function getStudentsByEvent(req) {
     req.user.authorization === 'Coach' ||
     req.user.authorization === 'Volunteer') {
       // Check if the id is in the related table
-      return events.getEvent(req)
+      return events.getEvent({
+       params: {
+         event_id: id
+       },
+       user: {
+         authorization: 'Admin'
+       }
+     })
       .then(function(data) {
         if (data.length > 0) {
           return query(queryString, [id]);
@@ -140,7 +154,14 @@ function getStudentsBySite(req) {
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return sites.getSite(req)
+    return sites.getSite({
+     params: {
+       site_id: id
+     },
+     user: {
+       authorization: 'Admin'
+     }
+   })
     .then(function(data) {
       if (data.length > 0) {
         return query(queryString, [id]);
@@ -198,6 +219,24 @@ function getStudent(req) {
 }
 
 function createStudent(req) {
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return createStudentAuthorized(req);
+  }
+
+  return getAccountID(req.user.auth0_id)
+  .then(function(acct_id) {
+    return query('SELECT program_id FROM AcctToProgram WHERE acct_id = ? AND program_id = ?', [acct_id, req.params.program_id]);
+  })
+  .then(function(data) {
+    if (data.length === 0) {
+      return createAccessDeniedError();
+    }
+
+    return createStudentAuthorized(req);
+  });
+}
+
+function createStudentAuthorized(req) {
   // Check that request has all necessary fields
   if (defined(req.body) && defined(req.body.first_name) && defined(req.body.last_name) &&
     defined(req.body.dob) && defined(req.params) && defined(req.params.program_id)) {
@@ -213,7 +252,14 @@ function createStudent(req) {
       }
 
       // Check if the given program_id exists in the database
-      return programs.getProgram(req)
+      return programs.getProgram({
+        params: {
+          program_id: req.params.program_id
+        },
+        user: {
+          authorization: 'Admin'
+        }
+      })
       .then(function(data) {
         if (data.length > 0) {
           var student_id;
@@ -323,7 +369,14 @@ function updateStudent(req) {
           });
         } else {
           // Program update requested. Check if the new program exists.
-          return programs.getProgram(req)
+          return programs.getProgram({
+            params: {
+              program_id: req.params.program_id
+            },
+            user: {
+              authorization: 'Admin'
+            }
+          })
           .then(function(data) {
             if (data.length > 0) {
               // The program exists. Update the student's program
