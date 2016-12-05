@@ -3,9 +3,7 @@
 const env = process.env.NODE_ENV || 'development';
 const config = require('./config/config.js')[env];
 
-var express = require('express');
-var bodyParser = require('body-parser');
-var request = require('request');
+const request = require('request');
 const express = require('express');
 const bodyParser = require('body-parser');
 const makeResponse = require('./lib/utils').makeResponse;
