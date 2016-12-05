@@ -2,6 +2,7 @@
 
 const Promise = require('bluebird');
 const utils = require('../lib/utils');
+const constants = require('../lib/constants');
 const query = utils.query;
 const defined = utils.defined;
 
@@ -110,6 +111,7 @@ function getStudentsBySite(req) {
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
+    req.user = constants.admin;
     return sites.getSite(req)
     .then(function(data) {
       if (data.length > 0) {

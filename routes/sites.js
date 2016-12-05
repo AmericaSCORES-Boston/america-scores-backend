@@ -26,7 +26,7 @@ function getSites(req) {
 /**
  * Gets all sites for given account.
  *
- * @param {Object} req The given request object
+ * @param {Number} accountID The given account id
  * @return {Promise} The promise
  */
 function getSitesByAccount(accountID) {
@@ -82,7 +82,7 @@ function getSite(req) {
     })
     .then(function(data) {
       if (data.length !== 1) {
-        return Promise.reject({status: 403, message: "Access denied or program not found"})
+        return Promise.reject({status: 403, message: 'Access denied or site not found'});
       }
       return data;
     });
@@ -127,7 +127,7 @@ function updateSite(req) {
  */
 function deleteSite(req) {
   if (req.user.authorization !== 'Admin') {
-    return Promise.reject({status: 403, message: 'Acces denied'});
+    return Promise.reject({status: 403, message: 'Access denied'});
   }
 
   return query('DELETE FROM Site WHERE site_id = ?', [req.params.site_id]);

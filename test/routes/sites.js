@@ -4,6 +4,7 @@ const chai = require('chai');
 const assert = chai.assert;
 const sites = require('../../routes/sites');
 const utils = require('../../lib/utils');
+const constants = require('../../lib/constants');
 
 const site1 = {
   site_id: 1,
@@ -68,10 +69,23 @@ describe('Sites', function() {
 
   describe('getSites(req)', function() {
     it('gets all sites', function(done) {
-      var promise = sites.getSites({});
+      var promise = sites.getSites({
+        user: constants.admin
+      });
 
       promise.then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        done();
+      });
+    });
+
+    it('gets sites on for the accont if not admin', function(done) {
+      var promise = sites.getSites({
+        user: constants.coach
+      });
+
+      promise.then(function(data) {
+        assert.deepEqual([site1, site2], data);
         done();
       });
     });
@@ -79,11 +93,7 @@ describe('Sites', function() {
 
   describe('getSitesByAccount(req)', function() {
     it('gets all sites for a given coach', function(done) {
-      var promise = sites.getSitesByAccount({
-        params: {
-          account_id: 1
-        }
-      });
+      var promise = sites.getSitesByAccount(1);
 
       promise.then(function(data) {
         assert.deepEqual([site1, site2], data);
@@ -92,11 +102,7 @@ describe('Sites', function() {
     });
 
     it('it should return no sites if the given coach does not exist', function(done) {
-      var promise = sites.getSitesByAccount({
-        params: {
-          account_id: 100
-        }
-      });
+      var promise = sites.getSitesByAccount(100);
 
       promise.then(function(data) {
         assert.deepEqual([], data);
@@ -111,16 +117,21 @@ describe('Sites', function() {
         site_name: 'newSiteName',
         site_address: 'new Boston, MA'
       };
-      sites.getSites({})
+      sites.getSites({
+        user: constants.admin
+      })
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
 
         return sites.createSite({
-          body: newData
+          body: newData,
+          user: constants.admin
         });
       })
       .then(function() {
-        return sites.getSites({});
+        return sites.getSites({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11, {
@@ -132,17 +143,36 @@ describe('Sites', function() {
       });
     });
 
+    it('403 if you are not an admin or staff', function(done) {
+      var newData = {
+        site_name: 'newSiteName',
+        site_address: 'new Boston, MA'
+      };
+      sites.createSite({
+        body: newData,
+        user: constants.coach
+      })
+      .catch(function(err) {
+        assert.equal(err.status, 403);
+        assert.equal(err.message, 'Access denied');
+        done();
+      });
+    });
+
     it('does not create site because a site with the given name and address already exists', function(done) {
       sites.createSite({
         body: {
           site_name: 'Schuyler High School',
           site_address: '232 Boylston Street, Boston, MA'
-        }
+        },
+        user: constants.admin
       })
       .catch(function(err) {
         assert.equal(err.status, 409);
         assert.equal(err.message, 'Unable to create site: the site is already in the database');
-        return sites.getSites({});
+        return sites.getSites({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
@@ -151,10 +181,14 @@ describe('Sites', function() {
     });
 
     it('does not create a site because body was missing', function(done) {
-      sites.createSite({}).catch(function(err) {
+      sites.createSite({
+        user: constants.admin
+      }).catch(function(err) {
         assert.equal(err.status, 406);
         assert.equal(err.message, 'Must provide site\'s name, and address');
-        return sites.getSites({});
+        return sites.getSites({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
@@ -166,12 +200,15 @@ describe('Sites', function() {
       sites.createSite({
         body: {
           site_address: 'address'
-        }
+        },
+        user: constants.admin
       })
       .catch(function(err) {
         assert.equal(err.status, 406);
         assert.equal(err.message, 'Must provide site\'s name, and address');
-        return sites.getSites({});
+        return sites.getSites({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
@@ -183,12 +220,15 @@ describe('Sites', function() {
       sites.createSite({
         body: {
           site_name: 'name'
-        }
+        },
+        user: constants.admin
       })
       .catch(function(err) {
         assert.equal(err.status, 406);
         assert.equal(err.message, 'Must provide site\'s name, and address');
-        return sites.getSites({});
+        return sites.getSites({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
@@ -198,11 +238,12 @@ describe('Sites', function() {
   });
 
   describe('getSite(req)', function() {
-    it('get a site', function(done) {
+    it('get a site admin', function(done) {
       var promise = sites.getSite({
         params: {
           site_id: 1
-        }
+        },
+        user: constants.admin
       });
 
       promise.then(function(data) {
@@ -211,11 +252,41 @@ describe('Sites', function() {
       });
     });
 
+    it('get the site if the coach can see it', function(done) {
+      var promise = sites.getSite({
+        params: {
+          site_id: 1
+        },
+        user: constants.coach
+      });
+
+      promise.then(function(data) {
+        assert.deepEqual([site1], data);
+        done();
+      });
+    });
+
+    it('403 if the coach cannot see the sites', function(done) {
+      var promise = sites.getSite({
+        params: {
+          site_id: 3
+        },
+        user: constants.coach
+      });
+
+      promise.catch(function(err) {
+        assert.equal(err.status, 403);
+        assert.equal(err.message, 'Access denied or site not found');
+        done();
+      });
+    });
+
     it('returns an empty array when getting a site that does not exist', function(done) {
       var promise = sites.getSite({
         params: {
           site_id: 124
-        }
+        },
+        user: constants.admin
       });
 
       promise.then(function(data) {
@@ -230,7 +301,8 @@ describe('Sites', function() {
       sites.getSite({
         params: {
           site_id: 9
-        }
+        },
+        user: constants.admin
       })
       .then(function(data) {
         assert.deepEqual([site9], data);
@@ -242,14 +314,16 @@ describe('Sites', function() {
           body: {
             site_name: 'new name',
             site_address: 'new address'
-          }
+          },
+          user: constants.admin
         });
       })
       .then(function() {
         return sites.getSite({
           params: {
             site_id: 9
-          }
+          },
+          user: constants.admin
         });
       })
       .then(function(data) {
@@ -262,8 +336,28 @@ describe('Sites', function() {
       });
     });
 
+    it('only admins or staff can edit a site', function(done) {
+      sites.updateSite({
+        params: {
+            site_id: 9
+        },
+        body: {
+          site_name: 'new name',
+          site_address: 'new address'
+        },
+        user: constants.coach
+      })
+      .catch(function(err) {
+        assert.equal(err.status, 403);
+        assert.equal(err.message, 'Access denied');
+        done();
+      });
+    });
+
     it('does not updated a site because the body was missing', function(done) {
-      sites.updateSite({}).catch(function(err) {
+      sites.updateSite({
+        user: constants.admin
+      }).catch(function(err) {
         assert.equal(err.status, 406);
         assert.equal(err.message, 'Must provide site\'s name, or address');
         done();
@@ -272,7 +366,8 @@ describe('Sites', function() {
 
     it('does not updated a site because there are no fields to be updated', function(done) {
       sites.updateSite({
-        body: {}
+        body: {},
+        user: constants.admin
       })
       .catch(function(err) {
         assert.equal(err.status, 406);
@@ -289,7 +384,8 @@ describe('Sites', function() {
         body: {
           site_name: 'new name',
           site_address: 'new address'
-        }
+        },
+        user: constants.admin
       })
       .then(function(data) {
         assert.equal(0, data.affectedRows);
@@ -303,7 +399,8 @@ describe('Sites', function() {
       sites.getSite({
         params: {
           site_id: 3
-        }
+        },
+        user: constants.admin
       })
       .then(function(data) {
         assert.deepEqual([site3], data);
@@ -311,14 +408,16 @@ describe('Sites', function() {
         return sites.deleteSite({
           params: {
             site_id: 3
-          }
+          },
+          user: constants.admin
         });
       })
       .then(function() {
         return sites.getSite({
           params: {
             site_id: 3
-          }
+          },
+          user: constants.admin
         });
       })
       .then(function(data) {
@@ -327,18 +426,37 @@ describe('Sites', function() {
       });
     });
 
+    it('only admins can delete a site', function(done) {
+      sites.deleteSite({
+        params: {
+          site_id: 3
+        },
+        user: constants.staff
+      })
+      .catch(function(err) {
+        assert.equal(err.status, 403);
+        assert.equal(err.message, 'Access denied');
+        done();
+      });
+    });
+
     it('does nothing when told to delete a site that doesn\'t exist', function(done) {
-      sites.getSites({}).then(function(data) {
+      sites.getSites({
+        user: constants.admin
+      }).then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
 
         return sites.deleteSite({
           params: {
             site_id: 12414
-          }
+          },
+          user: constants.admin
         });
       })
       .then(function() {
-        return sites.getSites({});
+        return sites.getSites({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
