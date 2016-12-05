@@ -339,7 +339,6 @@ function updateStudent(req) {
   if (req.user.authorization !== 'Admin' && req.user.authorization !== 'Staff') {
     return createAccessDeniedError();
   }
-  
   // Check that request has all necessary fields
   if (defined(req.params) && defined(req.params.student_id) && defined(req.body)) {
     // All required fields are present. Check that student_id is valid
