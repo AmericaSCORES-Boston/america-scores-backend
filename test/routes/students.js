@@ -1846,7 +1846,7 @@ describe('Students', function() {
   });
 
   describe('updateStudent(req)', function() {
-    it('should update the first_name for a given student', function(done) {
+    it('should update the first_name for a given student (admin)', function(done) {
       var req = {
         params: {
           student_id: 1
@@ -1876,7 +1876,7 @@ describe('Students', function() {
       });
     });
 
-    it('should update the last_name for a given student', function(done) {
+    it('should update the last_name for a given student (admin)', function(done) {
       var req = {
         params: {
           student_id: 1
@@ -1906,7 +1906,7 @@ describe('Students', function() {
       });
     });
 
-    it('should update the birthdate for a given student', function(done) {
+    it('should update the birthdate for a given student (admin)', function(done) {
       var req = {
         params: {
           student_id: 1
@@ -1936,7 +1936,7 @@ describe('Students', function() {
       });
     });
 
-    it('should update multiple fields for a given student', function(done) {
+    it('should update multiple fields for a given student (admin)', function(done) {
       var req = {
         params: {
           student_id: 1
@@ -1969,6 +1969,93 @@ describe('Students', function() {
           'last_name': 'Levesque',
           'dob': new Date(28, 11, 17)
         }, annabeth, brian, pam], data);
+        done();
+      });
+    });
+
+    it('should update multiple fields for a given student (staff)', function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        },
+        body: {
+          first_name: 'Hazel',
+          last_name: 'Levesque',
+          dob: '1928-12-17'
+        },
+        user: constants.staff
+      };
+
+      students.updateStudent(req)
+      .then(function(data) {
+        // Check that the updated student is returned
+        assert.deepEqual(data, [hazel]);
+
+        // Get the DB after the update
+        return getAllStudents();
+      })
+      .then(function(data) {
+        // Assert that the number of students is the same as before
+        assert.lengthOf(data, studentCount);
+        // Assert that the old data and new data aren't the same
+        assert.notDeepEqual(oldDB, data);
+        // Assert that the new data reflects the update changes
+        assert.deepEqual([{
+          'student_id': 1,
+          'first_name': 'Hazel',
+          'last_name': 'Levesque',
+          'dob': new Date(28, 11, 17)
+        }, annabeth, brian, pam], data);
+        done();
+      });
+    });
+
+    it('should give error if coach tries to update', function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        },
+        body: {
+          first_name: 'Hazel',
+          last_name: 'Levesque',
+          dob: '1928-12-17'
+        },
+        user: constants.coach
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
+        done();
+      });
+    });
+
+    it('should give error if volunteer tries to update', function(done) {
+      var req = {
+        params: {
+          student_id: 1
+        },
+        body: {
+          first_name: 'Hazel',
+          last_name: 'Levesque',
+          dob: '1928-12-17'
+        },
+        user: constants.volunteer
+      };
+
+      students.updateStudent(req)
+      .catch(function(err) {
+        assert.equal(err.message,
+        'Access denied: this account does not have permission for this action');
+
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+
         done();
       });
     });
