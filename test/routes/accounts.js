@@ -11,11 +11,12 @@ const accType = require('../../lib/constants');
 const query = utils.query;
 const ManagementClient = require('auth0').ManagementClient;
 const auth0ID = utils.getAuth0ID;
-const creds = require('../../config/creds');
+const dotenv = require('dotenv');
+dotenv.load();
 
 var mgmt = new ManagementClient({
-  token: creds.auth0.AUTH0_MANAGEMENT_TOKEN,
-  domain: creds.auth0.AUTH0_DOMAIN
+  token: process.env.AUTH0_MANAGEMENT_TOKEN,
+  domain: process.env.AUTH0_DOMAIN
 });
 
 function getAllAccounts() {
