@@ -5,7 +5,7 @@ const config = require('./config/config.js')[env];
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var request = require('request')
+var request = require('request');
 const express = require('express');
 const bodyParser = require('body-parser');
 const makeResponse = require('./lib/utils').makeResponse;
@@ -32,15 +32,15 @@ app.use(function(req, res, next) {
     res.send('authorization field not found in request');
   }
 
-  var options = { method: 'GET',
- 	 url: 'https://asbadmin.auth0.com/userinfo',
-   headers: { authorization: 'Bearer ' + req.authorization }
+  var options = {
+    method: 'GET',
+    url: 'https://asbadmin.auth0.com/userinfo',
+    headers: {authorization: 'Bearer ' + req.authorization}
   };
 
-  request(options, function (err, response, body) {
+  request(options, function(err, response, body) {
     if(err) {
-      //unsure if this is how we want to
-      //throw new Error(error);
+      // unsure if this is how we want to throw new Error(error);
       res.status = response.status;
       res.send('Unable to retrieve user info from Auth0');
     } else {
@@ -50,6 +50,7 @@ app.use(function(req, res, next) {
         next();
     }
   });
+});
 // app.options('*', cors());
 
 app.use(function(req, res, next) {
