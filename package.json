@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "auth0": "^2.5.0",
     "bluebird": "^3.4.6",
     "body-parser": "^1.15.2",
     "cookie-parser": "~1.4.3",

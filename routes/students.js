@@ -54,7 +54,14 @@ function getStudentsByProgram(req) {
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return programs.getProgram(req)
+    return programs.getProgram({
+     params: {
+       program_id: id
+     },
+     user: {
+       authorization: 'Admin'
+     }
+   })
     .then(function(data) {
       if (data.length > 0) {
         return query(queryString, [id]);
@@ -76,13 +83,20 @@ function getStudentsByEvent(req) {
   var id = req.params.event_id;
   var field = 'event_id';
   var queryString = 'SELECT * FROM Student WHERE student_id IN ' +
-  '(SELECT student_id FROM StudentToProgram WHERE program_id IN ' +
-  '(SELECT program_id FROM Event WHERE event_id = ?))';
+  '(SELECT student_id FROM Measurement WHERE measurement_id IN ' +
+  '(SELECT measurement_id FROM Measurement WHERE event_id = ?))';
 
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return events.getEvent(req)
+    return events.getEvent({
+     params: {
+       event_id: id
+     },
+     user: {
+       authorization: 'Admin'
+     }
+   })
     .then(function(data) {
       if (data.length > 0) {
         return query(queryString, [id]);
@@ -110,7 +124,14 @@ function getStudentsBySite(req) {
   // Check if the id is an integer > 0
   if (isPositiveInteger(id)) {
     // Check if the id is in the related table
-    return sites.getSite(req)
+    return sites.getSite({
+     params: {
+       site_id: id
+     },
+     user: {
+       authorization: 'Admin'
+     }
+   })
     .then(function(data) {
       if (data.length > 0) {
         return query(queryString, [id]);
@@ -167,7 +188,14 @@ function createStudent(req) {
       }
 
       // Check if the given program_id exists in the database
-      return programs.getProgram(req)
+      return programs.getProgram({
+        params: {
+          program_id: req.params.program_id
+        },
+        user: {
+          authorization: 'Admin'
+        }
+      })
       .then(function(data) {
         if (data.length > 0) {
           var student_id;
@@ -274,7 +302,14 @@ function updateStudent(req) {
           });
         } else {
           // Program update requested. Check if the new program exists.
-          return programs.getProgram(req)
+          return programs.getProgram({
+            params: {
+              program_id: req.params.program_id
+            },
+            user: {
+              authorization: 'Admin'
+            }
+          })
           .then(function(data) {
             if (data.length > 0) {
               // The program exists. Update the student's program
