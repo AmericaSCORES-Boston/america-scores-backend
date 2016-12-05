@@ -46,6 +46,7 @@ CREATE TABLE Acct
     last_name varchar(255),
     email varchar(255),
     acct_type ENUM('Coach', 'Volunteer', 'Staff', 'Admin'),
+    auth0_id varchar(255),
     PRIMARY KEY (acct_id)
 );
 
