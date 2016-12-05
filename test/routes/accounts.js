@@ -488,7 +488,7 @@ describe('Accounts', function() {
   });
 
   describe('getAccountsByProgram(req)', function() {
-    it('it should get all accounts for a specific program', function(done) {
+    xit('it should get all accounts for a specific program', function(done) {
       var promise = accounts.getAccountsByProgram({
         params: {
           program_id: 1
@@ -502,7 +502,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should return a 403 error because staff cannot request accounts', function(done) {
+    xit('it should return a 403 error because staff cannot request accounts', function(done) {
       var promise = accounts.getAccountsByProgram({
         params: {
           program_id: 1
@@ -529,7 +529,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because coaches cannot request accounts', function(done) {
+    xit('it should return a 403 error because coaches cannot request accounts', function(done) {
       var promise = accounts.getAccountsByProgram({
         params: {
           program_id: 1
@@ -556,7 +556,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because volunteers cannot request accounts', function(done) {
+    xit('it should return a 403 error because volunteers cannot request accounts', function(done) {
       var promise = accounts.getAccountsByProgram({
         params: {
           program_id: 1
@@ -585,7 +585,7 @@ describe('Accounts', function() {
   });
 
   describe('getAccountsBySite(req)', function() {
-    it('it should get all accounts for a specific site', function(done) {
+    xit('it should get all accounts for a specific site', function(done) {
       var promise = accounts.getAccountsBySite({
         params: {
           site_id: 1
@@ -599,7 +599,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should get 0 accounts when a site id that DNE is passed', function(done) {
+    xit('it should get 0 accounts when a site id that DNE is passed', function(done) {
       var promise = accounts.getAccountsBySite({
         params: {
           site_id: 999
@@ -613,7 +613,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should return a 403 error because staff cannot request accounts', function(done) {
+    xit('it should return a 403 error because staff cannot request accounts', function(done) {
       var promise = accounts.getAccountsBySite({
         params: {
           site_id: 1
@@ -640,7 +640,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because coaches cannot request accounts', function(done) {
+    xit('it should return a 403 error because coaches cannot request accounts', function(done) {
       var promise = accounts.getAccountsBySite({
         params: {
           site_id: 1
@@ -667,7 +667,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because volunteers cannot request accounts', function(done) {
+    xit('it should return a 403 error because volunteers cannot request accounts', function(done) {
       var promise = accounts.getAccountsBySite({
         params: {
           site_id: 1
@@ -696,7 +696,7 @@ describe('Accounts', function() {
   });
 
   describe('updateAccount(req)', function() {
-    it('it should update an account with all new fields', function(done) {
+    xit('it should update an account with all new fields', function(done) {
       var req = {
         params: {
           acct_id: 5
@@ -727,7 +727,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should update an account with a new first name', function(done) {
+    xit('it should update an account with a new first name', function(done) {
       var req = {
         params: {
           acct_id: 7
@@ -755,7 +755,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should update an account with a new last name', function(done) {
+    xit('it should update an account with a new last name', function(done) {
       var req = {
         params: {
           acct_id: 7
@@ -783,7 +783,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should update an account with a new email', function(done) {
+    xit('it should update an account with a new email', function(done) {
       var req = {
         params: {
           acct_id: 7
@@ -811,7 +811,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should update an account with a new auth level', function(done) {
+    xit('it should update an account with a new auth level', function(done) {
       var req = {
         params: {
           acct_id: 7
@@ -839,7 +839,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should return error err msg because body is missing', function(done) {
+    xit('it should return error err msg because body is missing', function(done) {
       accounts.updateAccount({
         params: {
           acct_id: 1
@@ -870,7 +870,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('should not update if request is missing params section', function(done) {
+    xit('should not update if request is missing params section', function(done) {
       // TODO create test to ensure Auth0 is the same before and after
       accounts.updateAccount({
         body: {
@@ -900,7 +900,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('should not update if request is missing acct_id in params', function(done) {
+    xit('should not update if request is missing acct_id in params', function(done) {
       // TODO ensure entire Auth0 DB has not been affected
       accounts.updateAccount({
         params: {
@@ -932,7 +932,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because staff cannot update other accounts', function(done) {
+    xit('it should return a 403 error because staff cannot update other accounts', function(done) {
       var promise = accounts.updateAccount({
         params: {
           acct_id: 7
@@ -965,7 +965,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because coaches cannot update other accounts', function(done) {
+    xit('it should return a 403 error because coaches cannot update other accounts', function(done) {
       var promise = accounts.updateAccount({
         params: {
           acct_id: 7
@@ -998,7 +998,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because volunteers cannot update other accounts', function(done) {
+    xit('it should return a 403 error because volunteers cannot update other accounts', function(done) {
       var promise = accounts.updateAccount({
         params: {
           acct_id: 7
@@ -1031,7 +1031,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because staff cannot update their own type', function(done) {
+    xit('it should return a 403 error because staff cannot update their own type', function(done) {
       var promise = accounts.updateAccount({
         params: {
           acct_id: 5  // id for the accType.staff constant
@@ -1063,7 +1063,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because coaches cannot update their own type', function(done) {
+    xit('it should return a 403 error because coaches cannot update their own type', function(done) {
       var promise = accounts.updateAccount({
         params: {
           acct_id: 1 // id for the accType.coach constant
@@ -1096,7 +1096,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because volunteers cannot update their own type', function(done) {
+    xit('it should return a 403 error because volunteers cannot update their own type', function(done) {
       var promise = accounts.updateAccount({
         params: {
           acct_id: 3 // id for the accType.volunteer constant
@@ -1130,7 +1130,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should allow volunteers to update their own email and name', function(done) {
+    xit('it should allow volunteers to update their own email and name', function(done) {
       var newFName = 'Beezlebub';
       var newLName = 'Smith';
       var newEmail = 'updated@americascores.org';
@@ -1168,7 +1168,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should allow coaches to update their own email and name', function(done) {
+    xit('it should allow coaches to update their own email and name', function(done) {
       var newFName = 'Beezlebub';
       var newLName = 'Smith';
       var newEmail = 'updated@americascores.org';
@@ -1205,7 +1205,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should allow staff to update their own email and name', function(done) {
+    xit('it should allow staff to update their own email and name', function(done) {
       var newFName = 'Beezlebub';
       var newLName = 'Smith';
       var newEmail = 'updated@americascores.org';
@@ -1244,7 +1244,7 @@ describe('Accounts', function() {
   });
 
   describe('createAccount(req)', function() {
-    it('it should add an Admin account when requested by an existing admin', function(done) {
+    xit('it should add an Admin account when requested by an existing admin', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1274,7 +1274,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should add a Staff account when requested by an existing admin', function(done) {
+    xit('it should add a Staff account when requested by an existing admin', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1304,7 +1304,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should add a volunteer account when requested', function(done) {
+    xit('it should add a volunteer account when requested', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1334,7 +1334,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should add a coach account when requested', function(done) {
+    xit('it should add a coach account when requested', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1364,7 +1364,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because staff cannot create admin accounts', function(done) {
+    xit('it should return a 403 error because staff cannot create admin accounts', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1392,7 +1392,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because Volunteers cannot create admin accounts', function(done) {
+    xit('it should return a 403 error because Volunteers cannot create admin accounts', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1420,7 +1420,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because Coaches cannot create staff accounts', function(done) {
+    xit('it should return a 403 error because Coaches cannot create staff accounts', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1448,7 +1448,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because coaches cannot create admin accounts', function(done) {
+    xit('it should return a 403 error because coaches cannot create admin accounts', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1476,7 +1476,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 403 error because volunteers cannot create staff accounts', function(done) {
+    xit('it should return a 403 error because volunteers cannot create staff accounts', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1504,7 +1504,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because a first_name is missing', function(done) {
+    xit('it should return a 400 error because a first_name is missing', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1528,7 +1528,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because a last_name is missing', function(done) {
+    xit('it should return a 400 error because a last_name is missing', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1552,7 +1552,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because email is missing', function(done) {
+    xit('it should return a 400 error because email is missing', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1576,7 +1576,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because type is missing', function(done) {
+    xit('it should return a 400 error because type is missing', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1600,7 +1600,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because password is missing', function(done) {
+    xit('it should return a 400 error because password is missing', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1624,7 +1624,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because first_name is empty', function(done) {
+    xit('it should return a 400 error because first_name is empty', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1649,7 +1649,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because last_name is empty', function(done) {
+    xit('it should return a 400 error because last_name is empty', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1674,7 +1674,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should return a 400 error because email is invalid', function(done) {
+    xit('it should return a 400 error because email is invalid', function(done) {
       accounts.createAccount(
         {
           body: {
@@ -1700,7 +1700,7 @@ describe('Accounts', function() {
     });
 
 
-    it('it should return a 400 error because the password supplied is too weak', function(done) {
+    xit('it should return a 400 error because the password supplied is too weak', function(done) {
       // as of time of writing, Auth0 configured such that password must be longer
       // than 8 characters and contain uppercase letter(s) and lowercase letter(s)
       // in addition to containing at least one digit
@@ -1728,7 +1728,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should throw error for trying to add an account that already exists',
+    xit('it should throw error for trying to add an account that already exists',
       function(done) {
         accounts.createAccount({
           body: {
@@ -1755,7 +1755,7 @@ describe('Accounts', function() {
   });
   /*
   describe('deleteAccount(req)', function() {
-    it('it should delete an account', function(done) {
+    xit('it should delete an account', function(done) {
       var auth_id = auth0ID('1');
       var promise = accounts.deleteAccount({
         params: {
@@ -1775,7 +1775,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should return missing argument error', function(done) {
+    xit('it should return missing argument error', function(done) {
       var promise = deleteAccount({
         user: accType.admin
       });
@@ -1788,7 +1788,7 @@ describe('Accounts', function() {
   });
   */
   /* describe('getAccount(req)', function() {
-    it('it should retrieve a single account', function(done) {
+    xit('it should retrieve a single account', function(done) {
       var promise = accounts.getAccount({
         query: {
           acct_id: 1
@@ -1802,7 +1802,7 @@ describe('Accounts', function() {
       });
     });
 
-    it('it should retrieve an empty object as acct_id DNE', function(done) {
+    xit('it should retrieve an empty object as acct_id DNE', function(done) {
       var promise = accounts.getAccount({
         query: {
           acct_id: 404
@@ -1816,7 +1816,7 @@ describe('Accounts', function() {
       });
     });*/
   /* TODO - remove malformatting?
-    it('it should return missing argument error', function(done) {
+    xit('it should return missing argument error', function(done) {
       assert.throw(accounts.getAccount({}));
       assert.throw(accounts.getAccount(malFormedDataReq));
       assert.throw(accounts.getAccount({
