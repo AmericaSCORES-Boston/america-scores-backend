@@ -24,7 +24,7 @@ function getProgram(req) {
   })
   .then(function(data) {
     if (data.length != 1) {
-      return Promise.reject({status: 403, message: "Access denied or program not found"})
+      return Promise.reject({status: 403, message: 'Access denied or program not found'});
     }
     return data;
   });

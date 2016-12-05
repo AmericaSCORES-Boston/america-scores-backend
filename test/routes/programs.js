@@ -44,7 +44,7 @@ describe('GET', function(done) {
       user: constants.coach
     };
     programs.getPrograms(req).then(function(data) {
-      assert.deepEqual([program1, program2], data)
+      assert.deepEqual([program1, program2], data);
       done();
     });
   });
@@ -54,7 +54,7 @@ describe('GET', function(done) {
       user: constants.volunteer
     };
     programs.getPrograms(req).then(function(data) {
-      assert.deepEqual([program2], data)
+      assert.deepEqual([program2], data);
       done();
     });
   });
