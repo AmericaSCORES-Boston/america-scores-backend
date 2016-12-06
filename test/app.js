@@ -36,7 +36,7 @@ describe('app.js', function() {
       .expect('Not Found');
   });
 
-  //TODO create on fly tokens to generate tests.
+  // TODO create on fly tokens to generate tests.
   describe('authorization failures', function() {
     it('403 missing authorization field in request', function(done) {
       request(app)
