@@ -6,7 +6,7 @@
   "scripts": {
     "test": "gulp seed && gulp test",
     "eslint": "gulp eslint",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
+    "coverage": "gulp seed && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
     "seed": "gulp seed",
     "start": "pm2 start app.js -n amscores_backend",
     "stop": "if [[ ! -z $(pm2 list | grep amscores_backend) ]]; then pm2 delete amscores_backend; fi"

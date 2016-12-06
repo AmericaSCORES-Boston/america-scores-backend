@@ -134,9 +134,9 @@ function uploadPacerStats(req) {
           return Promise.reject({
             status: 403,
             message: 'Forbidden to laod stats or event does not exist'
-            });
-          }
-      });
+          });
+        }
+    });
   }
 
   if (!isPositiveInteger(event_id)) {
@@ -211,9 +211,9 @@ function uploadBMIStats(req) {
           return Promise.reject({
             status: 403,
             message: 'Forbidden to laod stats or event does not exist'
-            });
-          }
-      });
+          });
+        }
+    });
   }
 
   if (!isPositiveInteger(event_id)) {
@@ -287,9 +287,9 @@ function updateStat(req) {
           return Promise.reject({
             status: 403,
             message: 'Forbidden to update this stat'
-            });
-          }
-      });
+          });
+        }
+    });
   }
 
   if (!defined(req.body) || !defined(req.body.height) && !defined(req.body.weight) && !defined(req.body.pacer)) {
