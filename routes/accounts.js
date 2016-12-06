@@ -11,16 +11,16 @@ function getAccounts(req) {
   }
 
   if (defined(req.query.auth0_id)) {
-    return query('SELECT * FROM Acct WHERE auth0_id = ?',
+    return query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct WHERE auth0_id = ?',
     [req.query.auth0_id]);
   }
 
-  if (defined(req.query.type)) {
-    return query('SELECT * FROM Acct WHERE acct_type = ?',
-    [req.query.type]);
+  if (defined(req.query.acct_type)) {
+    return query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct WHERE acct_type = ?',
+    [req.query.acct_type]);
   }
 
-  return query('SELECT * FROM Acct');
+  return query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct');
 }
 
 function getAccount(req) {

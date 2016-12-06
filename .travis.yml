@@ -8,7 +8,7 @@ before_script:
 
 script:
   - mysql -u travis america_scores < database/dbcreate.sql
-  - ./scripts/travis-mysql.sh
+  - ./scripts/travis-config.sh
   - npm run eslint -- --failTaskOnError
   - npm run seed
   - npm run test -- --failTaskOnError
