@@ -36,13 +36,70 @@ describe('app.js', function() {
       .expect('Not Found');
   });
 
-/*  describe('authorization failures', function() {
-    xit('403 missing authorization field in request', function(done) {
+  //TODO create on fly tokens to generate tests.
+  describe('authorization failures', function() {
+    it('403 missing authorization field in request', function(done) {
       request(app)
-      .get()
+        .get('/')
+        .set('connection', 'web_app')
+        .expect(403)
+        .end(done);
+    });
+
+    it('400 missing connection field in request', function(done) {
+      request(app)
+        .get('/')
+        .set('authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im9saXZlcmhic2NvdHRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMDgwOTUzNTc3MTI0ODk2MjI1NCIsImF1dGhvcml6YXRpb24iOnsidHlwZSI6ImFkbWluIiwiZ3JvdXBzIjpbXX0sImlzcyI6Imh0dHBzOi8vYXNiYWRtaW4uYXV0aDAuY29tLyIsInN1YiI6Imdvb2dsZS1vYXV0aDJ8MTAwODA5NTM1NzcxMjQ4OTYyMjU0IiwiYXVkIjoiYXBSNWxITnhvOWhhN2Y4RVI0eXhDZ3NYVU90SzZBbm9LIiwiZXhwIjoxNDgyOTc1MjA5LCJpYXQiOjE0ODA5NzUyMDl9.SqX0v3SQGta2OMgmxVp5_AsgUelcgszn3prZiNwfYHI')
+        .expect(400)
+        .end(done);
+    });
+
+    it('400 connection field is not mobile or web_app', function(done) {
+      request(app)
+        .get('/')
+        .set('authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im9saXZlcmhic2NvdHRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMDgwOTUzNTc3MTI0ODk2MjI1NCIsImF1dGhvcml6YXRpb24iOnsidHlwZSI6ImFkbWluIiwiZ3JvdXBzIjpbXX0sImlzcyI6Imh0dHBzOi8vYXNiYWRtaW4uYXV0aDAuY29tLyIsInN1YiI6Imdvb2dsZS1vYXV0aDJ8MTAwODA5NTM1NzcxMjQ4OTYyMjU0IiwiYXVkIjoiYXBSNWxITnhvOWhhN2Y4RVI0eXhDZ3NYVU90SzZBbm9LIiwiZXhwIjoxNDgyOTc1MjA5LCJpYXQiOjE0ODA5NzUyMDl9.SqX0v3SQGta2OMgmxVp5_AsgUelcgszn3prZiNwfYHI')
+        .set('connection', 'mobilemaybehahahnojkdefnot')
+        .expect(400)
+        .end(done);
+    });
+
+    it('401 authorization failed because an expired token was used', function(done) {
+      request(app)
+        .get('/')
+        .set('authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im9saXZlcmhic2NvdHRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMDgwOTUzNTc3MTI0ODk2MjI1NCIsImF1dGhvcml6YXRpb24iOnsidHlwZSI6ImFkbWluIn0sImlzcyI6Imh0dHBzOi8vYXNiYWRtaW4uYXV0aDAuY29tLyIsInN1YiI6Imdvb2dsZS1vYXV0aDJ8MTAwODA5NTM1NzcxMjQ4OTYyMjU0IiwiYXVkIjoiRjhpQlZGMzRLb1RxR2dPZDRmajVENklSU2F4OEpXeHoiLCJleHAiOjE0ODA5NzUyMDksImlhdCI6MTQ4MDk3NTIwOX0.vdy14qdpwFjCpyeZj1de0saO3HkDztxBhoW2Mc-zcFY')
+        .set('connection', 'mobile')
+        .expect(401)
+        .end(done);
+    });
+
+    it('401 authorization failed because iss field in JWT is incorrect', function(done) {
+      request(app)
+        .get('/')
+        .set('authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im9saXZlcmhic2NvdHRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMDgwOTUzNTc3MTI0ODk2MjI1NCIsImF1dGhvcml6YXRpb24iOnsidHlwZSI6ImFkbWluIn0sImlzcyI6Imh0dHBzOi8vYXNiYWRtaW4uYXV0aDAuY29tL2QiLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMDgwOTUzNTc3MTI0ODk2MjI1NCIsImF1ZCI6IkY4aUJWRjM0S29UcUdnT2Q0Zmo1RDZJUlNheDhKV3h6IiwiZXhwIjoxNTgwOTc1MjA5LCJpYXQiOjE0ODA5NzUyMDl9.n800C_lQ08yt_UXX5mE2ygD0WJ3n1xqRgdASRo3GZl0')
+        .set('connection', 'mobile')
+        .expect(401)
+        .end(done);
+    });
+
+    it('401 authorization failed because email_verified !== true', function(done) {
+      request(app)
+        .get('/')
+        .set('authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im9saXZlcmhic2NvdHRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJ1c2VyX2lkIjoiZ29vZ2xlLW9hdXRoMnwxMDA4MDk1MzU3NzEyNDg5NjIyNTQiLCJhdXRob3JpemF0aW9uIjp7InR5cGUiOiJhZG1pbiJ9LCJpc3MiOiJodHRwczovL2FzYmFkbWluLmF1dGgwLmNvbS8iLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMDgwOTUzNTc3MTI0ODk2MjI1NCIsImF1ZCI6IkY4aUJWRjM0S29UcUdnT2Q0Zmo1RDZJUlNheDhKV3h6IiwiZXhwIjoxNTgwOTc1MjA5LCJpYXQiOjE0ODA5NzUyMDl9.JoOh9bhMMYLSKmS8jqxyWkTIyLvZMYaYXMwRZnADZEs')
+        .set('connection', 'mobile')
+        .expect(401)
+        .end(done);
+    });
+
+    it('401 authorization failed because a token with a bad signature was provided', function(done) {
+      request(app)
+        .get('/')
+        .set('authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im9saXZlcmhic2NvdHRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJ1c2VyX2lkIjoiZ29vZ2xlLW9hdXRoMnwxMDA4MDk1MzU3NzEyNDg5NjIyNTQiLCJhdXRob3JpemF0aW9uIjp7InR5cGUiOiJhZG1pbiJ9LCJpc3MiOiJodHRwczovL2FzYmFkbWluLmF1dGgwLmNvbS8iLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMDgwOTUzNTc3MTI0ODk2MjI1NCIsImF1ZCI6IkY4aUJWRjM0S29UcUdnT2Q0Zmo1RDZJUlNheDhKV3h6IiwiZXhwIjoxNTgwOTc1MjA5LCJpYXQiOjE0ODA5NzUyMDl9.vIvpsxmTdQX-sKpA89ivFjX-w93_Uvw3J2OEUc6fpkw')
+        .set('connection', 'web_app')
+        .expect(401)
+        .end(done);
     });
   });
-*/
+
   describe('students endpoint', function() {
     var getStudentsStub;
     var getStudentStub;

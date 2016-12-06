@@ -6,6 +6,7 @@ const config = require('./config/config.js')[env];
 const express = require('express');
 const bodyParser = require('body-parser');
 const makeResponse = require('./lib/utils').makeResponse;
+const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 // var cors = require('cors');
 const app = express();
@@ -17,6 +18,7 @@ const sites = require('./routes/sites');
 const programs = require('./routes/programs');
 const events = require('./routes/events');
 const stats = require('./routes/stats');
+dotenv.load();
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -30,31 +32,27 @@ function checkUser(req, res, next) {
 
   var err;
   // verify authorization and connection suppiled in request
-  if (!req.hasOwnProperty('authorization')) {
+  if (!req.headers.hasOwnProperty('authorization')) {
     err = new Error('Access denied: No authorization provided');
-    err.status(403);
-    return next(err);
-  } else if (!req.hasOwnProperty('connection')) {
-    err = new Error('No connection type supplied');
-    err.status = 400;
+    err.status = 403;
     return next(err);
   }
 
   var client_secret;
   var client_id;
   // set parameters for JWT check depending upon connection type supplied
-  if (req.connection === 'mobile') {
+  if (req.headers.connection === 'mobile') {
     client_secret = process.env.AUTH0_MOBILE_SECRET;
     // android and mobile do not share same client_id (stored in 'aud').
     // update accordingly.
-    var unverified = jwt.decode(req.authorization);
+    var unverified = jwt.decode(req.headers.authorization);
     client_id = unverified.aud === process.env.AUTH0_IOS_CLIENT_ID ? process.env.AUTH0_IOS_CLIENT_ID : process.env.AUTH0_ANDROID_CLIENT_ID;
-  } else if (req.connection === 'web_app') {
+  } else if (req.headers.connection === 'web_app') {
     client_secret = process.env.AUTH0_WEBAPP_SECRET;
     client_id = process.env.AUTH0_WEBAPP_CLIENT_ID;
   } else {
     err = new Error('Bad connection type supplied');
-    err.status(400);
+    err.status = 400;
     return next(err);
   }
 
@@ -71,10 +69,11 @@ function checkUser(req, res, next) {
 
   try {
     // verify token with provided parameters
-    var decoded = jwt.verify(req.authorization, client_secret, options);
+    var decoded = jwt.verify(req.headers.authorization, client_secret, options);
     if (decoded.email_verified !== true) {
+      console.log('hi');
       err = new Error('Access denied: Must verify email.');
-      err.status(401);
+      err.status = 401;
       return next(err);
     }
 
@@ -87,8 +86,8 @@ function checkUser(req, res, next) {
     };
     next();
   } catch(err) {
-    res.status(401);
-    res.send('Authorization failed');
+    err.status = 401;
+    return next(err);
   }
 };
 
