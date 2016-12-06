@@ -696,6 +696,83 @@ describe('Accounts', function() {
     });
   });
 
+  describe('addProgramToAccount(req)', function() {
+    it('should add the given program to the given account\'s permissions', function() {
+      var req = {
+        params: {
+          acct_id: 1,
+          program_id: 3
+        },
+        user: accType.admin
+      };
+
+      getAllAccounts()
+      .then(function(data) {
+        assert.deepEqual(initAcc, data);
+
+        return query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(data) {
+        console.log(data);
+        assert.deepEqual(initA2P, data);
+
+        return accounts.addProgramToAccount(req);
+      })
+      .then(function() {
+        return getAllAccounts();
+      })
+      .then(function(data) {
+        assert.deepEqual(data, initAcc);
+
+        return query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(data, initAcc.push({
+          id: 8,
+          acct_id: 1,
+          program_id: 3
+        }));
+        done();
+      });
+    });
+
+    it('should not add a program that the account already has', function() {
+      var req = {
+        params: {
+          acct_id: 1,
+          program_id: 2
+        },
+        user: accType.admin
+      };
+      getAllAccounts()
+      .then(function(data) {
+        assert.deepEqual(data, initAcc);
+
+        return query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(data) {
+        console.log(data);
+        assert.deepEqual(initA2P, data);
+
+        return accounts.addProgramToAccount(req);
+      })
+      .then(function() {
+        return getAllAccounts();
+      })
+      .then(function(data) {
+        assert.deepEqual(data, initAcc);
+
+        return query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(data, initAcc);
+        done();
+      });
+    });
+    // TODO Program id doesn't exist, don't add -> does mysql give an error for you -> yes
+    // TODO Negative program_id don't add
+  });
+
   describe('updateAccount(req)', function() {
     xit('it should update an account with all new fields', function(done) {
       var req = {

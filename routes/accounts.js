@@ -35,6 +35,31 @@ function getAccountsByProgram(req) {
 function createAccount(req) {
 }
 
+function addProgramToAccount(req) {
+  if (req.user.authorization !== 'Admin') {
+    return createAccessDeniedError();
+  }
+
+  return query('SELECT * FROM AcctToProgram WHERE acct_id = ? AND program_id = ?',
+  [req.params.acct_id, req.params.program_id])
+  .then(function(data) {
+    if (data.length !== 0) {
+      return;
+    }
+
+  })
+
+  return query('INSERT INTO AcctToProgram (acct_id, program_id) VALUES (?, ?)',
+   [req.params.acct_id, req.params.program_id])
+  .catch(function(err) {
+    return createInvalidArgumentError();
+  });
+}
+
+function removeProgramFromAccount(req) {
+
+}
+
 function updateAccount(req) {
 }
 
@@ -50,7 +75,16 @@ function createAccessDeniedError() {
   });
 }
 
+function createInvalidArgumentError() {
+  return Promise.reject({
+    name: 'InvalidArgument',
+    status: 400,
+    message: 'Invalid account_id or program_id'
+  });
+}
+
 module.exports = {
   getAccounts, getAccount, getAccountsByProgram, getAccountsBySite,
-  getAccountsByProgram, createAccount, updateAccount, deleteAccount
+  getAccountsByProgram, createAccount, addProgramToAccount,
+  removeProgramFromAccount, updateAccount, deleteAccount
 };
