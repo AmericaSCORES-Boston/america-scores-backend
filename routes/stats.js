@@ -45,6 +45,7 @@ function getStatsBySite(req) {
     .then(function(data) {
       return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND site_id = ?', [data, req.params.site_id]);
     });
+}
 
 /**
  * Get all stats for a program.
@@ -93,7 +94,7 @@ function getStatsByStudent(req) {
 
   return getAccountID(req.user.auth0_id)
     .then(function(data) {
-      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND student_id = ?', [data, req.params.student_id])
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND student_id = ?', [data, req.params.student_id]);
     });
 }
 
@@ -110,7 +111,7 @@ function getStat(req) {
 
   return getAccountID(req.user.auth0_id)
     .then(function(data) {
-      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND measurement_id = ?', [data, req,params.student_id]);
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND measurement_id = ?', [data, req.params.student_id]);
     });
 }
 
@@ -321,51 +322,51 @@ function deleteStat(req) {
   return query('DELETE FROM Measurement WHERE measurement_id = ?', [req.params.stat_id]);
 }
 
- function createInvalidArgumentError(id, field, message) {
-   var defaultIdError = 'Given ' + field + ' is of invalid format (e.g. not' +
-   ' an integer or negative)';
-   message = (typeof message === 'undefined') ? defaultIdError : message;
-   return Promise.reject({
-     name: 'InvalidArgumentError',
-     status: 400,
-     message: message,
-     propertyName: field,
-     propertyValue: id
-   });
- }
+function createInvalidArgumentError(id, field, message) {
+  var defaultIdError = 'Given ' + field + ' is of invalid format (e.g. not' +
+  ' an integer or negative)';
+  message = (typeof message === 'undefined') ? defaultIdError : message;
+  return Promise.reject({
+    name: 'InvalidArgumentError',
+    status: 400,
+    message: message,
+    propertyName: field,
+    propertyValue: id
+  });
+}
 
- function createArgumentNotFoundError(id, field) {
-   // Given id does not exist, give error.
-   return Promise.reject({
-     name: 'ArgumentNotFoundError',
-     status: 404,
-     message: 'Invalid request: The given ' + field +
-     ' does not exist in the database',
-     propertyName: field,
-     propertyValue: id
-   });
- }
+function createArgumentNotFoundError(id, field) {
+  // Given id does not exist, give error.
+  return Promise.reject({
+    name: 'ArgumentNotFoundError',
+    status: 404,
+    message: 'Invalid request: The given ' + field +
+    ' does not exist in the database',
+    propertyName: field,
+    propertyValue: id
+  });
+}
 
- function createUpdateQuery(body) {
-   var changes = '';
-   var fieldValues = [];
+function createUpdateQuery(body) {
+  var changes = '';
+  var fieldValues = [];
 
-   // Create a string of changes based on what is in the body
-   for (var field in body) {
-     if (field === 'pacer' || field === 'height' || field === 'weight') {
-       changes = changes + field + '= ?, ';
-       // Add to ordered list of field arguments
-       fieldValues.push(body[field]);
-     }
-   }
+  // Create a string of changes based on what is in the body
+  for (var field in body) {
+    if (field === 'pacer' || field === 'height' || field === 'weight') {
+      changes = changes + field + '= ?, ';
+      // Add to ordered list of field arguments
+      fieldValues.push(body[field]);
+    }
+  }
 
-   // Drop the extra comma
-   changes = changes.substring(0, changes.length - 2);
+  // Drop the extra comma
+  changes = changes.substring(0, changes.length - 2);
 
-   // Construct and return the final update query string
-   return ['UPDATE Measurement SET ' + changes + ' WHERE measurement_id = ?',
+  // Construct and return the final update query string
+  return ['UPDATE Measurement SET ' + changes + ' WHERE measurement_id = ?',
     fieldValues];
- }
+}
 
 module.exports = {
   getStats,
@@ -377,5 +378,5 @@ module.exports = {
   uploadPacerStats,
   uploadBMIStats,
   updateStat,
-  deleteStat,
+  deleteStat
 };
