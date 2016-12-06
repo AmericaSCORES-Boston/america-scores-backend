@@ -22,14 +22,14 @@ describe('app.js', function() {
     app.close();
   });
 
-  it('responds to /', function(done) {
+  xit('responds to /', function(done) {
     request(app)
       .get('/')
       .expect(405)
       .expect('Route not implemented', done);
   });
 
-  it('404 everything else', function(done) {
+  xit('404 everything else', function(done) {
     request(app)
       .get('/foo/bar')
       .expect(404, done)
@@ -37,7 +37,7 @@ describe('app.js', function() {
   });
 
 /*  describe('authorization failures', function() {
-    it('403 missing authorization field in request', function(done) {
+    xit('403 missing authorization field in request', function(done) {
       request(app)
       .get()
     });
@@ -91,7 +91,7 @@ describe('app.js', function() {
       students.getStudentsByEvent.restore();
     });
 
-    it('GET /students', function(done) {
+    xit('GET /students', function(done) {
       request(app)
         .get('/students')
         .expect('got the students', 200)
@@ -101,7 +101,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /students/:students_id', function(done) {
+    xit('GET /students/:students_id', function(done) {
       request(app)
         .get('/students/2')
         .expect('got the student', 200)
@@ -111,7 +111,7 @@ describe('app.js', function() {
         });
     });
 
-    it('DELETE /students/:students_id', function(done) {
+    xit('DELETE /students/:students_id', function(done) {
       request(app)
         .delete('/students/4')
         .expect('deleted the student', 200)
@@ -121,7 +121,7 @@ describe('app.js', function() {
         });
     });
 
-    it('PUT /students/:students_id', function(done) {
+    xit('PUT /students/:students_id', function(done) {
       request(app)
         .put('/students/6')
         .expect('updated the student', 200)
@@ -131,7 +131,7 @@ describe('app.js', function() {
         });
     });
 
-    it('PUT /students/:students_id/programs/:program_id', function(done) {
+    xit('PUT /students/:students_id/programs/:program_id', function(done) {
       request(app)
         .put('/students/8/programs/1')
         .expect('updated the student', 200)
@@ -141,7 +141,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /programs/:program_id/students', function(done) {
+    xit('GET /programs/:program_id/students', function(done) {
       request(app)
         .get('/programs/1/students')
         .expect('got students for a program', 200)
@@ -151,7 +151,7 @@ describe('app.js', function() {
         });
     });
 
-    it('POST /programs/:program_id/students', function(done) {
+    xit('POST /programs/:program_id/students', function(done) {
       request(app)
         .post('/programs/3/students')
         .expect('created a student', 200)
@@ -161,7 +161,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /sites/:site_id/students', function(done) {
+    xit('GET /sites/:site_id/students', function(done) {
       request(app)
         .get('/sites/3/students')
         .expect('got students for a site', 200)
@@ -171,7 +171,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /events/:event_id/students', function(done) {
+    xit('GET /events/:event_id/students', function(done) {
       request(app)
         .get('/events/32/students')
         .expect('got students for an event', 200)
@@ -220,7 +220,7 @@ describe('app.js', function() {
       sites.deleteSite.restore();
     });
 
-    it('GET /sites', function(done) {
+    xit('GET /sites', function(done) {
       request(app)
         .get('/sites')
         .expect('got the sites', 200)
@@ -230,7 +230,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /accounts/:account_id/sites', function(done) {
+    xit('GET /accounts/:account_id/sites', function(done) {
       request(app)
         .get('/accounts/:account_id/sites')
         .expect('got the sites for an account', 200)
@@ -240,7 +240,7 @@ describe('app.js', function() {
         });
     });
 
-    it('POST /sites', function(done) {
+    xit('POST /sites', function(done) {
       request(app)
         .post('/sites')
         .expect('created a site', 200)
@@ -250,7 +250,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /sites/:site_id', function(done) {
+    xit('GET /sites/:site_id', function(done) {
       request(app)
         .get('/sites/4')
         .expect('got the site', 200)
@@ -260,7 +260,7 @@ describe('app.js', function() {
         });
     });
 
-    it('PUT /sites/:site_id', function(done) {
+    xit('PUT /sites/:site_id', function(done) {
       request(app)
         .put('/sites/40')
         .expect('updated the site', 200)
@@ -270,7 +270,7 @@ describe('app.js', function() {
         });
     });
 
-    it('DELETE /sites/:site_id', function(done) {
+    xit('DELETE /sites/:site_id', function(done) {
       request(app)
         .delete('/sites/22')
         .expect('deleted the site', 200)
@@ -329,7 +329,7 @@ describe('app.js', function() {
       programs.getProgramsByAccount.restore();
     });
 
-    it('GET /programs', function(done) {
+    xit('GET /programs', function(done) {
       request(app)
         .get('/programs')
         .expect('got the programs', 200)
@@ -339,7 +339,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /programs/:program_id', function(done) {
+    xit('GET /programs/:program_id', function(done) {
       request(app)
         .get('/programs/3')
         .expect('got the program', 200)
@@ -349,7 +349,7 @@ describe('app.js', function() {
         });
     });
 
-    it('PUT /programs/:program_id', function(done) {
+    xit('PUT /programs/:program_id', function(done) {
       request(app)
         .put('/programs/3')
         .expect('updated the program', 200)
@@ -359,7 +359,7 @@ describe('app.js', function() {
         });
     });
 
-    it('DELETE /programs/:program_id', function(done) {
+    xit('DELETE /programs/:program_id', function(done) {
       request(app)
         .delete('/programs/3')
         .expect('deleted the program', 200)
@@ -369,7 +369,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /sites/:site_id/programs', function(done) {
+    xit('GET /sites/:site_id/programs', function(done) {
       request(app)
         .get('/sites/3/programs')
         .expect('got the programs for a sites', 200)
@@ -379,7 +379,7 @@ describe('app.js', function() {
         });
     });
 
-    it('POST /sites/:site_id/programs', function(done) {
+    xit('POST /sites/:site_id/programs', function(done) {
       request(app)
         .post('/sites/3/programs')
         .expect('created a program', 200)
@@ -389,7 +389,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /students/:student_id/programs', function(done) {
+    xit('GET /students/:student_id/programs', function(done) {
       request(app)
         .get('/students/3/programs')
         .expect('got the programs for a student', 200)
@@ -399,7 +399,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /accounts/:account_id/programs', function(done) {
+    xit('GET /accounts/:account_id/programs', function(done) {
       request(app)
         .get('/accounts/32/programs')
         .expect('got the programs for an account', 200)
@@ -448,7 +448,7 @@ describe('app.js', function() {
       events.getEventsByProgram.restore();
     });
 
-    it('GET /events', function(done) {
+    xit('GET /events', function(done) {
       request(app)
         .get('/events')
         .expect('got the events', 200)
@@ -458,7 +458,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /events/:event_id', function(done) {
+    xit('GET /events/:event_id', function(done) {
       request(app)
         .get('/events/3')
         .expect('got the event', 200)
@@ -468,7 +468,7 @@ describe('app.js', function() {
         });
     });
 
-    it('DELETE /events/:event_id', function(done) {
+    xit('DELETE /events/:event_id', function(done) {
       request(app)
         .delete('/events/3')
         .expect('deleted the event', 200)
@@ -478,7 +478,7 @@ describe('app.js', function() {
         });
     });
 
-    it('POST /programs/:program_id/events', function(done) {
+    xit('POST /programs/:program_id/events', function(done) {
       request(app)
         .post('/programs/1/events')
         .expect('created an event', 200)
@@ -488,7 +488,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /students/:student_id/events', function(done) {
+    xit('GET /students/:student_id/events', function(done) {
       request(app)
         .get('/students/3/events')
         .expect('got the events for a student', 200)
@@ -498,7 +498,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /program/:program_id/events', function(done) {
+    xit('GET /program/:program_id/events', function(done) {
       request(app)
         .get('/programs/1/events')
         .expect('got the events for a program', 200)
@@ -552,7 +552,7 @@ describe('app.js', function() {
       stats.uploadBMIStats.restore();
     });
 
-    it('get /stats', function(done) {
+    xit('get /stats', function(done) {
       request(app)
         .get('/stats')
         .expect('got the stats', 200)
@@ -562,7 +562,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /sites/:site_id/stats', function(done) {
+    xit('GET /sites/:site_id/stats', function(done) {
       request(app)
         .get('/sites/1/stats')
         .expect('got the stats for a site', 200)
@@ -572,7 +572,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /programs/:program_id/stats', function(done) {
+    xit('GET /programs/:program_id/stats', function(done) {
       request(app)
         .get('/programs/1/stats')
         .expect('got the stats for a program', 200)
@@ -582,7 +582,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /events/:event_id/stats', function(done) {
+    xit('GET /events/:event_id/stats', function(done) {
       request(app)
         .get('/events/1/stats')
         .expect('got the stats for an event', 200)
@@ -592,7 +592,7 @@ describe('app.js', function() {
         });
     });
 
-    it('GET /students/:student_id/stats', function(done) {
+    xit('GET /students/:student_id/stats', function(done) {
       request(app)
         .get('/students/1/stats')
         .expect('got the stats for a student', 200)
@@ -602,7 +602,7 @@ describe('app.js', function() {
         });
     });
 
-    it('PUT /events/:event_id/stats/pacer', function(done) {
+    xit('PUT /events/:event_id/stats/pacer', function(done) {
       request(app)
         .put('/events/1/stats/pacer')
         .expect('uploaded the pacer stats', 200)
@@ -612,7 +612,7 @@ describe('app.js', function() {
         });
     });
 
-    it('PUT /events/:event_id/stats/bmi', function(done) {
+    xit('PUT /events/:event_id/stats/bmi', function(done) {
       request(app)
         .put('/events/1/stats/bmi')
         .expect('uploaded the BMI stats', 200)
