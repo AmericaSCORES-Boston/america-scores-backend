@@ -163,10 +163,11 @@ describe('stats', function() {
 
     it('should get all stats that a given coach can see', function(done) {
       stats.getStats({
-        user: constants.coach
+        user: constants.volunteer
       })
       .then(function(data) {
-        assert.deepEqual([fakeStat, fakeStat2, fakeStat4, fakeStat5, fakeStat6], data);
+        console.log(data);
+        assert.deepEqual([fakeStat2, fakeStat5, fakeStat6], data);
         done();
       });
     });
