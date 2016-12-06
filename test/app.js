@@ -32,9 +32,17 @@ describe('app.js', function() {
   it('404 everything else', function(done) {
     request(app)
       .get('/foo/bar')
-      .expect(404, done);
+      .expect(404, done)
+      .expect('Not Found');
   });
 
+/*  describe('authorization failures', function() {
+    it('403 missing authorization field in request', function(done) {
+      request(app)
+      .get()
+    });
+  });
+*/
   describe('students endpoint', function() {
     var getStudentsStub;
     var getStudentStub;

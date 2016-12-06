@@ -3,7 +3,6 @@
 const env = process.env.NODE_ENV || 'development';
 const config = require('./config/config.js')[env];
 
-const request = require('request');
 const express = require('express');
 const bodyParser = require('body-parser');
 const makeResponse = require('./lib/utils').makeResponse;
@@ -25,19 +24,22 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 // exchange access_token for user info
 app.use(function(req, res, next) {
+  var err;
   // verify authorization and connection suppiled in request
   if (!req.hasOwnProperty('authorization')) {
-    res.status(400);
-    res.send('No authorization provied');
+    err = new Error('Access denied: No authorization provided');
+    err.status(403);
+    return next(err);
   } else if (!req.hasOwnProperty('connection')) {
-    res.status(400);
-    res.send('No connection type supplied');
+    err = new Error('No connection type supplied');
+    err.status = 400;
+    return next(err);
   }
 
   var client_secret;
   var client_id;
   // set parameters for JWT check depending upon connection type supplied
-  if (req.connection === 'mobile'){
+  if (req.connection === 'mobile') {
     client_secret = process.env.AUTH0_MOBILE_SECRET;
     // android and mobile do not share same client_id (stored in 'aud').
     // update accordingly.
@@ -47,8 +49,9 @@ app.use(function(req, res, next) {
     client_secret = process.env.AUTH0_WEBAPP_SECRET;
     client_id = process.env.AUTH0_WEBAPP_CLIENT_ID;
   } else {
-    res.status(400);
-    res.send('Bad connection type supplied');
+    err = new Error('Bad connection type supplied');
+    err.status(400);
+    return next(err);
   }
 
   // convert secret into a base64 encoded buffer
@@ -65,12 +68,18 @@ app.use(function(req, res, next) {
   try {
     // verify token with provided parameters
     var decoded = jwt.verify(req.authorization, client_secret, options);
+    if (decoded.email_verified !== true) {
+      err = new Error('Access denied: Must verify email.');
+      err.status(401);
+      return next(err);
+    }
+
     req.user = {
-      authorization: decoded.app_metadata.authorization.group,
+      authorization: decoded.app_metadata.type,
       f_name: decoded.first_name,
       l_name: decoded.last_name,
-      email: email,
-      auth0_id: user_id
+      email: decoded.email,
+      auth0_id: decoded.user_id
     };
     next();
   } catch(err) {
@@ -256,6 +265,19 @@ app.route('/events/:event_id/stats/bmi')
   .put(function(req, res, next) {
     makeResponse(res, stats.uploadBMIStats(req));
   });
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.send(err.message);
+});
 
 var server = app.listen(config.server.port);
 console.log('Listening on port ' + config.server.port);
