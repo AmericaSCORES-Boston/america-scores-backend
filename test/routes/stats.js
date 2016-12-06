@@ -166,7 +166,6 @@ describe('stats', function() {
         user: constants.volunteer
       })
       .then(function(data) {
-        console.log(data);
         assert.deepEqual([fakeStat2, fakeStat5, fakeStat6], data);
         done();
       });
