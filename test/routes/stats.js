@@ -7,6 +7,7 @@ const seed = require('../../lib/utils').seed;
 
 // The file to be tested
 const stats = require('../../routes/stats');
+const constants = require('../../lib/constants');
 
 // Create fake stats
 var fakeStat = {
@@ -148,7 +149,9 @@ describe('stats', function() {
   describe('getStats(req)', function() {
     it('should get all the stats in the database', function(done) {
       // GET all doesn't need anything from the request, so pass in empty
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
@@ -163,7 +166,8 @@ describe('stats', function() {
       var req = {
         params: {
           site_id: 1
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsBySite(req);
@@ -180,7 +184,8 @@ describe('stats', function() {
       var req = {
         params: {
           site_id: 44555555
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsBySite(req);
@@ -195,7 +200,8 @@ describe('stats', function() {
       var req = {
         params: {
           student_id: 1
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsByStudent(req);
@@ -212,7 +218,8 @@ describe('stats', function() {
       var req = {
         params: {
           student_id: 48394234
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsByStudent(req);
@@ -228,7 +235,8 @@ describe('stats', function() {
       var req = {
         params: {
           program_id: 1
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsByProgram(req);
@@ -245,7 +253,8 @@ describe('stats', function() {
       var req = {
         params: {
           event_id: 4
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsByEvent(req);
@@ -263,7 +272,8 @@ describe('stats', function() {
         params: {
           // The student_id is contained in the request
           stat_id: 4
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStat(req);
@@ -279,7 +289,8 @@ describe('stats', function() {
       var req = {
         params: {
           stat_id: 9999999
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStat(req);
@@ -311,10 +322,13 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -325,7 +339,9 @@ describe('stats', function() {
         return stats.uploadPacerStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -356,10 +372,13 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -370,7 +389,9 @@ describe('stats', function() {
         return stats.uploadPacerStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -401,7 +422,8 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadPacerStats(req)
@@ -437,7 +459,8 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadPacerStats(req)
@@ -473,7 +496,8 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.uploadPacerStats(req);
@@ -497,7 +521,8 @@ describe('stats', function() {
         params: {
           event_id: 3
         },
-        body: {}
+        body: {},
+        user: constants.admin
       };
 
       var promise = stats.uploadPacerStats(req);
@@ -548,10 +573,13 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -562,7 +590,9 @@ describe('stats', function() {
         return stats.uploadBMIStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -596,10 +626,13 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -610,7 +643,9 @@ describe('stats', function() {
         return stats.uploadBMIStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -644,7 +679,8 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadBMIStats(req)
@@ -683,7 +719,8 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadBMIStats(req)
@@ -722,7 +759,8 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.uploadBMIStats(req);
@@ -746,7 +784,8 @@ describe('stats', function() {
         params: {
           event_id: 3
         },
-        body: {}
+        body: {},
+        user: constants.admin
       };
 
       var promise = stats.uploadBMIStats(req);
@@ -784,10 +823,13 @@ describe('stats', function() {
           height: 6,
           weight: 6,
           pacer: 6,
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -801,7 +843,9 @@ describe('stats', function() {
       })
       .then(function(data) {
         assert.deepEqual([fakeStat8], data);
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -821,10 +865,13 @@ describe('stats', function() {
           height: 6,
           weight: 6,
           pacer: 6,
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -837,7 +884,9 @@ describe('stats', function() {
         return stats.updateStat(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -850,10 +899,13 @@ describe('stats', function() {
       var req = {
         params: {
           stat_id: 2,
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -867,7 +919,9 @@ describe('stats', function() {
       })
       .catch(function(err) {
         assert.equal(err.message, 'Must provide height, weight or pacer values');
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -882,10 +936,13 @@ describe('stats', function() {
           stat_id: 2,
         },
         body: {
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -899,7 +956,9 @@ describe('stats', function() {
       })
       .catch(function(err) {
         assert.equal(err.message, 'Must provide height, weight or pacer values');
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -915,10 +974,13 @@ describe('stats', function() {
       var req = {
         params: {
           stat_id: 1
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -931,7 +993,9 @@ describe('stats', function() {
         return stats.deleteStat(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount - 1);
