@@ -47,12 +47,11 @@ function addProgramToAccount(req) {
       return;
     }
 
-  })
-
-  return query('INSERT INTO AcctToProgram (acct_id, program_id) VALUES (?, ?)',
-   [req.params.acct_id, req.params.program_id])
-  .catch(function(err) {
-    return createInvalidArgumentError();
+    return query('INSERT INTO AcctToProgram (acct_id, program_id) VALUES (?, ?)',
+     [req.params.acct_id, req.params.program_id])
+    .catch(function(err) {
+      return createInvalidArgumentError();
+    });
   });
 }
 

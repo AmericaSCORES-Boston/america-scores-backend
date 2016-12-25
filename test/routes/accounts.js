@@ -309,23 +309,27 @@ var badEMailPutReq = {
 
 // get original states of the database tables
 before(function() {
-  // Acct table
   getAllAccounts().then(function(data) {
     initAcc = data;
 
     return query('SELECT * FROM AcctToProgram');
   })
-    .then(function(data) {
-      // Acct to Program table
-      initA2P = data;
-    });
-});
-
-beforeEach(function() {
-  return seed();
+  .then(function(data) {
+    // Acct to Program table
+    initA2P = data;
+  });
 });
 
 describe('Accounts', function() {
+  beforeEach(function() {
+    return seed();
+  });
+
+  // Without this line, initAcc and initA2P change.
+  after(function() {
+    return seed();
+  });
+
   describe('getAccounts(req)', function() {
     it('it should get all accounts in DB when requested by an admin', function(done) {
       // Retrieve all students when req.query.acct_type is empty
@@ -359,15 +363,15 @@ describe('Accounts', function() {
 
         return getAllAccounts();
       })
-        .then(function(data) {
-          assert.deepEqual(data, initAcc);
+      .then(function(data) {
+        assert.deepEqual(data, initAcc);
 
-          return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
-          assert.deepEqual(initA2P, data);
-          done();
-        });
+        return query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(initA2P, data);
+        done();
+      });
     });
 
     it('it should return a 403 error because coaches cannot request accounts', function(done) {
@@ -697,7 +701,7 @@ describe('Accounts', function() {
   });
 
   describe('addProgramToAccount(req)', function() {
-    it('should add the given program to the given account\'s permissions', function() {
+    it('should add the given program to the given account\'s permissions', function(done) {
       var req = {
         params: {
           acct_id: 1,
@@ -713,7 +717,6 @@ describe('Accounts', function() {
         return query('SELECT * FROM AcctToProgram');
       })
       .then(function(data) {
-        console.log(data);
         assert.deepEqual(initA2P, data);
 
         return accounts.addProgramToAccount(req);
@@ -727,16 +730,18 @@ describe('Accounts', function() {
         return query('SELECT * FROM AcctToProgram');
       })
       .then(function(data) {
-        assert.deepEqual(data, initAcc.push({
+        var newA2P = initA2P.concat([{
           id: 8,
           acct_id: 1,
           program_id: 3
-        }));
+        }]);
+
+        assert.deepEqual(data, newA2P);
         done();
       });
     });
 
-    it('should not add a program that the account already has', function() {
+    it('should not add a program that the account already has', function(done) {
       var req = {
         params: {
           acct_id: 1,
@@ -751,9 +756,7 @@ describe('Accounts', function() {
         return query('SELECT * FROM AcctToProgram');
       })
       .then(function(data) {
-        console.log(data);
-        assert.deepEqual(initA2P, data);
-
+        assert.deepEqual(data, initA2P);
         return accounts.addProgramToAccount(req);
       })
       .then(function() {
@@ -765,7 +768,43 @@ describe('Accounts', function() {
         return query('SELECT * FROM AcctToProgram');
       })
       .then(function(data) {
+        assert.deepEqual(data, initA2P);
+        done();
+      });
+    });
+
+    it('should not let staff update account permissions', function(done) {
+      var req = {
+        params: {
+          acct_id: 1,
+          program_id: 3
+        },
+        user: accType.staff
+      };
+
+      getAllAccounts()
+      .then(function(data) {
         assert.deepEqual(data, initAcc);
+
+        return query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(data) {
+        return accounts.addProgramToAccount(req);
+      })
+      .catch(function(err) {
+        assert.equal(err.message, 'Access denied: this account does not have permission ' +
+        'for this action');
+        assert.equal(err.name, 'AccessDenied');
+        assert.equal(err.status, 403);
+        return getAllAccounts();
+      })
+      .then(function(data) {
+        assert.deepEqual(data, initAcc);
+
+        return query('SELECT * FROM AcctToProgram');
+      })
+      .then(function(data) {
+        assert.deepEqual(data, initA2P);
         done();
       });
     });
