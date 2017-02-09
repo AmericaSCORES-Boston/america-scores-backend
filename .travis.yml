@@ -56,7 +56,7 @@ deploy:
     upload-dir: dev
     on:
       branch: develop
-    bucket: amscores-deploy
+    bucket: "amscores"
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
