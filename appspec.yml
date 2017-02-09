@@ -17,6 +17,11 @@ files:
 #   the Amazon EC2 instance.
 #   For more information, see the documentation.
 permissions:
+  - object: /amscores/backend
+    pattern: "**"
+    owner: ubuntu
+    type:
+      - directory
   - object: /amscores
     pattern: "backend"
     owner: ubuntu
