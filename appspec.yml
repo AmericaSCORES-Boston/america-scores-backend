@@ -22,6 +22,9 @@ permissions:
     owner: ubuntu
     type:
       - directory
+  - object: /amscores
+    pattern: "backend"
+    owner: ubuntu
 
 # If you are not running any commands on the Amazon EC2 instance, then remove
 #   the "hooks" section altogether. A blank or incomplete "hooks" section
