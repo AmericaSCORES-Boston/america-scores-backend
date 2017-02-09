@@ -22,6 +22,7 @@ permissions:
     owner: ubuntu
     type:
       - directory
+      - file
   - object: /amscores
     pattern: "backend"
     owner: ubuntu
