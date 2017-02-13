@@ -5,14 +5,22 @@
 The backend for the America SCORES data collection system.
 
 ### Getting Started
+You will need [NodeJS](https://nodejs.org/en/download/) installed locally.
+
 ~~~~
 > git clone https://github.com/CS4500-AmericaSCORES/america-scores-backend
 > cd america-scores-backend/
 > npm install
 ~~~~
+You will need to be able to run a [MySQL Server](https://dev.mysql.com/downloads/) on your local machine if you want to be able to test things locally.
+
+You will also need the Node production process manager [PM2](http://pm2.keymetrics.io/) in order to run the backend locally. You can install it using:
+~~~~
+> npm install pm2@latest -g
+~~~~
 
 ## Helpful Tools
-You will need to be able to run a [MySQL Server](https://dev.mysql.com/downloads/) on your local machine if you want to be able to test things locally. It can also be helpful to install a MySQL GUI like [MySQL Workbench](https://www.mysql.com/products/workbench/) if you're not comfortable running queries from the terminal. 
+Consider installing a MySQL GUI like [MySQL Workbench](https://www.mysql.com/products/workbench/) if you're not comfortable running queries from the terminal. 
 
 It can also be beneficial to install a GUI like [Postman](https://www.getpostman.com/) to verify API calls. You can similarly make the calls through [curl](https://curl.haxx.se/download.html) requests.
 
@@ -70,7 +78,17 @@ From the top level of `america-scores-backend`:
 ~~~~
 runs a local instance of the backend app, listening for requests on port 8888.
 
+You can see more information, including log file locations, for the app instance by running:
+~~~~
+> pm2 show amscores_backend
+~~~~
+
 You can now make requests via curl or a GUI like Postman.
+
+To stop the backend instance, run:
+~~~~
+> npm run stop
+~~~~
 
 ### Versioning
 This project uses [semantic versioning](http://semver.org/).
