@@ -33,7 +33,7 @@ deploy:
     skip_cleanup: true
     upload-dir: prod
     on:
-      branch: KC_AWS_Testing
+      branch: master
     bucket: asb-deploy
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
@@ -45,7 +45,7 @@ deploy:
     application: ASB-Backend
     deployment_group: Production
     on:
-      branch: KC_AWS_Testing
+      branch: master
     wait-until-deployed: true
   - provider: s3
     access_key_id: $AMSCORES_AWS_KEY_ID
@@ -55,7 +55,7 @@ deploy:
     skip_cleanup: true
     upload-dir: dev
     on:
-      branch: KC_AWS_Testing
+      branch: develop
     bucket: asb-deploy
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
@@ -67,5 +67,5 @@ deploy:
     application: ASB-Backend
     deployment_group: Development
     on:
-      branch: KC_AWS_Testing
+      branch: develop
     wait-until-deployed: true
