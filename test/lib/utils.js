@@ -37,11 +37,11 @@ describe('utils', function() {
 
     it('makes all other responses', function(done) {
       var promise = Promise.reject({
-        status: 404
+        status: 500
       });
 
       utils.makeResponse(res, promise).catch(function() {
-        assert.isTrue(resStatusSpy.calledWith(404));
+        assert.isTrue(resStatusSpy.calledWith(500));
         done();
       });
     });
