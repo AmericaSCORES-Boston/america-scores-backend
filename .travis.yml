@@ -8,7 +8,7 @@ before_script:
 
 script:
   - mysql -u travis america_scores < database/dbcreate.sql
-  - ./scripts/travis-mysql.sh
+  - ./scripts/travis-config.sh
   - npm run eslint -- --failTaskOnError
   - npm run seed
   - npm run test -- --failTaskOnError
@@ -34,15 +34,15 @@ deploy:
     upload-dir: prod
     on:
       branch: master
-    bucket: amscores-deploy
+    bucket: asb-deploy
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     region: us-east-1
-    bucket: "amscores-deploy"
+    bucket: asb-deploy
     key: prod/backend-latest.zip
     bundle_type: zip
-    application: AmScoresBackend
+    application: ASB-Backend
     deployment_group: Production
     on:
       branch: master
@@ -56,16 +56,23 @@ deploy:
     upload-dir: dev
     on:
       branch: develop
-    bucket: amscores-deploy
+    bucket: asb-deploy
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     region: us-east-1
-    bucket: "amscores-deploy"
+    bucket: asb-deploy
     key: dev/backend-latest.zip
     bundle_type: zip
-    application: AmScoresBackend
+    application: ASB-Backend
     deployment_group: Development
     on:
       branch: develop
     wait-until-deployed: true
+
+notifications:
+    slack:
+        on_pull_requests: false
+        rooms:
+            - secure: "scbo7s/9of6BC/VYd9dmG4lRQRldjWAe9Up6IYC+flKr9MCN5Vh8BoL/LZoDWCP/hkh73uNw4cNwpi5klxzhDpO+F7jXlg8aFiHmluw0acwEWwMLTRmcwLDnh7yYXjg21hk8RTUG76Sp1sWFTpWa/bdr8EPFZmw2c0MQF+57dIWSIQdRxU67uVeJJSQR6DKnmgqeGb1VNNb5fv2vCfZSpL1Kh54440OIBGijWpJiOnXGk4riGiQKm9vaq1CTgb/sEuJkJ8KkiHUOPTZEPBKzEXYhz2V/tyMn6fccpdeTO3iAaMRojeMbOQWUkSL41vRU+99b3/3xiiCFGKNz/ZZEEtnksforXSJAGlYNX0JhHDgBfTkxXvGGzMrQSUX0KYg/Xu+Q3v2mvErDvb4EWgstnPw0YOG6ZujRnWrmmo5widQVWMaOUTiYLV7/7Alxb5lf8gJ6T6bZZgCxXHzvy9+bTSH0dbIdttDPcgcYtG2mDp+8SxWO8g82lbPiCovEG10+8Jxu0EITUFuRJ/DOToa7+Nb8LhGS4IbFM4Dq+bGJQwMtozk1nFX4OQFIb6u2qaVct6Co4pvlW0U9XFAeB3S3a+l+zE5jMyMrl0y/caas3sPAtzSvottXtP3QREt2Ys++W7nSlte16oodFdUd03VgbAlCYEUj5bW3GLf4WhB+Dik=" # dev-ops channel
+            - secure: "DjmSNawgrgzUQJvQ2s8UV2+C7Qq5zCdVkYQKVIp5s1FlQgV4/ebGkPxm8R0rNaNErtdcYia9OLCN/5VIyXyNmPDjMubQ/DqKsUe6gsbt9UmrBrOGGEH0/PiVSZIxdCrIuhWfCe4YVmsftp0Fj3a2bkjI3MWD+aW4OKWtUQoMqDWVaokBX8Uq9erq52aQxEgLYyF9LcvZT0TcqLFXEtEH9Z/KQOeQ99gS+8Z61fA77x2pdGFRriO4bRWUoJ/9g323me6EKa1AVtWAOXyoBtqFTgOcG7LTfoELkEQHOOv5SLzJV+wv230z6lSf+v1dgwRUExZ65TG4W6AO5wZs7ly4BUK07yyx+CRhbeVG9ERrvzlpaDU/0xZq1KQjVvi+zkBN2Hjdh3d5a3z1FmUKULQQ7kX13mrsNCiiuOBF5PGa/WdQpGphUYzNCRRzq3qtUrlWN83bo9Z7RePpBypetpCvVTbiTJ/h/sWTEMcYa3sPrLncxXsvGfDFP8pQt5Ytw4hZ1vqznFZDCcyAw1DfQtGjRa+GVOxWwU/hYPpOdvu4fUg2gi80lVSuNg3OSiztgc+GijZWT9bQqTiGcnUr/QkTxi6yW/Fqeyhsr0gqI2MuAcXoY4g3DzGMULPFcdAbsgQF85HJ/ZMv39Xoug3znT6flef8J3VhqfQCq3zR2Ir0VQU=" # backend channel

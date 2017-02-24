@@ -5,20 +5,20 @@ const chai = require('chai');
 const assert = chai.assert;
 const request = require('supertest');
 const Promise = require('bluebird');
-const students = require('../../routes/students');
-const sites = require('../../routes/sites');
-const programs = require('../../routes/programs');
-const events = require('../../routes/events');
-
+const students = require('../routes/students');
+const sites = require('../routes/sites');
+const programs = require('../routes/programs');
+const events = require('../routes/events');
+const stats = require('../routes/stats');
 
 describe('app.js', function() {
   var app;
 
-  beforeEach(function() {
-    app = require('../../app');
+  before(function() {
+    app = require('../app');
   });
 
-  afterEach(function() {
+  after(function() {
     app.close();
   });
 
@@ -45,7 +45,7 @@ describe('app.js', function() {
     var getStudentsBySiteStub;
     var getStudentsByEventStub;
 
-    beforeEach(function() {
+    before(function() {
       getStudentsStub = sinon.stub(students, 'getStudents', function() {
         return Promise.resolve('got the students');
       });
@@ -72,7 +72,7 @@ describe('app.js', function() {
       });
     });
 
-    afterEach(function() {
+    after(function() {
       students.getStudents.restore();
       students.getStudent.restore();
       students.deleteStudent.restore();
@@ -182,7 +182,7 @@ describe('app.js', function() {
     var updateSiteStub;
     var deleteSiteStub;
 
-    beforeEach(function() {
+    before(function() {
       getSitesStub = sinon.stub(sites, 'getSites', function() {
         return Promise.resolve('got the sites');
       });
@@ -202,7 +202,8 @@ describe('app.js', function() {
         return Promise.resolve('deleted the site');
       });
     });
-    afterEach(function() {
+
+    after(function() {
       sites.getSites.restore();
       sites.getSitesByAccount.restore();
       sites.createSite.restore();
@@ -282,7 +283,7 @@ describe('app.js', function() {
     var getProgramsByStudentStub;
     var getProgramsByAccountStub;
 
-    beforeEach(function() {
+    before(function() {
       getProgramsStub = sinon.stub(programs, 'getPrograms', function() {
         return Promise.resolve('got the programs');
       });
@@ -309,7 +310,7 @@ describe('app.js', function() {
       });
     });
 
-    afterEach(function() {
+    after(function() {
       programs.getPrograms.restore();
       programs.getProgram.restore();
       programs.updateProgram.restore();
@@ -469,9 +470,9 @@ describe('app.js', function() {
         });
     });
 
-    it('POST /accounts/:account_id/programs/:program_id/events', function(done) {
+    it('POST /programs/:program_id/events', function(done) {
       request(app)
-        .post('/accounts/1/programs/1/events')
+        .post('/programs/1/events')
         .expect('created an event', 200)
         .end(function() {
           assert.isTrue(createEventStub.called);
@@ -495,6 +496,120 @@ describe('app.js', function() {
         .expect('got the events for a program', 200)
         .end(function() {
           assert.isTrue(getEventsByProgramStub.called);
+          done();
+        });
+    });
+  });
+
+  describe('stats endpoint', function() {
+    var getStatsStub;
+    var getStatsBySiteStub;
+    var getStatsByProgramStub;
+    var getStatsByEventStub;
+    var getStatsByStudentStub;
+    var uploadPacerStatsStub;
+    var uploadBMIStatsStub;
+
+    before(function() {
+      getStatsStub = sinon.stub(stats, 'getStats', function() {
+        return Promise.resolve('got the stats');
+      });
+      getStatsBySiteStub = sinon.stub(stats, 'getStatsBySite', function() {
+        return Promise.resolve('got the stats for a site');
+      });
+      getStatsByProgramStub = sinon.stub(stats, 'getStatsByProgram', function() {
+        return Promise.resolve('got the stats for a program');
+      });
+      getStatsByEventStub = sinon.stub(stats, 'getStatsByEvent', function() {
+        return Promise.resolve('got the stats for an event');
+      });
+      getStatsByStudentStub = sinon.stub(stats, 'getStatsByStudent', function() {
+        return Promise.resolve('got the stats for a student');
+      });
+      uploadPacerStatsStub = sinon.stub(stats, 'uploadPacerStats', function() {
+        return Promise.resolve('uploaded the pacer stats');
+      });
+      uploadBMIStatsStub = sinon.stub(stats, 'uploadBMIStats', function() {
+        return Promise.resolve('uploaded the BMI stats');
+      });
+    });
+
+    after(function() {
+      stats.getStats.restore();
+      stats.getStatsBySite.restore();
+      stats.getStatsByProgram.restore();
+      stats.getStatsByEvent.restore();
+      stats.getStatsByStudent.restore();
+      stats.uploadPacerStats.restore();
+      stats.uploadBMIStats.restore();
+    });
+
+    it('get /stats', function(done) {
+      request(app)
+        .get('/stats')
+        .expect('got the stats', 200)
+        .end(function() {
+          assert.isTrue(getStatsStub.called);
+          done();
+        });
+    });
+
+    it('GET /sites/:site_id/stats', function(done) {
+      request(app)
+        .get('/sites/1/stats')
+        .expect('got the stats for a site', 200)
+        .end(function() {
+          assert.isTrue(getStatsBySiteStub.called);
+          done();
+        });
+    });
+
+    it('GET /programs/:program_id/stats', function(done) {
+      request(app)
+        .get('/programs/1/stats')
+        .expect('got the stats for a program', 200)
+        .end(function() {
+          assert.isTrue(getStatsByProgramStub.called);
+          done();
+        });
+    });
+
+    it('GET /events/:event_id/stats', function(done) {
+      request(app)
+        .get('/events/1/stats')
+        .expect('got the stats for an event', 200)
+        .end(function() {
+          assert.isTrue(getStatsByEventStub.called);
+          done();
+        });
+    });
+
+    it('GET /students/:student_id/stats', function(done) {
+      request(app)
+        .get('/students/1/stats')
+        .expect('got the stats for a student', 200)
+        .end(function() {
+          assert.isTrue(getStatsByStudentStub.called);
+          done();
+        });
+    });
+
+    it('PUT /events/:event_id/stats/pacer', function(done) {
+      request(app)
+        .put('/events/1/stats/pacer')
+        .expect('uploaded the pacer stats', 200)
+        .end(function() {
+          assert.isTrue(uploadPacerStatsStub.called);
+          done();
+        });
+    });
+
+    it('PUT /events/:event_id/stats/bmi', function(done) {
+      request(app)
+        .put('/events/1/stats/bmi')
+        .expect('uploaded the BMI stats', 200)
+        .end(function() {
+          assert.isTrue(uploadBMIStatsStub.called);
           done();
         });
     });
