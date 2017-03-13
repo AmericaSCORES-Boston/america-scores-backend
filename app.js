@@ -14,6 +14,7 @@ const sites = require('./routes/sites');
 const programs = require('./routes/programs');
 const events = require('./routes/events');
 const stats = require('./routes/stats');
+const accounts = require('./routes/accounts');
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -70,6 +71,12 @@ app.route('/events/:event_id/students')
   .get(function(req, res, next) {
     makeResponse(res, students.getStudentsByEvent(req));
   });
+
+// Accounts
+app.route('/accounts')
+  .get(function(req, res, next) {
+    makeResponse(res, accounts.getAccounts(req));
+});
 
 // Sites
 app.route('/sites')
@@ -195,6 +202,7 @@ app.route('/events/:event_id/stats/bmi')
   .put(function(req, res, next) {
     makeResponse(res, stats.uploadBMIStats(req));
   });
+
 
 var server = app.listen(config.server.port);
 console.log('Listening on port ' + config.server.port);
