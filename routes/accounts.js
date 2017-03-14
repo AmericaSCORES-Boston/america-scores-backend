@@ -61,8 +61,27 @@ function getAccountsBySite(req) {
   return [];
 }
 
+/*
+ * User must have admin authorization
+ *
+ * Supports:
+ * /accounts/:program_id
+ */
 function getAccountsByProgram(req) {
-  return [];
+    debugger;
+  /*
+  if (req.user.authorization !== 'Admin') {
+    return createAccessDeniedError();
+  }
+  */
+  if (defined(req.params.program_id)) {
+      return query('SELECT a.acct_id, first_name, last_name, email, acct_type ' +
+          'FROM Acct a, AcctToProgram ap ' +
+          'WHERE a.acct_id = ap.acct_id AND ? = ap.program_id',
+          [req.params.program_id]);
+  }
+
+  return createUnsupportedRequestError();
 }
 
 function createAccount(req) {
