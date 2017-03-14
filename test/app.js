@@ -6,6 +6,7 @@ const assert = chai.assert;
 const request = require('supertest');
 const Promise = require('bluebird');
 const students = require('../routes/students');
+const accounts = require('../routes/accounts');
 const sites = require('../routes/sites');
 const programs = require('../routes/programs');
 const events = require('../routes/events');
@@ -169,6 +170,30 @@ describe('app.js', function() {
         .expect('got students for an event', 200)
         .end(function() {
           assert.isTrue(getStudentsByEventStub.called);
+          done();
+        });
+    });
+  });
+
+  describe('accounts endpoint', function() {
+    var getAccountsStub;
+
+    before(function() {
+      getAccountsStub = sinon.stub(accounts, 'getAccounts', function() {
+        return Promise.resolve('got the accounts');
+      });
+    });
+
+    after(function() {
+      accounts.getAccounts.restore();
+    });
+
+    it('GET /accounts', function(done) {
+      request(app)
+        .get('/accounts')
+        .expect('got the accounts', 200)
+        .end(function() {
+          assert.isTrue(getAccountsStub.called);
           done();
         });
     });
