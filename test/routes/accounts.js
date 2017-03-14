@@ -604,171 +604,182 @@ describe('Accounts', function() {
   });
 
   describe('updateAccount(req)', function() {
-    xit('it should update an account with all new fields', function(done) {
-      var req = {
-        params: {
-          acct_id: 5
-        },
-        body: {
-          first_name: 'updatedFirst',
-          last_name: 'updatedLast',
-          email: 'updated@americascores.org',
-          acct_type: 'Admin'
-        },
-        user: accType.admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
+    xit('it should update an account with all new fields',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 5
+          },
+          body: {
+            first_name: 'updatedFirst',
+            last_name: 'updatedLast',
+            email: 'updated@americascores.org',
+            acct_type: 'Admin'
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc5_upd]);
 
           return getAccounts();
         });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(5)), acc5_upd);
-        // reset the account to previous Auth0 values
-        resetAuth0Acc(acc5);
-        done();
-      });
+
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(5)), acc5_upd);
+          // reset the account to previous Auth0 values
+          resetAuth0Acc(acc5);
+          done();
+        });
     });
 
-    xit('it should update an account with a new first name', function(done) {
-      var req = {
-        params: {
-          acct_id: 7
-        },
-        body: {
-          first_name: 'updatedFirst',
-        },
-        user: accType.admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
+    xit('it should update an account with a new first name',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 7
+          },
+          body: {
+            first_name: 'updatedFirst',
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_fn_upd]);
 
           return getAccounts();
         });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_fn_upd);
-        // reset the account to the previous Auth0 values
-        resetAuth0Acc(acc7);
-        done();
-      });
+
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_fn_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
+          done();
+        });
     });
 
-    xit('it should update an account with a new last name', function(done) {
-      var req = {
-        params: {
-          acct_id: 7
-        },
-        body: {
-          last_name: 'updatedLast',
-        },
-        user: accType.admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
+    xit('it should update an account with a new last name',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 7
+          },
+          body: {
+            last_name: 'updatedLast',
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_ln_upd]);
 
           return getAccounts();
         });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_ln_upd);
-        // reset the account to the previous Auth0 values
-        resetAuth0Acc(acc7);
-        done();
-      });
+
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_ln_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
+          done();
+        });
     });
 
-    xit('it should update an account with a new email', function(done) {
-      var req = {
-        params: {
-          acct_id: 7
-        },
-        body: {
-          email: 'updated@americascores.org',
-        },
-        user: accType.admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
+    xit('it should update an account with a new email',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 7
+          },
+          body: {
+            email: 'updated@americascores.org',
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_email_upd]);
 
           return getAccounts();
         });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_email_upd);
-        // reset the account to the previous Auth0 values
-        resetAuth0Acc(acc7);
-        done();
-      });
+
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_email_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
+          done();
+        });
     });
 
-    xit('it should update an account with a new auth level', function(done) {
-      var req = {
-        params: {
-          acct_id: 7
-        },
-        body: {
-          acct_type: 'Staff',
-        },
-        user: accType.admin
-      };
-      accounts.updateAccount(req)
-        .then(function(data) {
+    xit('it should update an account with a new auth level',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 7
+          },
+          body: {
+            acct_type: 'Staff',
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_auth_upd]);
 
           return getAccounts();
         });
-      promise.then(function(data) {
-        // confirm only expected entry was updatedd
-        assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
-        // confirm update received in Auth0
-        assert.isTrue(checkAuth0(auth0ID(7)), acc7_auth_upd);
-        // reset the account to the previous Auth0 values
-        resetAuth0Acc(acc7);
-        done();
-      });
+
+        promise.then(function(data) {
+          // confirm only expected entry was updatedd
+          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
+          // confirm update received in Auth0
+          assert.isTrue(checkAuth0(auth0ID(7)), acc7_auth_upd);
+          // reset the account to the previous Auth0 values
+          resetAuth0Acc(acc7);
+          done();
+        });
     });
 
-    xit('it should return error err msg because body is missing', function(done) {
-      accounts.updateAccount({
-        params: {
-          acct_id: 1
-        },
-        user: accType.admin
-      }).catch(function(err) {
-        assert.equal(err.name, 'MissingFieldError');
-        assert.equal(err.status, 400);
-        assert.equal(err.message, 'Request must have body and params section. Within ' +
-          'params a valid acct_id must be given. Body should contain updated values ' +
-          'for fields to be updated.');
+    xit('it should return error err msg because body is missing',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 1
+          },
+          user: accType.admin
+        });
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+        promise.catch(function(err) {
+          assert.equal(err.name, 'MissingFieldError');
+          assert.equal(err.status, 400);
+          assert.equal(err.message, 'Request must have body and params section. Within ' +
+            'params a valid acct_id must be given. Body should contain updated values ' +
+            'for fields to be updated.');
+
+          return getAllAccounts();
+        }).then(function(data) {
           // confirm no updates were incurred
           assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           assert.deepEqual(initA2P, data);
           // confirm account was not affected
           assert.isTrue(checkAuth0(auth0ID(1)), acc1);
@@ -778,15 +789,17 @@ describe('Accounts', function() {
         });
     });
 
-    xit('should not update if request is missing params section', function(done) {
-      // TODO create test to ensure Auth0 is the same before and after
-      accounts.updateAccount({
-        body: {
-          first_name: 'Beezlebub'
-        },
-        user: accType.admin
-      })
-        .catch(function(err) {
+    xit('should not update if request is missing params section',
+      function(done) {
+        // TODO create test to ensure Auth0 is the same before and after
+        var promise = accounts.updateAccount({
+          body: {
+            first_name: 'Beezlebub'
+          },
+          user: accType.admin
+        });
+
+        promise.catch(function(err) {
           assert.equal(err.message, 'Request must have body and params section. Within ' +
             'params a valid acct_id must be given. Body should contain updated values ' +
             'for fields to be updated.');
@@ -794,32 +807,32 @@ describe('Accounts', function() {
           assert.equal(err.status, 400);
 
           return getAllAccounts();
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm no changes were made to acc table
           assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm no change to acc-to-prog table
           assert.deepEqual(initA2P, data);
           done();
         });
     });
 
-    xit('should not update if request is missing acct_id in params', function(done) {
-      // TODO ensure entire Auth0 DB has not been affected
-      accounts.updateAccount({
-        params: {
-          something_stupid: 7
-        },
-        body: {
-          first_name: 'Beezlebub'
-        },
-        user: accType.admin
-      })
-        .catch(function(err) {
+    xit('should not update if request is missing acct_id in params',
+      function(done) {
+        // TODO ensure entire Auth0 DB has not been affected
+        var promise = accounts.updateAccount({
+          params: {
+            something_stupid: 7
+          },
+          body: {
+            first_name: 'Beezlebub'
+          },
+          user: accType.admin
+        });
+
+        promise.catch(function(err) {
           assert.equal(err.message, 'Request must have body and params section. Within ' +
             'params a valid acct_id must be given. Body should contain updated values ' +
             'for fields to be updated.');
@@ -827,44 +840,41 @@ describe('Accounts', function() {
           assert.equal(err.status, 400);
 
           return getAllAccounts();
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm no changes were made to accounts table
           assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm no changes were made to accounts-to-prog table
           assert.deepEqual(data, initA2P);
         });
     });
 
-    xit('it should return a 403 error because staff cannot update other accounts', function(done) {
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 7
-        },
-        body: {
-          first_name: 'Beezlebub'
-        },
-        user: accType.staff
-      });
+    xit('it should return a 403 error because staff cannot update other accounts',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 7
+          },
+          body: {
+            first_name: 'Beezlebub'
+          },
+          user: accType.staff
+        });
 
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
+        promise.catch(function(err) {
+          assert.equal(err.name, 'AccessDenied');
+          assert.equal(err.status, 403);
+          assert.equal(err.message, 'Access denied: this account does not have permission ' +
+            'for this action');
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+          return getAllAccounts();
+        }).then(function(data) {
           assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm table was unaffected
           assert.deepEqual(initA2P, data);
           // reset the account to the previous Auth0 values
@@ -873,31 +883,30 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should return a 403 error because coaches cannot update other accounts', function(done) {
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 7
-        },
-        body: {
-          first_name: 'Beezlebub'
-        },
-        user: accType.coach
-      });
+    xit('it should return a 403 error because coaches cannot update other accounts',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 7
+          },
+          body: {
+            first_name: 'Beezlebub'
+          },
+          user: accType.coach
+        });
 
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
+        promise.catch(function(err) {
+          assert.equal(err.name, 'AccessDenied');
+          assert.equal(err.status, 403);
+          assert.equal(err.message, 'Access denied: this account does not have permission ' +
+            'for this action');
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+          return getAllAccounts();
+        }).then(function(data) {
           assert.deepEqual(data, initAcc);
 
           return query('select * from AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm table was unaffected
           assert.deepEqual(initA2P, data);
           // reset the account to the previous Auth0 values
@@ -906,31 +915,30 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should return a 403 error because volunteers cannot update other accounts', function(done) {
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 7
-        },
-        body: {
-          first_name: 'Beezlebub'
-        },
-        user: accType.volunteer
-      });
+    xit('it should return a 403 error because volunteers cannot update other accounts',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 7
+          },
+          body: {
+            first_name: 'Beezlebub'
+          },
+          user: accType.volunteer
+        });
 
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
+        promise.catch(function(err) {
+          assert.equal(err.name, 'AccessDenied');
+          assert.equal(err.status, 403);
+          assert.equal(err.message, 'Access denied: this account does not have permission ' +
+            'for this action');
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+          return getAllAccounts();
+        }).then(function(data) {
           assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm table was unaffected
           assert.deepEqual(initA2P, data);
           // reset the account to the previous Auth0 values
@@ -939,31 +947,30 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should return a 403 error because staff cannot update their own type', function(done) {
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 5  // id for the accType.staff constant
-        },
-        body: {
-          acct_type: 'Admin'
-        },
-        user: accType.staff
-      });
+    xit('it should return a 403 error because staff cannot update their own type',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 5  // id for the accType.staff constant
+          },
+          body: {
+            acct_type: 'Admin'
+          },
+          user: accType.staff
+        });
 
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
+        promise.catch(function(err) {
+          assert.equal(err.name, 'AccessDenied');
+          assert.equal(err.status, 403);
+          assert.equal(err.message, 'Access denied: this account does not have permission ' +
+            'for this action');
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+          return getAllAccounts();
+        }).then(function(data) {
           assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           assert.deepEqual(inita2p, data);
           // reset the account to the previous Auth0 values
           resetAuth0Acc(acc5);
@@ -971,31 +978,30 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should return a 403 error because coaches cannot update their own type', function(done) {
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 1 // id for the accType.coach constant
-        },
-        body: {
-          first_name: 'Beezlebub'
-        },
-        user: accType.coach
-      });
+    xit('it should return a 403 error because coaches cannot update their own type',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 1 // id for the accType.coach constant
+          },
+          body: {
+            first_name: 'Beezlebub'
+          },
+          user: accType.coach
+        });
 
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
+        promise.catch(function(err) {
+          assert.equal(err.name, 'AccessDenied');
+          assert.equal(err.status, 403);
+          assert.equal(err.message, 'Access denied: this account does not have permission ' +
+            'for this action');
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+          return getAllAccounts();
+        }).then(function(data) {
           assert.deepEqual(data, initAcc);
 
           return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+        }).then(function(data) {
           // confirm table was unaffected
           assert.deepEqual(initA2P, data);
           // reset the account to the previous Auth0 values
@@ -1004,32 +1010,31 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should return a 403 error because volunteers cannot update their own type', function(done) {
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 3 // id for the accType.volunteer constant
-        },
-        body: {
-          first_name: 'Beezlebub'
-        },
-        user: accType.volunteer
-      });
+    xit('it should return a 403 error because volunteers cannot update their own type',
+      function(done) {
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 3 // id for the accType.volunteer constant
+          },
+          body: {
+            first_name: 'Beezlebub'
+          },
+          user: accType.volunteer
+        });
 
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
+        promise.catch(function(err) {
+          assert.equal(err.name, 'AccessDenied');
+          assert.equal(err.status, 403);
+          assert.equal(err.message, 'Access denied: this account does not have permission ' +
+            'for this action');
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
-          // confirm table was unaffected
-          assert.deepEqual(data, initAcc);
+          return getAllAccounts();
+        }).then(function(data) {
+         // confirm table was unaffected
+         assert.deepEqual(data, initAcc);
 
-          return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
+         return query('SELECT * FROM AcctToProgram');
+        }).then(function(data) {
           // confirm table was unaffectd
           assert.deepEqual(initA2P, data);
           // reset the account to the previous Auth0 values
@@ -1038,34 +1043,35 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should allow volunteers to update their own email and name', function(done) {
-      var newFName = 'Beezlebub';
-      var newLName = 'Smith';
-      var newEmail = 'updated@americascores.org';
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 3 // id for the accType.volunteer constant
-        },
-        body: {
-          first_name: newFName,
-          last_name: newLName,
-          email: newEmail
-        },
-        user: accType.volunteer
-      });
+    xit('it should allow volunteers to update their own email and name',
+      function(done) {
+        var newFName = 'Beezlebub';
+        var newLName = 'Smith';
+        var newEmail = 'updated@americascores.org';
 
-      // update acc3 object to match
-      acc3.first_name = newFName;
-      acc3.last_name = newLName;
-      acc3.last_name = newEmail;
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 3 // id for the accType.volunteer constant
+          },
+          body: {
+            first_name: newFName,
+            last_name: newLName,
+            email: newEmail
+          },
+          user: accType.volunteer
+        });
 
-      promise.then(function(data) {
-        // confirm the returned data matches updated object
-        assert.equal(data, acc3);
+        // update acc3 object to match
+        acc3.first_name = newFName;
+        acc3.last_name = newLName;
+        acc3.last_name = newEmail;
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+        promise.then(function(data) {
+          // confirm the returned data matches updated object
+          assert.equal(data, acc3);
+
+          return getAllAccounts();
+        }).then(function(data) {
           // confirm all data in db is as expected, 3 has been updated
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
           // confirm updates received in Auth0
@@ -1076,33 +1082,34 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should allow coaches to update their own email and name', function(done) {
-      var newFName = 'Beezlebub';
-      var newLName = 'Smith';
-      var newEmail = 'updated@americascores.org';
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 1 // id for the accType.coach constant
-        },
-        body: {
-          first_name: newFName,
-          last_name: newLName,
-          email: newEmail
-        },
-        user: accType.coach
-      });
-      // update acc1 object to match
-      acc1.first_name = newFName;
-      acc1.last_name = newLName;
-      acc1.last_name = newEmail;
+    xit('it should allow coaches to update their own email and name',
+      function(done) {
+        var newFName = 'Beezlebub';
+        var newLName = 'Smith';
+        var newEmail = 'updated@americascores.org';
 
-      promise.then(function(data) {
-        // confirm the returned data matches updated object
-        assert.equal(data, acc1);
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 1 // id for the accType.coach constant
+          },
+          body: {
+            first_name: newFName,
+            last_name: newLName,
+            email: newEmail
+          },
+          user: accType.coach
+        });
+        // update acc1 object to match
+        acc1.first_name = newFName;
+        acc1.last_name = newLName;
+        acc1.last_name = newEmail;
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+        promise.then(function(data) {
+          // confirm the returned data matches updated object
+          assert.equal(data, acc1);
+
+          return getAllAccounts();
+        }).then(function(data) {
           // confirm all data in db is as expected, 1 has been updated
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
           // confirm updates received in Auth0
@@ -1113,33 +1120,34 @@ describe('Accounts', function() {
         });
     });
 
-    xit('it should allow staff to update their own email and name', function(done) {
-      var newFName = 'Beezlebub';
-      var newLName = 'Smith';
-      var newEmail = 'updated@americascores.org';
-      var promise = accounts.updateAccount({
-        params: {
-          acct_id: 5 // id for the accType.staff constant
-        },
-        body: {
-          first_name: newFName,
-          last_name: newLName,
-          email: newEmail
-        },
-        user: accType.staff
-      });
-      // update acc5 object to match
-      acc5.first_name = newFName;
-      acc5.last_name = newLName;
-      acc5.last_name = newEmail;
+    xit('it should allow staff to update their own email and name',
+      function(done) {
+        var newFName = 'Beezlebub';
+        var newLName = 'Smith';
+        var newEmail = 'updated@americascores.org';
 
-      promise.then(function(data) {
-        // confirm the returned data matches updated object
-        assert.equal(data, acc5);
+        var promise = accounts.updateAccount({
+          params: {
+            acct_id: 5 // id for the accType.staff constant
+          },
+          body: {
+            first_name: newFName,
+            last_name: newLName,
+            email: newEmail
+          },
+          user: accType.staff
+        });
+        // update acc5 object to match
+        acc5.first_name = newFName;
+        acc5.last_name = newLName;
+        acc5.last_name = newEmail;
 
-        return getAllAccounts();
-      })
-        .then(function(data) {
+        promise.then(function(data) {
+          // confirm the returned data matches updated object
+          assert.equal(data, acc5);
+
+          return getAllAccounts();
+        }).then(function(data) {
           // confirm all data in db is as expected, 5 has been updated
           assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
           // confirm updates received in Auth0

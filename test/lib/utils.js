@@ -178,4 +178,60 @@ describe('utils', function() {
       });
     });
   });
+
+  describe('reqHasRequirements(requestObj, requirementsList)', function() {
+    var obj = {
+      'query': {
+        'testReq': '1',
+      }
+    };
+    it('returns true when the request has no requirements',
+      function() {
+        assert.isTrue(utils.reqHasRequirements(obj, []));
+    });
+    it('returns true when the request has the specified requirements',
+      function() {
+        var req1 = new utils.Requirement('testReq');
+        assert.isTrue(utils.reqHasRequirements(obj, [req1]));
+    });
+    it('returns false when the request is missing specified requirements',
+      function() {
+        var req2 = new utils.Requirement('testReq2');
+        assert.isFalse(utils.reqHasRequirements(obj, [req2]));
+    });
+    it('returns false when the request is missing specified type of requirements',
+      function() {
+        var req3 = new utils.Requirement('testReq3');
+        req3.setType('params');
+        assert.isFalse(utils.reqHasRequirements(obj, [req3]));
+    });
+  });
+
+  describe('makeQueryArgs(requestObj, requirementsList)', function() {
+    var req1 = new utils.Requirement('testReq');
+    var req2 = new utils.Requirement('testReq2');
+    var req3 = new utils.Requirement('testReq3');
+    req3.setType('params');
+    var obj = {
+      'query': {
+        'testReq': '1',
+        'testReq2': '2'
+      },
+      'params': {
+        'testReq3': '3'
+      }
+    };
+    it('creates a list of SQL query arguments from the requirements',
+      function() {
+        assert.deepEqual(utils.makeQueryArgs(obj, [req1, req2, req3]), ['1', '2', '3']);
+    });
+    it('preserves the requirements order in the query args it creates',
+      function() {
+        assert.deepEqual(utils.makeQueryArgs(obj, [req3, req1, req2]), ['3', '1', '2']);
+    });
+    it('returns no args when given an empty requirements list',
+      function() {
+        assert.deepEqual(utils.makeQueryArgs(obj, []), []);
+    });
+  });
 });

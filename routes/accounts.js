@@ -1,9 +1,40 @@
 'use strict';
 
-const Promise = require('bluebird');
 const utils = require('../lib/utils');
+const errors = require('../lib/errors');
 const query = utils.query;
-const defined = utils.defined;
+const reqHasRequirements = utils.reqHasRequirements;
+const makeQueryArgs = utils.makeQueryArgs;
+const Requirement = utils.Requirement;
+const PotentialQuery = utils.PotentialQuery;
+
+const SELECT_ACCT = 'SELECT a.acct_id, a.first_name, a.last_name, a.email, a.acct_type ';
+const FROM_ACCT = 'FROM Acct a ';
+
+const ALL_ACCOUNTS = SELECT_ACCT + FROM_ACCT;
+const ACCOUNT_BY_AUTH = SELECT_ACCT + FROM_ACCT + 'WHERE auth0_id = ?';
+const ACCOUNT_BY_TYPE = SELECT_ACCT + FROM_ACCT + 'WHERE acct_type = ?';
+const ACCOUNT_BY_ID = SELECT_ACCT + FROM_ACCT + 'WHERE acct_id = ?';
+const ACCOUNT_BY_USER_INFO = SELECT_ACCT + FROM_ACCT +
+    'WHERE first_name = ? AND last_name = ? AND email = ?';
+const ACCOUNT_BY_PROGRAM = SELECT_ACCT +
+    'FROM Acct a, AcctToProgram ap ' +
+    'WHERE a.acct_id = ap.acct_id AND ? = ap.program_id';
+const ACCOUNT_BY_SITE = SELECT_ACCT +
+    'FROM Acct a, Program p, AcctToProgram ap ' +
+    'WHERE a.acct_id = ap.acct_id AND ? = p.site_id AND p.program_id = ap.program_id';
+
+const ACCOUNTS_QUERIES = [
+  new PotentialQuery([new Requirement('auth0_id')], ACCOUNT_BY_AUTH),
+  new PotentialQuery([new Requirement('acct_type')], ACCOUNT_BY_TYPE),
+  new PotentialQuery([new Requirement('account_id')], ACCOUNT_BY_ID),
+  new PotentialQuery([new Requirement('first_name'),
+      new Requirement('last_name'),
+      new Requirement('email')],
+      ACCOUNT_BY_USER_INFO),
+  new PotentialQuery([new Requirement('program_id')], ACCOUNT_BY_PROGRAM),
+  new PotentialQuery([new Requirement('site_id')], ACCOUNT_BY_SITE),
+];
 
 /*
  * User must have admin authorization
@@ -20,57 +51,23 @@ const defined = utils.defined;
 function getAccounts(req) {
   /*
   if (req.user.authorization !== 'Admin') {
-    return createAccessDeniedError();
+    return errors.createAccessDeniedError();
   }
   */
   if (Object.keys(req.query).length == 0) {
-    return query('SELECT acct_id, first_name, last_name, email, acct_type ' +
-        'FROM Acct');
+    return query(ALL_ACCOUNTS);
   }
 
-  if (defined(req.query.auth0_id)) {
-    return query('SELECT acct_id, first_name, last_name, email, acct_type ' +
-        'FROM Acct ' +
-        'WHERE auth0_id = ?',
-    [req.query.auth0_id]);
+  var accountQuery;
+  for (var i = 0; i < ACCOUNTS_QUERIES.length; i++) {
+    accountQuery = ACCOUNTS_QUERIES[i];
+    if (reqHasRequirements(req, accountQuery.requirements)) {
+        return query(accountQuery.queryString,
+                     makeQueryArgs(req, accountQuery.requirements));
+    }
   }
 
-  if (defined(req.query.acct_type)) {
-    return query('SELECT acct_id, first_name, last_name, email, acct_type ' +
-        'FROM Acct ' +
-        'WHERE acct_type = ?',
-    [req.query.acct_type]);
-  }
-
-  if (defined(req.query.account_id)) {
-      return query('SELECT acct_id, first_name, last_name, email, acct_type ' +
-          'FROM Acct ' +
-          'WHERE acct_id = ?',
-          [req.query.account_id]);
-  }
-
-  if (defined(req.query.first_name) && defined(req.query.last_name) && defined(req.query.email)) {
-      return query('SELECT acct_id, first_name, last_name, email, acct_type ' +
-          'FROM Acct ' +
-          'WHERE first_name = ? AND last_name = ? AND email = ?',
-          [req.query.first_name, req.query.last_name, req.query.email]);
-  }
-
-  if (defined(req.query.program_id)) {
-    return query('SELECT a.acct_id, first_name, last_name, email, acct_type ' +
-        'FROM Acct a, AcctToProgram ap ' +
-        'WHERE a.acct_id = ap.acct_id AND ? = ap.program_id',
-        [req.query.program_id]);
-  }
-
-  if (defined(req.query.site_id)) {
-    return query('SELECT a.acct_id, first_name, last_name, email, acct_type ' +
-        'FROM Acct a, Program p, AcctToProgram ap ' +
-        'WHERE a.acct_id = ap.acct_id AND ? = p.site_id AND p.program_id = ap.program_id',
-        [req.query.site_id]);
-  }
-
-  return createUnsupportedRequestError();
+  return errors.createUnsupportedRequestError();
 }
 
 function createAccount(req) {
@@ -83,26 +80,6 @@ function updateAccount(req) {
 
 function deleteAccount(req) {
   return [];
-}
-
-/*
-function createAccessDeniedError() {
-  return Promise.reject({
-    name: 'AccessDenied',
-    status: 403,
-    message: 'Access denied: this account does not have permission ' +
-    'for this action'
-  });
-}
-*/
-
-function createUnsupportedRequestError() {
-  return Promise.reject({
-    name: 'UnsupportedRequest',
-    status: 501,
-    message: 'The API does not support a request of this format. ' +
-    ' See the documentation for a list of options.'
-  });
 }
 
 module.exports = {
