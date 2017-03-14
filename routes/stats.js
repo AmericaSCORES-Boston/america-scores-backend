@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const utils = require('../lib/utils');
 const defined = utils.defined;
 const query = utils.query;
+const getAccountID = utils.getAccountID;
 
 // Require isPositiveInteger for argument checking
 const isPositiveInteger = require('../lib/utils').isPositiveInteger;
@@ -19,7 +20,14 @@ var students = require('../routes/students');
  * @return {Promise} The promise
  */
 function getStats(req) {
-  return query('SELECT * FROM Measurement');
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT * FROM Measurement');
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ?', [data]);
+    });
 }
 
 /**
@@ -29,7 +37,14 @@ function getStats(req) {
  * @return {Promise} The promise
  */
 function getStatsBySite(req) {
-  return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN Site WHERE site_id = ' + req.params.site_id);
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN Site WHERE site_id = ?', [req.params.site_id]);
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND site_id = ?', [data, req.params.site_id]);
+    });
 }
 
 /**
@@ -39,7 +54,14 @@ function getStatsBySite(req) {
  * @return {Promise} The promise
  */
 function getStatsByProgram(req) {
-  return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program WHERE program_id = ' + req.params.program_id);
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event NATURAL JOIN Program WHERE program_id = ?', [req.params.program_id]);
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND program_id = ?', [data, req.params.program_id]);
+    });
 }
 
 /**
@@ -49,7 +71,14 @@ function getStatsByProgram(req) {
  * @return {Promise} The promise
  */
 function getStatsByEvent(req) {
-  return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event WHERE event_id = ' + req.params.event_id);
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Event WHERE event_id = ?', [req.params.event_id]);
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND event_id = ?', [data, req.params.event_id]);
+    });
 }
 
 /**
@@ -59,7 +88,14 @@ function getStatsByEvent(req) {
  * @return {Promise} The promise
  */
 function getStatsByStudent(req) {
-    return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Student WHERE student_id = ' + req.params.student_id);
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT measurement_id, student_id, event_id, height, weight, pacer from Measurement NATURAL JOIN Student WHERE student_id = ?', [req.params.student_id]);
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND student_id = ?', [data, req.params.student_id]);
+    });
 }
 
 /**
@@ -69,7 +105,14 @@ function getStatsByStudent(req) {
  * @return {Promise} The promise
  */
 function getStat(req) {
-  return query('SELECT * FROM Measurement WHERE measurement_id = ' + req.params.stat_id);
+  if (req.user.authorization === 'Admin' || req.user.authorization === 'Staff') {
+    return query('SELECT * FROM Measurement WHERE measurement_id = ?', [req.params.stat_id]);
+  }
+
+  return getAccountID(req.user.auth0_id)
+    .then(function(data) {
+      return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND measurement_id = ?', [data, req.params.student_id]);
+    });
 }
 
 /**
@@ -81,6 +124,20 @@ function getStat(req) {
 function uploadPacerStats(req) {
   var event_id = req.params.event_id;
   var field = 'event_id';
+  if (req.user.authorization == 'Coach' || req.user.authorization == 'Volunteer') {
+    return getAccountID(req.user.auth0_id)
+      .then(function(data) {
+          return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND event_id = ?', [data, req.params.event_id]);
+      })
+      .then(function(data) {
+        if (data.length === 0) {
+          return Promise.reject({
+            status: 403,
+            message: 'Forbidden to laod stats or event does not exist'
+          });
+        }
+    });
+  }
 
   if (!isPositiveInteger(event_id)) {
     return createInvalidArgumentError(event_id, field);
@@ -144,6 +201,20 @@ function uploadPacerStats(req) {
 function uploadBMIStats(req) {
   var event_id = req.params.event_id;
   var field = 'event_id';
+  if (req.user.authorization == 'Coach' || req.user.authorization == 'Volunteer') {
+    return getAccountID(req.user.auth0_id)
+      .then(function(data) {
+          return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND event_id = ?', [data, req.params.event_id]);
+      })
+      .then(function(data) {
+        if (data.length === 0) {
+          return Promise.reject({
+            status: 403,
+            message: 'Forbidden to laod stats or event does not exist'
+          });
+        }
+    });
+  }
 
   if (!isPositiveInteger(event_id)) {
     return createInvalidArgumentError(event_id, field);
@@ -198,20 +269,35 @@ function uploadBMIStats(req) {
   });
 }
 
- /**
+/**
  * PUT
  * /stats/id : Update stat with given id
  *
  * @param {Object} req The given request object
  * @return {Promise} The promise
  */
- function updateStat(req) {
-   if (!defined(req.body) || !defined(req.body.height) && !defined(req.body.weight) && !defined(req.body.pacer)) {
-        return Promise.reject({
-         status: 406,
-         message: 'Must provide height, weight or pacer values'
-       });
-   }
+function updateStat(req) {
+  if (req.user.authorization == 'Coach' || req.user.authorization == 'Volunteer') {
+    return getAccountID(req.user.auth0_id)
+      .then(function(data) {
+          return query('SELECT measurement_id, student_id, event_id, height, weight, pacer FROM Measurement NATURAL JOIN Event NATURAL JOIN Program NATURAL JOIN AcctToProgram WHERE acct_id = ? AND measurement_id = ?', [data, req.params.stat_id]);
+      })
+      .then(function(data) {
+        if (data.length === 0) {
+          return Promise.reject({
+            status: 403,
+            message: 'Forbidden to update this stat'
+          });
+        }
+    });
+  }
+
+  if (!defined(req.body) || !defined(req.body.height) && !defined(req.body.weight) && !defined(req.body.pacer)) {
+    return Promise.reject({
+      status: 406,
+      message: 'Must provide height, weight or pacer values'
+    });
+  }
 
    var queryComponents = createUpdateQuery(req.body);
    queryComponents[1].push(req.params.stat_id);
@@ -229,54 +315,58 @@ function uploadBMIStats(req) {
  * @return {Promise} The promise
  */
 function deleteStat(req) {
-  return query('DELETE FROM Measurement WHERE measurement_id = ' + req.params.stat_id);
+  if (req.user.authorization !== 'Admin') {
+    return Promise.reject({status: 403, message: 'Access denied'});
+  }
+
+  return query('DELETE FROM Measurement WHERE measurement_id = ?', [req.params.stat_id]);
 }
 
- function createInvalidArgumentError(id, field, message) {
-   var defaultIdError = 'Given ' + field + ' is of invalid format (e.g. not' +
-   ' an integer or negative)';
-   message = (typeof message === 'undefined') ? defaultIdError : message;
-   return Promise.reject({
-     name: 'InvalidArgumentError',
-     status: 400,
-     message: message,
-     propertyName: field,
-     propertyValue: id
-   });
- }
+function createInvalidArgumentError(id, field, message) {
+  var defaultIdError = 'Given ' + field + ' is of invalid format (e.g. not' +
+  ' an integer or negative)';
+  message = (typeof message === 'undefined') ? defaultIdError : message;
+  return Promise.reject({
+    name: 'InvalidArgumentError',
+    status: 400,
+    message: message,
+    propertyName: field,
+    propertyValue: id
+  });
+}
 
- function createArgumentNotFoundError(id, field) {
-   // Given id does not exist, give error.
-   return Promise.reject({
-     name: 'ArgumentNotFoundError',
-     status: 404,
-     message: 'Invalid request: The given ' + field +
-     ' does not exist in the database',
-     propertyName: field,
-     propertyValue: id
-   });
- }
+function createArgumentNotFoundError(id, field) {
+  // Given id does not exist, give error.
+  return Promise.reject({
+    name: 'ArgumentNotFoundError',
+    status: 404,
+    message: 'Invalid request: The given ' + field +
+    ' does not exist in the database',
+    propertyName: field,
+    propertyValue: id
+  });
+}
 
- function createUpdateQuery(body) {
-   var changes = '';
-   var fieldValues = [];
+function createUpdateQuery(body) {
+  var changes = '';
+  var fieldValues = [];
 
-   // Create a string of changes based on what is in the body
-   for (var field in body) {
-     if (field === 'pacer' || field === 'height' || field === 'weight') {
-       changes = changes + field + '= ?, ';
-       // Add to ordered list of field arguments
-       fieldValues.push(body[field]);
-     }
-   }
+  // Create a string of changes based on what is in the body
+  for (var field in body) {
+    if (field === 'pacer' || field === 'height' || field === 'weight') {
+      changes = changes + field + '= ?, ';
+      // Add to ordered list of field arguments
+      fieldValues.push(body[field]);
+    }
+  }
 
-   // Drop the extra comma
-   changes = changes.substring(0, changes.length - 2);
+  // Drop the extra comma
+  changes = changes.substring(0, changes.length - 2);
 
-   // Construct and return the final update query string
-   return ['UPDATE Measurement SET ' + changes + ' WHERE measurement_id = ?',
+  // Construct and return the final update query string
+  return ['UPDATE Measurement SET ' + changes + ' WHERE measurement_id = ?',
     fieldValues];
- }
+}
 
 module.exports = {
   getStats,
@@ -288,5 +378,5 @@ module.exports = {
   uploadPacerStats,
   uploadBMIStats,
   updateStat,
-  deleteStat,
+  deleteStat
 };

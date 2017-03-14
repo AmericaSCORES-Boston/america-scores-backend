@@ -7,6 +7,7 @@ const seed = require('../../lib/utils').seed;
 
 // The file to be tested
 const stats = require('../../routes/stats');
+const constants = require('../../lib/constants');
 
 // Create fake stats
 var fakeStat = {
@@ -148,7 +149,9 @@ describe('stats', function() {
   describe('getStats(req)', function() {
     it('should get all the stats in the database', function(done) {
       // GET all doesn't need anything from the request, so pass in empty
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
 
       // When the promised data is returned, check it against the expected data
       promise.then(function(data) {
@@ -158,12 +161,40 @@ describe('stats', function() {
       });
     });
 
+    it('should get all stats that a given coach can see', function(done) {
+      stats.getStats({
+        user: constants.volunteer
+      })
+      .then(function(data) {
+        assert.deepEqual([fakeStat2, fakeStat5, fakeStat6], data);
+        done();
+      });
+    });
+
     // Get all stats at one site
     it('should get all stats for one site', function(done) {
       var req = {
         params: {
           site_id: 1
-        }
+        },
+        user: constants.admin
+      };
+
+      var promise = stats.getStatsBySite(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat, fakeStat4]);
+        done();
+      });
+    });
+
+    // Get all stats at one site
+    it('should get all stats for one site that a coach has access to', function(done) {
+      var req = {
+        params: {
+          site_id: 1
+        },
+        user: constants.coach
       };
 
       var promise = stats.getStatsBySite(req);
@@ -180,7 +211,8 @@ describe('stats', function() {
       var req = {
         params: {
           site_id: 44555555
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsBySite(req);
@@ -195,7 +227,8 @@ describe('stats', function() {
       var req = {
         params: {
           student_id: 1
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsByStudent(req);
@@ -206,13 +239,31 @@ describe('stats', function() {
       });
     });
 
+    // Get all stats of one student
+    it('should get all stats for one student if the coach has access', function(done) {
+      var req = {
+        params: {
+          student_id: 5
+        },
+        user: constants.volunteer
+      };
+
+      var promise = stats.getStatsByStudent(req);
+
+      promise.then(function(data) {
+        assert.deepEqual([], data);
+        done();
+      });
+    });
+
     // test for student_id not in database
     it('should return empty array if the student_id is not in the database',
     function(done) {
       var req = {
         params: {
           student_id: 48394234
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsByStudent(req);
@@ -224,11 +275,12 @@ describe('stats', function() {
   });
 
   describe('getStatsByProgram(req)', function() {
-    it('should get all stats for one program', function(done) {
+    it('should get all stats for one program admin', function(done) {
       var req = {
         params: {
           program_id: 1
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStatsByProgram(req);
@@ -238,14 +290,63 @@ describe('stats', function() {
         done();
       });
     });
+
+    it('should get all stats for one program for the coach', function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        user: constants.coach
+      };
+
+      var promise = stats.getStatsByProgram(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat, fakeStat4]);
+        done();
+      });
+    });
+
+    it('should get all stats for one program for the volunteer', function(done) {
+      var req = {
+        params: {
+          program_id: 1
+        },
+        user: constants.volunteer
+      };
+
+      var promise = stats.getStatsByProgram(req);
+
+      promise.then(function(data) {
+        assert.deepEqual([], data);
+        done();
+      });
+    });
   });
 
   describe('getStatsByEvent(req)', function() {
-    it('should get all stats for one event', function(done) {
+    it('should get all stats for one event admin', function(done) {
       var req = {
         params: {
           event_id: 4
-        }
+        },
+        user: constants.admin
+      };
+
+      var promise = stats.getStatsByEvent(req);
+
+      promise.then(function(data) {
+        assert.deepEqual(data, [fakeStat4]);
+        done();
+      });
+    });
+
+    it('should get all stats for one event coach', function(done) {
+      var req = {
+        params: {
+          event_id: 4
+        },
+        user: constants.coach
       };
 
       var promise = stats.getStatsByEvent(req);
@@ -258,12 +359,13 @@ describe('stats', function() {
   });
 
   describe('getStat(req)', function() {
-    it('should get a specific stat', function(done) {
+    it('should get a specific stat admin', function(done) {
       var req = {
         params: {
           // The student_id is contained in the request
           stat_id: 4
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStat(req);
@@ -274,12 +376,30 @@ describe('stats', function() {
       });
     });
 
+    it('should get a specific stat not admin', function(done) {
+      var req = {
+        params: {
+          // The student_id is contained in the request
+          stat_id: 4
+        },
+        user: constants.coach
+      };
+
+      var promise = stats.getStat(req);
+
+      promise.then(function(data) {
+        assert.deepEqual([], data);
+        done();
+      });
+    });
+
     it('should return empty array if the stat_id is not in the database',
     function(done) {
       var req = {
         params: {
           stat_id: 9999999
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.getStat(req);
@@ -311,10 +431,13 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -325,7 +448,9 @@ describe('stats', function() {
         return stats.uploadPacerStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -356,10 +481,13 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -370,7 +498,9 @@ describe('stats', function() {
         return stats.uploadPacerStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -378,6 +508,84 @@ describe('stats', function() {
           assert.include(updateBatch, data[i]);
         }
         assert.lengthOf(data, statCount);
+        done();
+      });
+    });
+
+    it('should add PACER data to existing set of stats coach', function(done) {
+      var req = {
+        params: {
+          event_id: 2
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
+        },
+        user: constants.coach
+      };
+
+      var promise = stats.getStats({
+        user: constants.admin
+      });
+      var statCount;
+
+      promise.then(function(data) {
+        statCount = data.length;
+        assert.deepEqual(data, [fakeStat, fakeStat2, fakeStat3,
+           fakeStat4, fakeStat5, fakeStat6]);
+
+        return stats.uploadPacerStats(req);
+      })
+      .then(function() {
+        return stats.getStats({
+          user: constants.admin
+        });
+      })
+      .then(function(data) {
+        for (var i = statCount; i < data.length; i++) {
+          delete data[i].measurement_id;
+          assert.include(updateBatch, data[i]);
+        }
+        assert.lengthOf(data, statCount);
+        done();
+      });
+    });
+
+    it('should error on PACER data to existing set of stats because that volunteer can\'t do that', function(done) {
+      var req = {
+        params: {
+          event_id: 3
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            pacer: 28
+          },
+          {
+            student_id: 2,
+            pacer: 35
+          },
+          {
+            student_id: 4,
+            pacer: 18
+          }]
+        },
+        user: constants.volunteer
+      };
+
+      stats.uploadPacerStats(req).catch(function(err) {
+        assert.equal(403, err.status);
+        assert.equal('Forbidden to laod stats or event does not exist', err.message);
         done();
       });
     });
@@ -401,7 +609,8 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadPacerStats(req)
@@ -437,7 +646,8 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadPacerStats(req)
@@ -473,7 +683,8 @@ describe('stats', function() {
             student_id: 4,
             pacer: 18
           }]
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.uploadPacerStats(req);
@@ -497,7 +708,8 @@ describe('stats', function() {
         params: {
           event_id: 3
         },
-        body: {}
+        body: {},
+        user: constants.admin
       };
 
       var promise = stats.uploadPacerStats(req);
@@ -548,10 +760,13 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -562,7 +777,9 @@ describe('stats', function() {
         return stats.uploadBMIStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -570,6 +787,37 @@ describe('stats', function() {
           assert.include(bmiNewBatch, data[i]);
         }
         assert.lengthOf(data, statCount + bmiNewBatch.length);
+        done();
+      });
+    });
+
+    it('shoud error because the coach does not have access to this event', function(done) {
+      stats.uploadBMIStats({
+        params: {
+          event_id: 3
+        },
+        body: {
+          stats: [{
+            student_id: 1,
+            height: 71,
+            weight: 168
+          },
+          {
+            student_id: 2,
+            height: 68,
+            weight: 140
+          },
+          {
+            student_id: 4,
+            height: 62,
+            weight: 110
+          }]
+        },
+        user: constants.volunteer
+      })
+      .catch(function(err) {
+        assert.equal(403, err.status);
+        assert.equal('Forbidden to laod stats or event does not exist', err.message);
         done();
       });
     });
@@ -596,10 +844,13 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var statCount;
 
       promise.then(function(data) {
@@ -610,7 +861,9 @@ describe('stats', function() {
         return stats.uploadBMIStats(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         for (var i = statCount; i < data.length; i++) {
@@ -644,7 +897,8 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadBMIStats(req)
@@ -683,7 +937,8 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
       stats.uploadBMIStats(req)
@@ -722,7 +977,8 @@ describe('stats', function() {
             height: 62,
             weight: 110
           }]
-        }
+        },
+        user: constants.admin
       };
 
       var promise = stats.uploadBMIStats(req);
@@ -746,7 +1002,8 @@ describe('stats', function() {
         params: {
           event_id: 3
         },
-        body: {}
+        body: {},
+        user: constants.admin
       };
 
       var promise = stats.uploadBMIStats(req);
@@ -784,10 +1041,13 @@ describe('stats', function() {
           height: 6,
           weight: 6,
           pacer: 6,
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -801,13 +1061,29 @@ describe('stats', function() {
       })
       .then(function(data) {
         assert.deepEqual([fakeStat8], data);
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
         assert.notDeepEqual(data, oldDB);
         assert.deepEqual(data, [fakeStat8, fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
+        done();
+      });
+    });
+
+    it('should error because the coach does not have access to this stat', function(done) {
+      stats.updateStat({
+        params: {
+          stat_id: 8
+        },
+        user: constants.coach
+      })
+      .catch(function(err) {
+        assert.equal(403, err.status);
+        assert.equal('Forbidden to update this stat', err.message);
         done();
       });
     });
@@ -821,10 +1097,13 @@ describe('stats', function() {
           height: 6,
           weight: 6,
           pacer: 6,
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -837,7 +1116,9 @@ describe('stats', function() {
         return stats.updateStat(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -850,10 +1131,13 @@ describe('stats', function() {
       var req = {
         params: {
           stat_id: 2,
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -867,7 +1151,9 @@ describe('stats', function() {
       })
       .catch(function(err) {
         assert.equal(err.message, 'Must provide height, weight or pacer values');
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -882,10 +1168,13 @@ describe('stats', function() {
           stat_id: 2,
         },
         body: {
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -899,7 +1188,9 @@ describe('stats', function() {
       })
       .catch(function(err) {
         assert.equal(err.message, 'Must provide height, weight or pacer values');
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount);
@@ -915,10 +1206,13 @@ describe('stats', function() {
       var req = {
         params: {
           stat_id: 1
-        }
+        },
+        user: constants.admin
       };
 
-      var promise = stats.getStats({});
+      var promise = stats.getStats({
+        user: constants.admin
+      });
       var oldDB;
       var statCount;
 
@@ -931,13 +1225,29 @@ describe('stats', function() {
         return stats.deleteStat(req);
       })
       .then(function() {
-        return stats.getStats({});
+        return stats.getStats({
+          user: constants.admin
+        });
       })
       .then(function(data) {
         assert.lengthOf(data, statCount - 1);
         assert.notDeepEqual(data, oldDB);
         assert.deepEqual(data, [fakeStat2, fakeStat3,
           fakeStat4, fakeStat5, fakeStat6]);
+        done();
+      });
+    });
+
+    it('should error as the user is not an admin', function(done) {
+      stats.deleteStat({
+        params: {
+          stat_id: 1
+        },
+        user: constants.staff
+      })
+      .catch(function(err) {
+        assert.equal(403, err.status);
+        assert.equal('Access denied', err.message);
         done();
       });
     });

@@ -164,6 +164,7 @@ describe('utils', function() {
       });
     });
   });
+
   describe('getAccountID()', function() {
     it('gets the account id for a auth0_id', function(done) {
       utils.getAccountID('auth0|584377c428be27504a2bcf92').then(function(data) {
@@ -171,9 +172,19 @@ describe('utils', function() {
         done();
       });
     });
+
     it('returns an error for an invalid auth0_id', function(done) {
       utils.getAccountID('invalid').catch(function(err) {
         assert.equal(err.status, 403);
+        done();
+      });
+    });
+  });
+
+  describe('getAuth0ID(acct_id)', function() {
+    it('gets the auth0 id', function(done) {
+      utils.getAuth0ID(1).then(function(rows) {
+        assert.equal(rows[0].auth0_id, 'auth0|584377c428be27504a2bcf92');
         done();
       });
     });
