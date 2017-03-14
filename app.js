@@ -78,11 +78,6 @@ app.route('/accounts')
     makeResponse(res, accounts.getAccounts(req));
 });
 
-app.route('/accounts/:program_id')
-  .get(function(req, res, next) {
-    makeResponse(res, accounts.getAccountsByProgram(req));
-});
-
 // Sites
 app.route('/sites')
   .get(function(req, res, next) {

@@ -522,6 +522,66 @@ describe('Accounts', function() {
           });
     });
 
+    it('it should get all accounts for a specific program',
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            program_id: 1
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
+          assert.deepEqual([acc7, acc1, acc6], data);
+          done();
+        });
+    });
+
+    it('it should get 0 accounts when a program id that DNE is passed',
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            program_id: 999
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
+          assert.deepEqual([], data);
+          done();
+        });
+    });
+
+    it('it should get all accounts for a specific site',
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            site_id: 1
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
+          assert.deepEqual([acc7, acc1, acc6], data);
+          done();
+        });
+    });
+
+    it('it should get 0 accounts when a site id that DNE is passed',
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            site_id: 999
+          },
+          user: accType.admin
+        });
+
+        promise.then(function(data) {
+          assert.deepEqual([], data);
+          done();
+        });
+    });
+
     it('it should return a 501 error because of a malformed query',
         function(done) {
           var promise = accounts.getAccounts({
@@ -540,210 +600,6 @@ describe('Accounts', function() {
 
             done();
           });
-    });
-  });
-
-  describe('getAccountsByProgram(req)', function() {
-    it('it should get all accounts for a specific program',
-      function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.admin
-        });
-
-        promise.then(function(data) {
-          assert.deepEqual([acc7, acc1, acc6], data);
-          done();
-        });
-    });
-
-    xit('it should return a 403 error because staff cannot request accounts',
-      function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.staff
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-
-          done();
-        });
-    });
-
-    xit('it should return a 403 error because coaches cannot request accounts',
-      function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.coach
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-
-          done();
-        });
-    });
-
-    xit('it should return a 403 error because volunteers cannot request accounts',
-      function(done) {
-        var promise = accounts.getAccountsByProgram({
-          params: {
-            program_id: 1
-          },
-          user: accType.volunteer
-        });
-
-        promise.catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-
-          done();
-        });
-    });
-
-    it('it should return a 501 error because of a malformed query',
-        function(done) {
-          var promise = accounts.getAccountsByProgram({
-            params: {
-              first_name: 'Ron',
-            },
-            user: accType.admin
-          });
-
-          promise.catch(function(err) {
-            assert.equal(err.name, 'UnsupportedRequest');
-            assert.equal(err.status, 501);
-            assert.equal(err.message, 'The API does not support a request of this format. ' +
-              ' See the documentation for a list of options.');
-
-            done();
-          });
-    });
-  });
-
-  describe('getAccountsBySite(req)', function() {
-    xit('it should get all accounts for a specific site', function(done) {
-      var promise = accounts.getAccountsBySite({
-        params: {
-          site_id: 1
-        },
-        user: accType.admin
-      });
-
-      promise.then(function(data) {
-        assert.deepEqual([acc7, acc1, acc6], data);
-        done();
-      });
-    });
-
-    xit('it should get 0 accounts when a site id that DNE is passed', function(done) {
-      var promise = accounts.getAccountsBySite({
-        params: {
-          site_id: 999
-        },
-        user: accType.admin
-      });
-
-      promise.then(function(data) {
-        assert.deepEqual([], data);
-        done();
-      });
-    });
-
-    xit('it should return a 403 error because staff cannot request accounts', function(done) {
-      var promise = accounts.getAccountsBySite({
-        params: {
-          site_id: 1
-        },
-        user: accType.staff
-      });
-
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
-
-        return getAllAccounts();
-      })
-        .then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
-          assert.deepEqual(initA2P, data);
-          done();
-        });
-    });
-
-    xit('it should return a 403 error because coaches cannot request accounts', function(done) {
-      var promise = accounts.getAccountsBySite({
-        params: {
-          site_id: 1
-        },
-        user: accType.coach
-      });
-
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
-
-        return getAllAccounts();
-      })
-        .then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
-          assert.deepEqual(initA2P, data);
-          done();
-        });
-    });
-
-    xit('it should return a 403 error because volunteers cannot request accounts', function(done) {
-      var promise = accounts.getAccountsBySite({
-        params: {
-          site_id: 1
-        },
-        user: accType.volunteer
-      });
-
-      promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
-
-        return getAllAccounts();
-      })
-        .then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        })
-        .then(function(data) {
-          assert.deepEqual(initA2P, data);
-          done();
-        });
     });
   });
 

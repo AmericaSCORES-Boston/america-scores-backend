@@ -14,6 +14,8 @@ const defined = utils.defined;
  * /accounts?acct_type=X
  * /accounts?account_id=X
  * /accounts?first_name=X&last_name=Y&email=Z
+ * /accounts?program_id=X
+ * /accounts?site_id=X
  */
 function getAccounts(req) {
   /*
@@ -54,31 +56,18 @@ function getAccounts(req) {
           [req.query.first_name, req.query.last_name, req.query.email]);
   }
 
-  return createUnsupportedRequestError();
-}
-
-function getAccountsBySite(req) {
-  return [];
-}
-
-/*
- * User must have admin authorization
- *
- * Supports:
- * /accounts/:program_id
- */
-function getAccountsByProgram(req) {
-    debugger;
-  /*
-  if (req.user.authorization !== 'Admin') {
-    return createAccessDeniedError();
+  if (defined(req.query.program_id)) {
+    return query('SELECT a.acct_id, first_name, last_name, email, acct_type ' +
+        'FROM Acct a, AcctToProgram ap ' +
+        'WHERE a.acct_id = ap.acct_id AND ? = ap.program_id',
+        [req.query.program_id]);
   }
-  */
-  if (defined(req.params.program_id)) {
-      return query('SELECT a.acct_id, first_name, last_name, email, acct_type ' +
-          'FROM Acct a, AcctToProgram ap ' +
-          'WHERE a.acct_id = ap.acct_id AND ? = ap.program_id',
-          [req.params.program_id]);
+
+  if (defined(req.query.site_id)) {
+    return query('SELECT a.acct_id, first_name, last_name, email, acct_type ' +
+        'FROM Acct a, Program p, AcctToProgram ap ' +
+        'WHERE a.acct_id = ap.acct_id AND ? = p.site_id AND p.program_id = ap.program_id',
+        [req.query.site_id]);
   }
 
   return createUnsupportedRequestError();
@@ -117,6 +106,5 @@ function createUnsupportedRequestError() {
 }
 
 module.exports = {
-  getAccounts, getAccountsByProgram, getAccountsBySite,
-  getAccountsByProgram, createAccount, updateAccount, deleteAccount
+  getAccounts, createAccount, updateAccount, deleteAccount
 };
