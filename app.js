@@ -78,6 +78,11 @@ app.route('/accounts')
     makeResponse(res, accounts.getAccounts(req));
 });
 
+app.route('/accounts/:account_id')
+  .put(function(req, res, next) {
+    makeResponse(res, accounts.updateAccount(req));
+  });
+
 // Sites
 app.route('/sites')
   .get(function(req, res, next) {

@@ -183,6 +183,8 @@ describe('utils', function() {
     var obj = {
       'query': {
         'testReq': '1',
+      },
+      'body': {
       }
     };
     it('returns true when the request has no requirements',
@@ -191,27 +193,30 @@ describe('utils', function() {
     });
     it('returns true when the request has the specified requirements',
       function() {
-        var req1 = new utils.Requirement('testReq');
-        assert.isTrue(utils.reqHasRequirements(obj, [req1]));
+        assert.isTrue(utils.reqHasRequirements(obj,
+            [new utils.Requirement('query', 'testReq')]));
+    });
+    it('returns true when the request has the specified requirement type if given no name',
+      function() {
+        assert.isTrue(utils.reqHasRequirements(obj,
+            [new utils.Requirement('body', null)]));
     });
     it('returns false when the request is missing specified requirements',
       function() {
-        var req2 = new utils.Requirement('testReq2');
-        assert.isFalse(utils.reqHasRequirements(obj, [req2]));
+        assert.isFalse(utils.reqHasRequirements(obj,
+            [new utils.Requirement('query', 'testReq2')]));
     });
     it('returns false when the request is missing specified type of requirements',
       function() {
-        var req3 = new utils.Requirement('testReq3');
-        req3.setType('params');
-        assert.isFalse(utils.reqHasRequirements(obj, [req3]));
+        assert.isFalse(utils.reqHasRequirements(obj,
+            [new utils.Requirement('params', 'testReq3')]));
     });
   });
 
   describe('makeQueryArgs(requestObj, requirementsList)', function() {
-    var req1 = new utils.Requirement('testReq');
-    var req2 = new utils.Requirement('testReq2');
-    var req3 = new utils.Requirement('testReq3');
-    req3.setType('params');
+    var req1 = new utils.Requirement('query', 'testReq');
+    var req2 = new utils.Requirement('query', 'testReq2');
+    var req3 = new utils.Requirement('params', 'testReq3');
     var obj = {
       'query': {
         'testReq': '1',

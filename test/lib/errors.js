@@ -61,4 +61,20 @@ describe('errors', function() {
       });
     });
   });
+
+  describe('createArgumentNotFoundError(id, field)', function() {
+    it('creates an argument not found error', function(done) {
+      var promise = errors.createArgumentNotFoundError('id', 'field');
+
+      promise.catch(function(err) {
+        assert.equal(err.name, 'ArgumentNotFoundError');
+        assert.equal(err.status, 404);
+        assert.equal(err.message, 'Invalid request: The given field' +
+          ' does not exist in the database');
+        assert.equal(err.propertyName, 'field');
+        assert.equal(err.propertyValue, 'id');
+        done();
+      });
+    });
+  });
 });

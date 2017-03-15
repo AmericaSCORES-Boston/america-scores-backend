@@ -3,6 +3,7 @@
 const utils = require('../lib/utils');
 const errors = require('../lib/errors');
 const query = utils.query;
+const isPositiveInteger = utils.isPositiveInteger;
 const reqHasRequirements = utils.reqHasRequirements;
 const makeQueryArgs = utils.makeQueryArgs;
 const Requirement = utils.Requirement;
@@ -25,15 +26,15 @@ const ACCOUNT_BY_SITE = SELECT_ACCT +
     'WHERE a.acct_id = ap.acct_id AND ? = p.site_id AND p.program_id = ap.program_id';
 
 const ACCOUNTS_QUERIES = [
-  new PotentialQuery([new Requirement('auth0_id')], ACCOUNT_BY_AUTH),
-  new PotentialQuery([new Requirement('acct_type')], ACCOUNT_BY_TYPE),
-  new PotentialQuery([new Requirement('account_id')], ACCOUNT_BY_ID),
-  new PotentialQuery([new Requirement('first_name'),
-      new Requirement('last_name'),
-      new Requirement('email')],
+  new PotentialQuery([new Requirement('query', 'auth0_id')], ACCOUNT_BY_AUTH),
+  new PotentialQuery([new Requirement('query', 'acct_type')], ACCOUNT_BY_TYPE),
+  new PotentialQuery([new Requirement('query', 'account_id')], ACCOUNT_BY_ID),
+  new PotentialQuery([new Requirement('query', 'first_name'),
+      new Requirement('query', 'last_name'),
+      new Requirement('query', 'email')],
       ACCOUNT_BY_USER_INFO),
-  new PotentialQuery([new Requirement('program_id')], ACCOUNT_BY_PROGRAM),
-  new PotentialQuery([new Requirement('site_id')], ACCOUNT_BY_SITE),
+  new PotentialQuery([new Requirement('query', 'program_id')], ACCOUNT_BY_PROGRAM),
+  new PotentialQuery([new Requirement('query', 'site_id')], ACCOUNT_BY_SITE),
 ];
 
 /*
@@ -54,10 +55,12 @@ function getAccounts(req) {
     return errors.createAccessDeniedError();
   }
   */
+  // With no params in the URL, give back all accounts
   if (Object.keys(req.query).length == 0) {
     return query(ALL_ACCOUNTS);
   }
 
+  // Otherwise, select the accounts by the params given in the URL
   var accountQuery;
   for (var i = 0; i < ACCOUNTS_QUERIES.length; i++) {
     accountQuery = ACCOUNTS_QUERIES[i];
@@ -67,15 +70,85 @@ function getAccounts(req) {
     }
   }
 
+  // Otherwise, not a valid request; error out
   return errors.createUnsupportedRequestError();
 }
 
-function createAccount(req) {
-  return [];
+
+const UPDATE_KEYS = ['first_name', 'last_name', 'email', 'acct_type'];
+const UPDATE_ACCT = 'UPDATE Acct ';
+const UPDATE_WHERE_ACCT = ' WHERE acct_id = ?';
+const UPDATE_REQS = [new Requirement('params', 'acct_id'), new Requirement('body', null)];
+
+// TODO: DO UPDATES IN AUTH0
+function updateAccount(req) {
+  // Check that request has all necessary fields
+  if (!reqHasRequirements(UPDATE_REQS)) {
+      return errors.createUnsupportedRequestError();
+  }
+
+  var body = req.body;
+  var account_id = req.params.acct_id;
+
+  // All required fields are present. Check that account_id is valid
+  if (!isPositiveInteger(account_id)) {
+    return errors.createInvalidArgumentError(account_id, 'acct_id');
+  }
+
+  // Check that an account with the given id exists
+  var promise = query(ACCOUNT_BY_ID, [account_id]);
+
+  return promise.then(function(data) {
+    if (data.length > 0) {
+      // Account exists, do update
+      var setStatement = buildSetStatement(body, UPDATE_KEYS);
+      if (!setStatement) {
+        // Has no valid update fields
+        return errors.createUnsupportedRequestError();
+      }
+      var innerPromise = query(UPDATE_ACCT + setStatement + UPDATE_WHERE_ACCT, [account_id]);
+      return innerPromise.then(function() {
+        return query(ACCOUNT_BY_ID, [account_id]);
+      });
+    } else {
+      // Account does not exist, error out
+      return errors.createArgumentNotFoundError(account_id, 'acct_id');
+    }
+  });
 }
 
-function updateAccount(req) {
-  return [];
+
+function buildSetStatement(body, validKeys) {
+  var setStatement = 'SET ';
+  var bodyKeys = Object.keys(body);
+  var bodyKey;
+  var hasValidKey = false;
+  for (var i = 0; i < bodyKeys.length; i++) {
+    bodyKey = bodyKeys[i];
+    if (validKeys.includes(bodyKey)) {
+      setStatement += bodyKey + '="' + body[bodyKey] + '",';
+      hasValidKey = true;
+    }
+  }
+  if (hasValidKey) {
+    return setStatement.substring(0, setStatement.length - 1);
+  } else {
+    return false;
+  }
+}
+
+const CREATE_REQS = [
+  new Requirement('body', 'first_name'),
+  new Requirement('body', 'last_name'),
+  new Requirement('body', 'email'),
+  new Requirement('body', 'acct_type'),
+  new Requirement('body', 'password')
+];
+
+function createAccount(req) {
+  if (!reqHasRequirements(CREATE_REQS)) {
+      return errors.createUnsupportedRequestError();
+  }
 }
 
 function deleteAccount(req) {
