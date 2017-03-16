@@ -629,7 +629,7 @@ describe('Accounts', function() {
         });
     });
 
-    it('it should update an account with a new first name',
+    xit('it should update an account with a new first name',
       function(done) {
         var promise = accounts.updateAccount({
           params: {
