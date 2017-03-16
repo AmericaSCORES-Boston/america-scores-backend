@@ -127,7 +127,6 @@ describe('Auth0 Utils', function() {
             done();
           });
       });
-
   });
 
   describe('updateAuth0User(auth0_id, updates)', function() {
