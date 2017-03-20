@@ -38,6 +38,7 @@ describe('Auth0 Utils', function() {
         done();
       });
     });
+
     it('it should 404 when no auth0 user with the given id exists', function(done) {
       auth0.getAuth0User('999').catch(function(err) {
         assert.equal(err.name, 'ArgumentNotFoundError');
@@ -130,62 +131,190 @@ describe('Auth0 Utils', function() {
   });
 
   describe('updateAuth0User(auth0_id, updates)', function() {
-    xit('it should update the email of the user', function(done) {
-      auth0.updateAuth0User(createdAuth0Id, {email: 'bob.pratt@email.com'}).then(function(data) {
-        assert.equal(data.email, 'bob.pratt@email.com');
+    it('it should update the email of the user', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {email: test_email}).then(function(data) {
+        assert.equal(data.email, test_email);
         assert.equal(data.username, username);
         assert.equal(data.user_metadata.first_name, first);
         assert.equal(data.user_metadata.last_name, last);
         assert.equal(data.app_metadata.type, type);
-        done();
+        // reset
+        auth0.updateAuth0User(createdAuth0Id, {email: email}).then(function(data) {
+          assert.equal(data.email, email);
+          done();
+        });
       });
     });
 
-    xit('it should 400 when trying to update the email to an invalid email', function(done) {
+    it('it should 400 when trying to update the email to an invalid email', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {email: 'notanemail'})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // make sure nothing changed
+          auth0.getAuth0User(createdAuth0Id).then(function(data) {
+            assert.equal(data.email, email);
+            done();
+          });
+        });
     });
 
-    xit('it should 400 when trying to update the email to one that already exists', function(done) {
+    it('it should 400 when trying to update the email to one that already exists', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {email: 'ronlarge@americascores.org'})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // make sure nothing changed
+          auth0.getAuth0User(createdAuth0Id).then(function(data) {
+            assert.equal(data.email, email);
+            done();
+          });
+        });
     });
 
-    xit('it should update the username of the user', function(done) {
+    it('it should update the username of the user', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {username: test_username}).then(function(data) {
+        assert.equal(data.email, email);
+        assert.equal(data.username, test_username);
+        assert.equal(data.user_metadata.first_name, first);
+        assert.equal(data.user_metadata.last_name, last);
+        assert.equal(data.app_metadata.type, type);
+        // reset
+        auth0.updateAuth0User(createdAuth0Id, {username: username}).then(function(data) {
+          assert.equal(data.username, username);
+          done();
+        });
+      });
     });
 
-    xit('it should 400 when trying to update the username to an invalid username', function(done) {
+    it('it should 400 when trying to update the username to an invalid username', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {username: 'bp'})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // make sure nothing changed
+          auth0.getAuth0User(createdAuth0Id).then(function(data) {
+            assert.equal(data.username, username);
+            done();
+          });
+        });
     });
 
-    xit('it should 400 when trying to update the username to one that already exists', function(done) {
+    it('it should 400 when trying to update the username to one that already exists', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {username: 'test1'})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // make sure nothing changed
+          auth0.getAuth0User(createdAuth0Id).then(function(data) {
+            assert.equal(data.username, username);
+            done();
+          });
+        });
     });
 
-    xit('it should 400 when trying to update the username and email simultaneously', function(done) {
+    it('it should 400 when trying to update the username and email simultaneously', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {username: test_username, email: test_email})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // make sure nothing changed
+          auth0.getAuth0User(createdAuth0Id).then(function(data) {
+            assert.equal(data.username, username);
+            assert.equal(data.email, email);
+            done();
+          });
+        });
     });
 
-    xit('it should update the password of the user', function(done) {
+    // TODO: figure out a way to verify password was actually updated
+    it('it should update the password of the user', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {password: 'An0therPassw0rd'}).then(function(data) {
+        assert.equal(data.email, email);
+        assert.equal(data.username, username);
+        assert.equal(data.user_metadata.first_name, first);
+        assert.equal(data.user_metadata.last_name, last);
+        assert.equal(data.app_metadata.type, type);
+        // reset
+        auth0.updateAuth0User(createdAuth0Id, {password: password}).then(function(data) {
+          done();
+        });
+      });
     });
 
-    xit('it should 400 when trying to update the password to an invalid password', function(done) {
+    it('it should 400 when trying to update the password to an invalid password', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {password: 'notapassword'})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // TODO: make sure nothing changed
+          // auth0.getAuth0User(createdAuth0Id).then(function(data) {
+          //  done();
+          // });
+          done();
+        });
     });
 
-    xit('it should 400 when trying to update the password and email simultaneously', function(done) {
+    it('it should 400 when trying to update the password and email simultaneously', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {email: test_email, password: 'An0therPassw0rd'})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // make sure nothing changed
+          auth0.getAuth0User(createdAuth0Id).then(function(data) {
+            assert.equal(data.email, email);
+            // TODO: verify password is the same
+            done();
+          });
+        });
     });
 
-    xit('it should 400 when trying to update the password and username simultaneously', function(done) {
+    it('it should 400 when trying to update the password and username simultaneously', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {username: test_username, password: 'An0therPassw0rd'})
+        .catch(function(err) {
+          assert.equal(err.statusCode, 400);
+          // make sure nothing changed
+          auth0.getAuth0User(createdAuth0Id).then(function(data) {
+            assert.equal(data.username, username);
+            // TODO: verify password is the same
+            done();
+          });
+        });
     });
 
-    xit('it should update the user_metadata of the user by adding new data', function(done) {
+    it('it should update the user_metadata of the user', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {first_name: test_first}).then(function(data) {
+        assert.equal(data.email, email);
+        assert.equal(data.username, username);
+        assert.equal(data.user_metadata.first_name, test_first);
+        assert.equal(data.user_metadata.last_name, last);
+        assert.equal(data.app_metadata.type, type);
+        // reset
+        auth0.updateAuth0User(createdAuth0Id, {first_name: first}).then(function(data) {
+          assert.equal(data.user_metadata.first_name, first);
+          done();
+        });
+      });
     });
 
-    xit('it should update the user_metadata of the user by replacing old data', function(done) {
+    it('it should update the app_metadata of the user', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {type: 'Volunteer'}).then(function(data) {
+        assert.equal(data.email, email);
+        assert.equal(data.username, username);
+        assert.equal(data.user_metadata.first_name, first);
+        assert.equal(data.user_metadata.last_name, last);
+        assert.equal(data.app_metadata.type, 'Volunteer');
+        // reset
+        auth0.updateAuth0User(createdAuth0Id, {type: type}).then(function(data) {
+          assert.equal(data.app_metadata.type, type);
+          done();
+        });
+      });
     });
 
-    xit('it should update the app_metadata of the user by adding new data', function(done) {
-    });
-
-    xit('it should update the app_metadata of the user by replacing old data', function(done) {
-    });
-
-    // supported fields: username, email, password, app_metadata.type,
-    // user_metadata.first_name, user_metadata.last_name
-    xit('it should 400 when trying to update an unsupported field', function(done) {
+    // supported fields: username, email, password, type, user_metadata.first_name, last_name
+    it('it should 501 when trying to update an unsupported field', function(done) {
+      auth0.updateAuth0User(createdAuth0Id, {notafield: 'anything'})
+        .catch(function(err) {
+          assert.equal(err.status, 501);
+          assert.equal(err.name, 'UnsupportedRequest');
+          assert.equal(err.message, 'The API does not support a request of this format. ' +
+          ' See the documentation for a list of options.');
+          done();
+        });
     });
   });
 
@@ -210,7 +339,7 @@ describe('Auth0 Utils', function() {
       });
     });
 
-    // it looks like the Auth0 API wrapper swallows this error?
+    // TODO: it looks like the Auth0 API wrapper swallows this error?
     xit('it should 204 when trying to delete an auth0 user that doesn\'t exist', function(done) {
       auth0.deleteAuth0User(createdAuth0Id).catch(function(err) {
         assert.equal(err.statusCode, 204);
