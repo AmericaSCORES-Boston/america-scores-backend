@@ -20,6 +20,29 @@ function getAllAccounts() {
   return query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct');
 }
 
+function assertEqualAuth0DB(auth0, db) {
+  assert.equal(auth0.email, db.email);
+  assert.equal(auth0.user_metadata.first_name, db.first_name);
+  assert.equal(auth0.user_metadata.last_name, db.last_name);
+  assert.equal(auth0.app_metadata.acct_type, db.acct_type);
+}
+
+function resetAccount(auth0Id, acct) {
+  return auth0.updateAuth0User(auth0Id, {
+    email: acct.email,
+    user_metadata: {
+      first_name: acct.first_name,
+      last_name: acct.last_name
+    },
+    app_metadata: {
+      acct_type: acct.acct_type
+    }
+  }).then(function(data) {
+    return query(accounts.UPDATE_ACCT_ALL,
+      [acct.first_name, acct.last_name, acct.email, acct.acct_type, acct.acct_id]);
+  });
+}
+
 function checkAuth0(userID, expected) {
   // confirms that the user is stored in Auth0s DB as exepcted
   return auth0.getAuth0User(userID).then(function(user) {
@@ -42,52 +65,8 @@ function deleteAuth0Acc(accID) {
   });
 }
 
-function resetAuth0Acc(resetAcc) {
-  // updates the Auth0 account associated with the resetAcc setting all values
-  // to those found in resetAcc.
-  var params = {id: auth0ID(resetAcc.acct_id)};
-  // Auth0 app_metadata object
-  var app_metadata = {
-    authorization: {
-      group: resetAcc.acct_type
-    }
-  };
-  // Auth0 user user_metadata object
-  var user_metadata = {
-    first_name: resetAcc.first_name,
-    last_name: resetAcc.last_name
-  };
-  // core Auth0 user data
-  var data = {
-    email: resetAcc.email
-  };
-
-  // reset user app_metadata
-  MGMT.users.updateAppMetaData(params, app_metadata, function(err, user) {
-    if (err) {
-      console.error('Failed to update Auth0 app_metadata for user');
-      console.error(err);
-    }
-    // reset user user_metadata
-    MGMT.users.updateUserMetadata(params, user_metadata, function(err, user) {
-      if (err) {
-        console.error('Failed to update Auth0 user_metadata for user');
-        console.error(err);
-      }
-      // reset user core Auth0 data
-      MGMT.users.update(params, data, function(err, user) {
-        if(err) {
-          console.error('Failed to update Auth0 core data');
-          console.error(err);
-        }
-      });
-    });
-  });
-}
-
 // objects to store the initial database tables
 var initAcc;
-var initA2P;
 
 // starting data from /utils.js.seed()
 var acc1 = {
@@ -169,7 +148,7 @@ var acc5_upd = {
   acct_id: 5,
   first_name: 'updatedFirst',
   last_name: 'updatedLast',
-  email: 'updated@email',
+  email: 'updated@americascores.org',
   acct_type: 'Admin'
 };
 
@@ -185,7 +164,7 @@ var acc7_fn_upd = {
 var acc7_ln_upd = {
   acct_id: 7,
   first_name: 'Mark',
-  last_name: 'updatedSecond',
+  last_name: 'updatedLast',
   email: 'redsoxfan@americascores.org',
   acct_type: 'Admin'
 };
@@ -238,69 +217,6 @@ var newCoachRes = {
   acct_type: 'Coach'
 };
 
-// bad put request data
-/* var noIDPutReq = {
-  data: {
-    acct_id: '',
-    first_name: 'first',
-    last_name: 'last',
-    email: 'something@rob.com',
-    acct_type: 'Staff'
-  }
-};
-
-var noFNamePutReq = {
-  data: {
-    acct_id: 1,
-    first_name: '',
-    last_name: 'last',
-    email: 'something@rob.com',
-    acct_type: 'Staff'
-  }
-};
-
-var noLNamePutReq = {
-  data: {
-    acct_id: 1,
-    first_name: 'first',
-    last_name: '',
-    email: 'something@rob.com',
-    acct_type: 'Staff'
-  }
-};
-
-var noEmailPutReq = {
-  data: {
-    acct_id: 1,
-    first_name: 'first',
-    last_name: 'last',
-    email: '',
-    acct_type: 'Staff'
-  }
-};
-
-var badtypePutReq = {
-  data: {
-    acct_id: 1,
-    first_name: 'first',
-    last_name: 'last',
-    email: 'some@thing.com',
-    acct_type: ''
-  }
-};
-
-var badEMailPutReq = {
-  data: {
-    acct_id: 1,
-    first_name: 'first',
-    last_name: 'last',
-    email: 'something.com',
-    acct_type: 'Staff'
-  }
-};
-*/
-// bad post request data
-
 // get original states of the database tables
 before(function() {
   // Acct table
@@ -308,11 +224,7 @@ before(function() {
     initAcc = data;
 
     return query('SELECT * FROM AcctToProgram');
-  })
-    .then(function(data) {
-      // Acct to Program table
-      initA2P = data;
-    });
+  });
 });
 
 beforeEach(function() {
@@ -596,40 +508,47 @@ describe('Accounts', function() {
   });
 
   describe('updateAccount(req)', function() {
-    xit('it should update an account with all new fields',
+    it('it should update an account with all new fields',
       function(done) {
+        var body = {
+          first_name: 'updatedFirst',
+          last_name: 'updatedLast',
+          email: 'updated@americascores.org',
+          acct_type: 'Admin'
+        };
+
         var promise = accounts.updateAccount({
           params: {
             acct_id: 5
           },
-          body: {
-            first_name: 'updatedFirst',
-            last_name: 'updatedLast',
-            email: 'updated@americascores.org',
-            acct_type: 'Admin'
-          },
+          body: body,
           user: accType.admin
         });
 
         promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc5_upd]);
-
-          return getAccounts();
-        });
-
-        promise.then(function(data) {
-          // confirm only expected entry was updatedd
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5_upd, acc6, acc7, acc8, acc9]);
-          // confirm update received in Auth0
-          // assert.isTrue(checkAuth0(auth0ID(5)), acc5_upd);
-          // reset the account to previous Auth0 values
-          // resetAuth0Acc(acc5);
-          done();
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, body);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [acc1, acc2, acc3, acc4,
+                   acc5_upd, acc6, acc7,
+                   acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc5).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
-    xit('it should update an account with a new first name',
+    it('it should update an account with a new first name',
       function(done) {
         var promise = accounts.updateAccount({
           params: {
@@ -641,28 +560,37 @@ describe('Accounts', function() {
           user: accType.admin
         });
 
+        var body = {
+          email: acc7.email,
+          first_name: 'updatedFirst',
+          last_name: acc7.last_name,
+          acct_type: acc7.acct_type
+        };
+
         promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_fn_upd]);
-          done();
-
-          // return getAccounts();
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, body);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [acc1, acc2, acc3, acc4,
+                   acc5, acc6, acc7_fn_upd,
+                   acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
-          // TODO: CURRENTLY BROKEN PAST THIS
-/*
-        promise.then(function(data) {
-          // confirm only expected entry was updatedd
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_fn_upd, acc8, acc9]);
-          // confirm update received in Auth0
-          // assert.isTrue(checkAuth0(auth0ID(7)), acc7_fn_upd);
-          // reset the account to the previous Auth0 values
-          // resetAuth0Acc(acc7);
-          done();
-        });
-        */
     });
 
-    xit('it should update an account with a new last name',
+    it('it should update an account with a new last name',
       function(done) {
         var promise = accounts.updateAccount({
           params: {
@@ -674,24 +602,37 @@ describe('Accounts', function() {
           user: accType.admin
         });
 
+        var body = {
+          email: acc7.email,
+          first_name: acc7.first_name,
+          last_name: 'updatedLast',
+          acct_type: acc7.acct_type
+        };
+
         promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_ln_upd]);
-          return getAccounts();
-        });
-
-        promise.then(function(data) {
-          // confirm only expected entry was updatedd
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_ln_upd, acc8, acc9]);
-          // confirm update received in Auth0
-          // assert.isTrue(checkAuth0(auth0ID(7)), acc7_ln_upd);
-          // reset the account to the previous Auth0 values
-          // resetAuth0Acc(acc7);
-          done();
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, body);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [acc1, acc2, acc3, acc4,
+                   acc5, acc6, acc7_ln_upd,
+                   acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
-    xit('it should update an account with a new email',
+    it('it should update an account with a new email',
       function(done) {
         var promise = accounts.updateAccount({
           params: {
@@ -703,25 +644,37 @@ describe('Accounts', function() {
           user: accType.admin
         });
 
+        var body = {
+          email: 'updated@americascores.org',
+          first_name: acc7.first_name,
+          last_name: acc7.last_name,
+          acct_type: acc7.acct_type
+        };
+
         promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_email_upd]);
-
-          return getAccounts();
-        });
-
-        promise.then(function(data) {
-          // confirm only expected entry was updatedd
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_email_upd, acc8, acc9]);
-          // confirm update received in Auth0
-          // assert.isTrue(checkAuth0(auth0ID(7)), acc7_email_upd);
-          // reset the account to the previous Auth0 values
-          // resetAuth0Acc(acc7);
-          done();
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, body);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [acc1, acc2, acc3, acc4,
+                   acc5, acc6, acc7_email_upd,
+                   acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
-    xit('it should update an account with a new auth level',
+    it('it should update an account with a new auth level',
       function(done) {
         var promise = accounts.updateAccount({
           params: {
@@ -733,25 +686,37 @@ describe('Accounts', function() {
           user: accType.admin
         });
 
+        var body = {
+          email: acc7.email,
+          first_name: acc7.first_name,
+          last_name: acc7.last_name,
+          acct_type: 'Staff'
+        };
+
         promise.then(function(data) {
           // check that updated account is returned
           assert.deepEqual(data, [acc7_auth_upd]);
-
-          return getAccounts();
-        });
-
-        promise.then(function(data) {
-          // confirm only expected entry was updatedd
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7_auth_upd, acc8, acc9]);
-          // confirm update received in Auth0
-          // assert.isTrue(checkAuth0(auth0ID(7)), acc7_auth_upd);
-          // reset the account to the previous Auth0 values
-          // resetAuth0Acc(acc7);
-          done();
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, body);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [acc1, acc2, acc3, acc4,
+                   acc5, acc6, acc7_auth_upd,
+                   acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
-    xit('it should return error err msg because body is missing',
+    it('it should return a 501 error because body is missing',
       function(done) {
         var promise = accounts.updateAccount({
           params: {
@@ -761,31 +726,27 @@ describe('Accounts', function() {
         });
 
         promise.catch(function(err) {
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Request must have body and params section. Within ' +
-            'params a valid acct_id must be given. Body should contain updated values ' +
-            'for fields to be updated.');
-
-          return getAllAccounts();
-        }).then(function(data) {
-          // confirm no updates were incurred
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          assert.deepEqual(initA2P, data);
-          // confirm account was not affected
-          assert.isTrue(checkAuth0(auth0ID(1)), acc1);
-          // reset the account to the previous Auth0 values
-          resetAuth0Acc(acc1);
-          done();
+          assert.equal(err.name, 'UnsupportedRequest');
+          assert.equal(err.status, 501);
+          assert.equal(err.message,
+            'The API does not support a request of this format. ' +
+            ' See the documentation for a list of options.');
+          auth0.getAuth0Id(acc1.acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account did not get updated
+              assertEqualAuth0DB(auth0Acct, acc1);
+              getAllAccounts().then(function(accts) {
+                // confirm no updates were incurred
+                assert.deepEqual(accts, initAcc);
+                done();
+              });
+            });
+          });
         });
     });
 
-    xit('should not update if request is missing params section',
+    it('should not update if request is missing params section',
       function(done) {
-        // TODO create test to ensure Auth0 is the same before and after
         var promise = accounts.updateAccount({
           body: {
             first_name: 'Beezlebub'
@@ -794,28 +755,21 @@ describe('Accounts', function() {
         });
 
         promise.catch(function(err) {
-          assert.equal(err.message, 'Request must have body and params section. Within ' +
-            'params a valid acct_id must be given. Body should contain updated values ' +
-            'for fields to be updated.');
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-
-          return getAllAccounts();
-        }).then(function(data) {
-          // confirm no changes were made to acc table
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          // confirm no change to acc-to-prog table
-          assert.deepEqual(initA2P, data);
-          done();
+          assert.equal(err.name, 'UnsupportedRequest');
+          assert.equal(err.status, 501);
+          assert.equal(err.message,
+            'The API does not support a request of this format. ' +
+            ' See the documentation for a list of options.');
+          getAllAccounts().then(function(accts) {
+            // confirm no updates were incurred
+            assert.deepEqual(accts, initAcc);
+            done();
+          });
         });
     });
 
-    xit('should not update if request is missing acct_id in params',
+    it('should not update if request is missing acct_id in params',
       function(done) {
-        // TODO ensure entire Auth0 DB has not been affected
         var promise = accounts.updateAccount({
           params: {
             something_stupid: 7
@@ -827,21 +781,16 @@ describe('Accounts', function() {
         });
 
         promise.catch(function(err) {
-          assert.equal(err.message, 'Request must have body and params section. Within ' +
-            'params a valid acct_id must be given. Body should contain updated values ' +
-            'for fields to be updated.');
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-
-          return getAllAccounts();
-        }).then(function(data) {
-          // confirm no changes were made to accounts table
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          // confirm no changes were made to accounts-to-prog table
-          assert.deepEqual(data, initA2P);
+          assert.equal(err.name, 'UnsupportedRequest');
+          assert.equal(err.status, 501);
+          assert.equal(err.message,
+            'The API does not support a request of this format. ' +
+            ' See the documentation for a list of options.');
+          getAllAccounts().then(function(accts) {
+            // confirm no updates were incurred
+            assert.deepEqual(accts, initAcc);
+            done();
+          });
         });
     });
 
@@ -863,17 +812,20 @@ describe('Accounts', function() {
           assert.equal(err.message, 'Access denied: this account does not have permission ' +
             'for this action');
 
-          return getAllAccounts();
-        }).then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          // confirm table was unaffected
-          assert.deepEqual(initA2P, data);
-          // reset the account to the previous Auth0 values
-          resetAuth0Acc(acc7);
-          done();
+          auth0.getAuth0Id(acc7.acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account did not get updated
+              assertEqualAuth0DB(auth0Acct, acc7);
+              getAllAccounts().then(function(accounts) {
+                // check that nothing was updated in the db
+                assert.deepEqual(accounts, initAcc);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
@@ -895,17 +847,20 @@ describe('Accounts', function() {
           assert.equal(err.message, 'Access denied: this account does not have permission ' +
             'for this action');
 
-          return getAllAccounts();
-        }).then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('select * from AcctToProgram');
-        }).then(function(data) {
-          // confirm table was unaffected
-          assert.deepEqual(initA2P, data);
-          // reset the account to the previous Auth0 values
-          resetAuth0Acc(acc7);
-          done();
+          auth0.getAuth0Id(acc7.acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account did not get updated
+              assertEqualAuth0DB(auth0Acct, acc7);
+              getAllAccounts().then(function(accounts) {
+                // check that nothing was updated in the db
+                assert.deepEqual(accounts, initAcc);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
@@ -927,17 +882,20 @@ describe('Accounts', function() {
           assert.equal(err.message, 'Access denied: this account does not have permission ' +
             'for this action');
 
-          return getAllAccounts();
-        }).then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          // confirm table was unaffected
-          assert.deepEqual(initA2P, data);
-          // reset the account to the previous Auth0 values
-          resetAuth0Acc(acc7);
-          done();
+          auth0.getAuth0Id(acc7.acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account did not get updated
+              assertEqualAuth0DB(auth0Acct, acc7);
+              getAllAccounts().then(function(accounts) {
+                // check that nothing was updated in the db
+                assert.deepEqual(accounts, initAcc);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
@@ -959,16 +917,20 @@ describe('Accounts', function() {
           assert.equal(err.message, 'Access denied: this account does not have permission ' +
             'for this action');
 
-          return getAllAccounts();
-        }).then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          assert.deepEqual(inita2p, data);
-          // reset the account to the previous Auth0 values
-          resetAuth0Acc(acc5);
-          done();
+          auth0.getAuth0Id(acc7.acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account did not get updated
+              assertEqualAuth0DB(auth0Acct, acc7);
+              getAllAccounts().then(function(accounts) {
+                // check that nothing was updated in the db
+                assert.deepEqual(accounts, initAcc);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
@@ -990,17 +952,20 @@ describe('Accounts', function() {
           assert.equal(err.message, 'Access denied: this account does not have permission ' +
             'for this action');
 
-          return getAllAccounts();
-        }).then(function(data) {
-          assert.deepEqual(data, initAcc);
-
-          return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          // confirm table was unaffected
-          assert.deepEqual(initA2P, data);
-          // reset the account to the previous Auth0 values
-          resetAuth0Acc(acc1);
-          done();
+          auth0.getAuth0Id(acc7.acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account did not get updated
+              assertEqualAuth0DB(auth0Acct, acc7);
+              getAllAccounts().then(function(accounts) {
+                // check that nothing was updated in the db
+                assert.deepEqual(accounts, initAcc);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
@@ -1022,22 +987,24 @@ describe('Accounts', function() {
           assert.equal(err.message, 'Access denied: this account does not have permission ' +
             'for this action');
 
-          return getAllAccounts();
-        }).then(function(data) {
-         // confirm table was unaffected
-         assert.deepEqual(data, initAcc);
-
-         return query('SELECT * FROM AcctToProgram');
-        }).then(function(data) {
-          // confirm table was unaffectd
-          assert.deepEqual(initA2P, data);
-          // reset the account to the previous Auth0 values
-          resetAuth0Acc(acc3);
-          done();
+          auth0.getAuth0Id(acc7.acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account did not get updated
+              assertEqualAuth0DB(auth0Acct, acc7);
+              getAllAccounts().then(function(accounts) {
+                // check that nothing was updated in the db
+                assert.deepEqual(accounts, initAcc);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc7).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
-    xit('it should allow volunteers to update their own email and name',
+    it('it should allow volunteers to update their own email and name',
       function(done) {
         var newFName = 'Beezlebub';
         var newLName = 'Smith';
@@ -1055,28 +1022,37 @@ describe('Accounts', function() {
           user: accType.volunteer
         });
 
-        // update acc3 object to match
-        acc3.first_name = newFName;
-        acc3.last_name = newLName;
-        acc3.last_name = newEmail;
+        var updated = {
+          acct_id: acc3.acct_id,
+          email: newEmail,
+          first_name: newFName,
+          last_name: newLName,
+          acct_type: acc3.acct_type,
+        };
 
         promise.then(function(data) {
           // confirm the returned data matches updated object
-          assert.equal(data, acc3);
-
-          return getAllAccounts();
-        }).then(function(data) {
-          // confirm all data in db is as expected, 3 has been updated
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
-          // confirm updates received in Auth0
-          assert.isTrue(checkAuth0(auth0ID(3), acc3));
-          // reset Auth0 account to init values
-          resetAuth0Acc(acc3);
-          done();
+          assert.deepEqual(data, [updated]);
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, updated);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [acc1, acc2, updated, acc4,
+                   acc5, acc6, acc7, acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc3).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
-    xit('it should allow coaches to update their own email and name',
+    it('it should allow coaches to update their own email and name',
       function(done) {
         var newFName = 'Beezlebub';
         var newLName = 'Smith';
@@ -1093,28 +1069,38 @@ describe('Accounts', function() {
           },
           user: accType.coach
         });
-        // update acc1 object to match
-        acc1.first_name = newFName;
-        acc1.last_name = newLName;
-        acc1.last_name = newEmail;
+
+        var updated = {
+          acct_id: acc1.acct_id,
+          email: newEmail,
+          first_name: newFName,
+          last_name: newLName,
+          acct_type: acc1.acct_type,
+        };
 
         promise.then(function(data) {
           // confirm the returned data matches updated object
-          assert.equal(data, acc1);
-
-          return getAllAccounts();
-        }).then(function(data) {
-          // confirm all data in db is as expected, 1 has been updated
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
-          // confirm updates received in Auth0
-          assert.isTrue(checkAuth0(auth0ID(1), acc1));
-          // reset Auth0 account to init values
-          resetAuth0Acc(acc1);
-          done();
+          assert.deepEqual(data, [updated]);
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, updated);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [updated, acc2, acc3, acc4,
+                   acc5, acc6, acc7, acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc1).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
 
-    xit('it should allow staff to update their own email and name',
+    it('it should allow staff to update their own email and name',
       function(done) {
         var newFName = 'Beezlebub';
         var newLName = 'Smith';
@@ -1131,24 +1117,34 @@ describe('Accounts', function() {
           },
           user: accType.staff
         });
-        // update acc5 object to match
-        acc5.first_name = newFName;
-        acc5.last_name = newLName;
-        acc5.last_name = newEmail;
+
+        var updated = {
+          acct_id: acc5.acct_id,
+          email: newEmail,
+          first_name: newFName,
+          last_name: newLName,
+          acct_type: acc5.acct_type,
+        };
 
         promise.then(function(data) {
           // confirm the returned data matches updated object
-          assert.equal(data, acc5);
-
-          return getAllAccounts();
-        }).then(function(data) {
-          // confirm all data in db is as expected, 5 has been updated
-          assert.deepEqual(data, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9]);
-          // confirm updates received in Auth0
-          assert.isTrue(checkAuth0(auth0ID(5), acc5));
-          // reset Auth0 account to init values
-          resetAuth0Acc(acc5);
-          done();
+          assert.deepEqual(data, [updated]);
+          auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
+            auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+              // check that the auth0 account got updated
+              assertEqualAuth0DB(auth0Acct, updated);
+              getAllAccounts().then(function(accounts) {
+                // check that only the target account was updated in the db
+                assert.deepEqual(accounts,
+                  [acc1, acc2, acc3, acc4, updated,
+                   acc6, acc7, acc8, acc9]);
+                // reset the auth0 and db accounts
+                resetAccount(auth0Id, acc5).then(function(data) {
+                  done();
+                });
+              });
+            });
+          });
         });
     });
   });

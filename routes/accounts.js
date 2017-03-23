@@ -1,5 +1,6 @@
 'use strict';
 
+const auth0 = require('../lib/auth0_utils');
 const utils = require('../lib/utils');
 const errors = require('../lib/errors');
 const query = utils.query;
@@ -8,6 +9,7 @@ const reqHasRequirements = utils.reqHasRequirements;
 const makeQueryArgs = utils.makeQueryArgs;
 const Requirement = utils.Requirement;
 const PotentialQuery = utils.PotentialQuery;
+
 
 const SELECT_ACCT = 'SELECT a.acct_id, a.first_name, a.last_name, a.email, a.acct_type ';
 const FROM_ACCT = 'FROM Acct a ';
@@ -74,16 +76,18 @@ function getAccounts(req) {
   return errors.createUnsupportedRequestError();
 }
 
-
 const UPDATE_KEYS = ['first_name', 'last_name', 'email', 'acct_type'];
 const UPDATE_ACCT = 'UPDATE Acct ';
 const UPDATE_WHERE_ACCT = ' WHERE acct_id = ?';
+const UPDATE_ACCT_ALL = UPDATE_ACCT + 'SET ' +
+    'first_name="?", last_name="?", email="?", acct_type=?' +
+    UPDATE_WHERE_ACCT;
 const UPDATE_REQS = [new Requirement('params', 'acct_id'), new Requirement('body', null)];
 
 // TODO: DO UPDATES IN AUTH0
 function updateAccount(req) {
   // Check that request has all necessary fields
-  if (!reqHasRequirements(UPDATE_REQS)) {
+  if (!reqHasRequirements(req, UPDATE_REQS)) {
       return errors.createUnsupportedRequestError();
   }
 
@@ -101,40 +105,59 @@ function updateAccount(req) {
   return promise.then(function(data) {
     if (data.length > 0) {
       // Account exists, do update
-      var setStatement = buildSetStatement(body, UPDATE_KEYS);
+      var rollbackData = [data.first_name, data.last_name, data.email, data.acct_type, data.acct_id];
+
+      var setStatement = 'SET ';
+      var bodyKeys = Object.keys(body);
+      var bodyKey;
+      var bodyValue;
+      var hasValidKey = false;
+      var updatedBody = {};
+
+      for (var i = 0; i < bodyKeys.length; i++) {
+        bodyKey = bodyKeys[i];
+        if (UPDATE_KEYS.includes(bodyKey)) {
+          bodyValue = body[bodyKey];
+          // Add to the query statement for our database
+          setStatement += bodyKey + '="' + bodyValue + '",';
+          hasValidKey = true;
+          try {
+            // Add to the body that will be sent to Auth0
+            updatedBody = auth0.addToAuth0Body(updatedBody, bodyKey, bodyValue);
+            continue;
+          } catch (e) {
+            // any error caught here is actually handled below
+          }
+        }
+        // Trying to update an invalid field
+        return errors.createUnsupportedRequestError();
+      }
+
+      if (hasValidKey) {
+        setStatement = setStatement.substring(0, setStatement.length - 1);
+      } else {
+        setStatement = '';
+      }
+
       if (!setStatement) {
         // Has no valid update fields
         return errors.createUnsupportedRequestError();
       }
-      var innerPromise = query(UPDATE_ACCT + setStatement + UPDATE_WHERE_ACCT, [account_id]);
-      return innerPromise.then(function() {
-        return query(ACCOUNT_BY_ID, [account_id]);
+
+      return query(UPDATE_ACCT + setStatement + UPDATE_WHERE_ACCT, [account_id]).then(function() {
+        return auth0.getAuth0Id(account_id).then(function(auth0Id) {
+          return auth0.updateAuth0User(auth0Id, updatedBody).then(function() {
+            return query(ACCOUNT_BY_ID, [account_id]);
+          }).catch(function(err) {
+            return query(UPDATE_ACCT_ALL, rollbackData);
+          });
+        });
       });
     } else {
       // Account does not exist, error out
       return errors.createArgumentNotFoundError(account_id, 'acct_id');
     }
   });
-}
-
-
-function buildSetStatement(body, validKeys) {
-  var setStatement = 'SET ';
-  var bodyKeys = Object.keys(body);
-  var bodyKey;
-  var hasValidKey = false;
-  for (var i = 0; i < bodyKeys.length; i++) {
-    bodyKey = bodyKeys[i];
-    if (validKeys.includes(bodyKey)) {
-      setStatement += bodyKey + '="' + body[bodyKey] + '",';
-      hasValidKey = true;
-    }
-  }
-  if (hasValidKey) {
-    return setStatement.substring(0, setStatement.length - 1);
-  } else {
-    return false;
-  }
 }
 
 const CREATE_REQS = [
@@ -156,5 +179,6 @@ function deleteAccount(req) {
 }
 
 module.exports = {
-  getAccounts, createAccount, updateAccount, deleteAccount
+  getAccounts, createAccount, updateAccount, deleteAccount,
+  UPDATE_ACCT_ALL
 };

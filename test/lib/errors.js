@@ -77,4 +77,12 @@ describe('errors', function() {
       });
     });
   });
+
+  describe('InvalidKeyError(key)', function() {
+    it('creates an InvalidKeyError', function() {
+      var invalidKeyError = new errors.InvalidKeyError('myKey');
+      assert.equal(invalidKeyError.name, 'InvalidKeyError');
+      assert.equal(invalidKeyError.message, 'Tried to access invalid key: myKey');
+    });
+  });
 });
