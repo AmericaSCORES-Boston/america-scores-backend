@@ -250,10 +250,14 @@ describe('Auth0 Utils', function() {
     });
 
     afterEach(function(done) {
-      createdAuth0Id = null;
-      deleteUserIfExists(EMAIL).then(function() {
+      if (createdAuth0Id !== null) {
+        auth0.deleteAuth0User(createdAuth0Id).then(function() {
+          createdAuth0Id = null;
+          done();
+        });
+      } else {
         done();
-      });
+      }
     });
 
     it('it should update the email of the user', function(done) {
@@ -333,10 +337,14 @@ describe('Auth0 Utils', function() {
     });
 
     afterEach(function(done) {
-      createdAuth0Id = null;
-      deleteUserIfExists(EMAIL).then(function() {
+      if (createdAuth0Id !== null) {
+        auth0.deleteAuth0User(createdAuth0Id).then(function() {
+          createdAuth0Id = null;
+          done();
+        });
+      } else {
         done();
-      });
+      }
     });
 
     it('it should delete an auth0 user with the given id', function(done) {
@@ -352,6 +360,7 @@ describe('Auth0 Utils', function() {
               ' does not exist in the database');
             assert.equal(err.propertyName, 'auth0_id');
             assert.equal(err.propertyValue, createdAuth0Id);
+            createdAuth0Id = null;
             done();
           });
         });
@@ -367,4 +376,3 @@ describe('Auth0 Utils', function() {
     });
   });
 });
-
