@@ -250,8 +250,8 @@ describe('Auth0 Utils', function() {
     });
 
     afterEach(function(done) {
+      createdAuth0Id = null;
       deleteUserIfExists(EMAIL).then(function() {
-        createdAuth0Id = null;
         done();
       });
     });
@@ -322,6 +322,23 @@ describe('Auth0 Utils', function() {
   });
 
   describe('deleteAuth0User(auth0_id)', function() {
+    var createdAuth0Id;
+
+    beforeEach(function(done) {
+      auth0.createAuth0User(FIRST, LAST, USERNAME, EMAIL, TYPE, PASSWORD)
+        .then(function(userId) {
+          createdAuth0Id = userId;
+          done();
+      });
+    });
+
+    afterEach(function(done) {
+      createdAuth0Id = null;
+      deleteUserIfExists(EMAIL).then(function() {
+        done();
+      });
+    });
+
     it('it should delete an auth0 user with the given id', function(done) {
       // ensure user exists
       auth0.getAuth0User(createdAuth0Id).then(function(data) {
