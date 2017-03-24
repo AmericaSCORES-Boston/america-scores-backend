@@ -892,7 +892,73 @@ describe('Accounts', function() {
         });
     });
 
-    // TODO: FILL IN MISSING COVERAGE
+    it('it should return a 400 if given a non-positive integer account id',
+      function(done) {
+      accounts.updateAccount({
+        params: {
+          acct_id: -1
+        },
+        body: {
+          first_name: 'Bobby'
+        },
+        user: accType.admin
+      }).catch(function(err) {
+        assertEqualError(err, 'InvalidArgumentError', 400,
+          'Given acct_id is of invalid format (e.g. not an integer or negative)');
+        verifyNoAccountChanges(done);
+      });
+    });
+
+    it('it should return a 404 if the account id DNE',
+      function(done) {
+      accounts.updateAccount({
+        params: {
+          acct_id: 999
+        },
+        body: {
+          first_name: 'Bobby'
+        },
+        user: accType.admin
+      }).catch(function(err) {
+        assertEqualError(err, 'ArgumentNotFoundError', 404,
+          'Invalid request: The given acct_id does not exist in the database');
+        verifyNoAccountChanges(done);
+      });
+    });
+
+    it('it should 501 if no updates are provided in the body',
+      function(done) {
+      accounts.updateAccount({
+        params: {
+          acct_id: 1
+        },
+        body: {},
+        user: accType.admin
+      }).catch(function(err) {
+        assertEqualError(err, 'UnsupportedRequest', 501,
+          'The API does not support a request of this format. ' +
+          ' See the documentation for a list of options.');
+        verifyNoAccountChanges(done);
+      });
+    });
+
+    // TODO: Auth0 API should be throwing an error because of duplicate email ... but it's not
+    xit('it should 500 when it encounters an auth0 error and rollback the database updates',
+      function(done) {
+      accounts.updateAccount({
+        params: {
+          acct_id: 1
+        },
+        body: {
+          email: acc1.email
+        },
+        user: accType.admin
+      }).catch(function(err) {
+        assertEqualError(err, 'InternalServerError', 500,
+            'The server encountered an unexpected condition which prevented it from fulfilling the request');
+        verifyNoAccountChanges(done);
+      });
+    });
 
     xit('it should return a 403 error because staff cannot update other accounts',
       function(done) {

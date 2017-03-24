@@ -120,16 +120,11 @@ function updateAccount(req) {
           // Add to the query statement for our database
           setStatement += bodyKey + '="' + bodyValue + '",';
           hasValidKey = true;
-          try {
-            // Add to the body that will be sent to Auth0
-            updatedBody = auth0.addToAuth0Body(updatedBody, bodyKey, bodyValue);
-            continue;
-          } catch (e) {
-            // any error caught here is actually handled below
-          }
+          updatedBody = auth0.addToAuth0Body(updatedBody, bodyKey, bodyValue);
+        } else {
+          // Trying to update an invalid field
+          return errors.createUnsupportedRequestError();
         }
-        // Trying to update an invalid field
-        return errors.createUnsupportedRequestError();
       }
 
       if (hasValidKey) {
@@ -150,7 +145,9 @@ function updateAccount(req) {
           }).catch(function(err) {
             console.log('Encountered an error trying to update account ' + account_id + '. Rolling back.');
             console.log(err.toString());
-            return query(UPDATE_ACCT_ALL, rollbackData);
+            return query(UPDATE_ACCT_ALL, rollbackData).then(function() {
+              return errors.createISE();
+            });
           });
         });
       });

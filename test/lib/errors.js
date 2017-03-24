@@ -98,6 +98,18 @@ describe('errors', function() {
     });
   });
 
+  describe('createISE()', function() {
+    it('creates an internal server error', function(done) {
+      errors.createISE().catch(function(err) {
+        assert.equal(err.name, 'InternalServerError');
+        assert.equal(err.status, 500);
+        assert.equal(err.message,
+          'The server encountered an unexpected condition which prevented it from fulfilling the request');
+        done();
+      });
+    });
+  });
+
   describe('InvalidKeyError(key)', function() {
     it('creates an InvalidKeyError', function() {
       var invalidKeyError = new errors.InvalidKeyError('myKey');
