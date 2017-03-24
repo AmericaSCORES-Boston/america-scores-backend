@@ -78,6 +78,26 @@ describe('errors', function() {
     });
   });
 
+  describe('createMissingFieldError(field, part)', function() {
+    it('creates a missing field error for a specific request part', function(done) {
+      errors.createMissingFieldError('field', 'body').catch(function(err) {
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        assert.equal(err.message, 'Request must have a field in the body');
+        done();
+      });
+    });
+
+    it('creates a general missing field error', function(done) {
+      errors.createMissingFieldError('field').catch(function(err) {
+        assert.equal(err.name, 'MissingFieldError');
+        assert.equal(err.status, 400);
+        assert.equal(err.message, 'Request must have a field');
+        done();
+      });
+    });
+  });
+
   describe('InvalidKeyError(key)', function() {
     it('creates an InvalidKeyError', function() {
       var invalidKeyError = new errors.InvalidKeyError('myKey');

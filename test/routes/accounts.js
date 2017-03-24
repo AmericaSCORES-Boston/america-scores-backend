@@ -1,30 +1,176 @@
 'use strict';
 const chai = require('chai'); // testing modules
 const assert = chai.assert;
+const Promise = require('bluebird');
 const accounts = require('../../routes/accounts'); // endpoint being tested
 const utils = require('../../lib/utils');
 // seed to reset db before each test
-const seed = utils.seed;
+// const seed = utils.seed;
 // constants specifying the given type of account performing the requets
 const accType = require('../../lib/constants');
+const ADMIN = accType.ADMIN;
+const STAFF = accType.STAFF;
+const COACH = accType.COACH;
+const VOLUNTEER = accType.VOLUNTEER;
 // query function for getAllAccounts check
 const query = utils.query;
 
 const auth0 = require('../../lib/auth0_utils');
-const MGMT = auth0.getManagementClient;
-const auth0ID = auth0.getAuth0ID;
 
+
+const dummyAccount = {
+  first_name: 'first',
+  last_name: 'last',
+  username: 'dummy_account',
+  email: 'dummy@americascores.org',
+  password: 'Password123',
+  acct_type: ADMIN
+};
 
 function getAllAccounts() {
   // Get contents of Accounts table in DB, used for asserts
   return query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct');
 }
 
+function seedAuth0(accts) {
+  console.log('  Seeding Auth0 accounts');
+  return Promise.each(accts, function(acct) {
+    return auth0.getAuth0Id(acct.acct_id).then(function(auth0Id) {
+      return auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+        var updates = {
+          first_name: acct.first_name,
+          last_name: acct.last_name,
+          acct_type: acct.acct_type
+        };
+
+        if (auth0Acct.email !== acct.email) {
+          updates['email'] = acct.email;
+        }
+
+        console.log('    Seeding ' + acct.first_name + ' ' + acct.last_name +
+            ' (' + acct.email + ') - ' + acct.acct_type);
+        return auth0.updateAuth0UserFromParams(auth0Id, updates);
+      });
+    });
+  });
+};
+
 function assertEqualAuth0DB(auth0, db) {
   assert.equal(auth0.email, db.email);
   assert.equal(auth0.user_metadata.first_name, db.first_name);
   assert.equal(auth0.user_metadata.last_name, db.last_name);
   assert.equal(auth0.app_metadata.acct_type, db.acct_type);
+}
+
+function assertEqualDB(db1, db2) {
+  assert.equal(db1.email, db2.email);
+  assert.equal(db1.first_name, db2.first_name);
+  assert.equal(db1.last_name, db2.last_name);
+  assert.equal(db1.acct_type, db2.acct_type);
+}
+
+function assertEqualError(err, name, status, message) {
+  assert.equal(err.name, name);
+  assert.equal(err.status, status);
+  assert.equal(err.message, message);
+}
+
+function verifyNoAccountChanges(done) {
+  // get contents of accounts table
+  getAllAccounts().then(function(data) {
+    // confirm no updates were made
+    assert.deepEqual(data, initAcc);
+    // TODO confirm all data on Auth0 unaffected
+    done();
+  });
+}
+
+function createAccountTester(newAcctData, type, done) {
+  var req = {
+    body: newAcctData,
+    user: type
+  };
+
+  accounts.createAccount(req).then(function(newAcct) {
+    // confirm new user returned
+    assertEqualDB(newAcctData, newAcct);
+    // get contents of accounts table
+    getAllAccounts().then(function(dbAccts) {
+      // confirm account list matches what was found in db
+      assert.deepEqual(dbAccts, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, newAcct]);
+      auth0.getAuth0Id(newAcct.acct_id).then(function(auth0Id) {
+        auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+          // confirm new account added to Auth0
+          assertEqualAuth0DB(auth0Acct, newAcct);
+          // remove account from Auth0
+          deleteAccount(auth0Id, newAcct).then(function() {
+            done();
+          });
+        });
+      });
+    });
+  });
+}
+
+function createAccountErrorTester(newAcctData, type, errName, errStatus, errMessage, done) {
+  var req = {
+    body: newAcctData,
+    user: type
+  };
+
+  accounts.createAccount(req).catch(function(err) {
+    assertEqualError(err, errName, errStatus, errMessage);
+    verifyNoAccountChanges(done);
+  });
+}
+
+function createPermissionErrorTester(createType, reqType, done) {
+  var acct = {
+    first_name: 'first',
+    last_name: 'last',
+    email: '10@americascores.org',
+    password: 'Password123',
+    acct_type: createType
+  };
+
+  createAccountErrorTester(acct, reqType,
+    'AccessDenied', 403, 'Access denied: this account does not have permission ' +
+    'for this action', done);
+}
+
+function createMissingFieldErrorTester(field, type, done) {
+  var acct = Object.assign({}, dummyAccount);
+  delete acct[field];
+
+  createAccountErrorTester(acct, type,
+    'MissingFieldError', 400, 'Request must have a ' + field + ' in the body',
+    done);
+}
+
+function createEmptyFieldErrorTester(field, type, done) {
+  var acct = Object.assign({}, dummyAccount);
+  acct[field] = '';
+  createAccountErrorTester(acct, type,
+    'InvalidArgumentError', 400, 'Last name cannot be empty.', done);
+}
+
+function deletePermissionErrorTester(user, done) {
+  accounts.deleteAccount({
+    params: {
+      acct_id: createdDBId
+    },
+    user: user
+  }).catch(function(err) {
+    assertEqualError(err,
+      'AccessDenied', 403, 'Access denied: this account does not have permission ' +
+      'for this action'
+    );
+    getAllAccounts().then(function(accts) {
+      // verify the account didn't get deleted
+      assertEqualDB(accts[accts.length - 1], dummyAccount);
+      done();
+    });
+  });
 }
 
 function resetAccount(auth0Id, acct) {
@@ -43,25 +189,9 @@ function resetAccount(auth0Id, acct) {
   });
 }
 
-function checkAuth0(userID, expected) {
-  // confirms that the user is stored in Auth0s DB as exepcted
-  return auth0.getAuth0User(userID).then(function(user) {
-    return user && user.email === expected.email &&
-      user.user_metadata.first_name === expected.first_name &&
-      user.user_metadata.last_name === expected.last_name &&
-      user.app_metadata.type === expected.acct_type;
-  });
-}
-
-function deleteAuth0Acc(accID) {
-  // delete the auth0 account for the supplied acct_id
-  var params = {id: auth0ID(acc.acct_id)};
-
-  MGMT.users.delete(params, function(err) {
-    if (err) {
-      console.error('Failed to remove user from Auth0');
-      console.error(err);
-    }
+function deleteAccount(auth0Id, acct) {
+  return auth0DeleteAuth0User(auth0Id).then(function(data) {
+    return query(accounts.DELETE_ACCT, acct.acct_id);
   });
 }
 
@@ -152,7 +282,6 @@ var acc5_upd = {
   acct_type: 'Admin'
 };
 
-
 var acc7_fn_upd = {
   acct_id: 7,
   first_name: 'updatedFirst',
@@ -185,89 +314,58 @@ var acc7_auth_upd = {
   acct_type: 'Staff'
 };
 
-var newAdminRes = {
-  acct_id: 10,
-  first_name: 'first',
-  last_name: 'last',
-  email: '10@americascores.org',
-  acct_type: 'Admin'
-};
-
-var newStaffRes = {
-  acct_id: 10,
-  first_name: 'first',
-  last_name: 'last',
-  email: '10@americascores.org',
-  acct_type: 'Staff'
-};
-
-var newVolunteerRes = {
-  acct_id: 10,
-  first_name: 'first',
-  last_name: 'last',
-  email: '10@americascores.org',
-  acct_type: 'Volunteer'
-};
-
-var newCoachRes = {
-  acct_id: 10,
-  first_name: 'first',
-  last_name: 'last',
-  email: '10@americascores.org',
-  acct_type: 'Coach'
-};
-
-// get original states of the database tables
-before(function() {
-  // Acct table
-  getAllAccounts().then(function(data) {
-    initAcc = data;
-
-    return query('SELECT * FROM AcctToProgram');
-  });
-});
-
-beforeEach(function() {
-  return seed();
-});
-
 describe('Accounts', function() {
+  // get original states of the database tables
+  before(function(done) {
+    /* eslint-disable no-invalid-this */
+    this.timeout(20000);
+    /* eslint-enable no-invalid-this */
+
+    // Acct table
+    getAllAccounts().then(function(data) {
+      initAcc = data;
+      seedAuth0(initAcc).then(function() {
+        done();
+      });
+    });
+  });
+
   describe('getAccounts(req)', function() {
     it('it should get all accounts in DB when requested by an admin',
-        function(done) {
-          // Retrieve all students when req.query.acct_type is empty
-          var promise = accounts.getAccounts({
-            query: {},
-            params: {},
-            body: {},
-            user: accType.admin
-          });
+      function(done) {
+        // Retrieve all students when req.query.acct_type is empty
+        var promise = accounts.getAccounts({
+          query: {},
+          params: {},
+          body: {},
+          user: accType.admin
+        });
 
-          // Confirm entire DB retrieved
-          promise.then(function(data) {
-            assert.deepEqual(initAcc, data);
-            done();
-          });
+        // Confirm entire DB retrieved
+        promise.then(function(data) {
+          assert.deepEqual(initAcc, data);
+          done();
+        });
     });
 
     // Verify access errors
     xit('it should return a 403 error because staff cannot request accounts',
-        function(done) {
-          var promise = accounts.getAccounts({
-            query: {},
-            params: {},
-            body: {},
-            user: accType.staff
-          });
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {},
+          params: {},
+          body: {},
+          user: accType.staff
+        });
 
-          promise.catch(function(err) {
-            assert.equal(err.name, 'AccessDenied');
-            assert.equal(err.status, 403);
-            assert.equal(err.message, 'Access denied: this account does not have permission ' +
-              'for this action');
+        promise.catch(function(err) {
+          assert.equal(err.name, 'AccessDenied');
+          assert.equal(err.status, 403);
+          assert.equal(err.message, 'Access denied: this account does not have permission ' +
+            'for this action');
 
-            done();
-          });
+          done();
+        });
     });
 
     xit('it should return a 403 error because coaches cannot request accounts',
@@ -377,53 +475,53 @@ describe('Accounts', function() {
     });
 
     it('it should get accounts pertaining to an auth0 id',
-        function(done) {
-          var promise = accounts.getAccounts({
-              query: {
-                auth0_id: acc1_auth0
-              },
-              user: accType.admin
-          });
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            auth0_id: acc1_auth0
+          },
+          user: accType.admin
+        });
 
-          promise.then(function(data) {
-            // Check that referenced account is returned
-            assert.deepEqual(data, [acc1]);
-            done();
-          });
+        promise.then(function(data) {
+          // Check that referenced account is returned
+          assert.deepEqual(data, [acc1]);
+          done();
+        });
     });
 
     it('it should get accounts pertaining to an id',
-        function(done) {
-          var promise = accounts.getAccounts({
-              query: {
-                account_id: '1'
-              },
-              user: accType.admin
-          });
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            account_id: '1'
+          },
+          user: accType.admin
+        });
 
-          promise.then(function(data) {
-            // Check that referenced account is returned
-            assert.deepEqual(data, [acc1]);
-            done();
-          });
+        promise.then(function(data) {
+          // Check that referenced account is returned
+          assert.deepEqual(data, [acc1]);
+          done();
+        });
     });
 
     it('it should get accounts pertaining to a full name and email',
-        function(done) {
-          var promise = accounts.getAccounts({
-              query: {
-                first_name: 'Ron',
-                last_name: 'Large',
-                email: 'ronlarge@americascores.org'
-              },
-              user: accType.admin
-          });
+      function(done) {
+        var promise = accounts.getAccounts({
+          query: {
+            first_name: 'Ron',
+            last_name: 'Large',
+            email: 'ronlarge@americascores.org'
+          },
+          user: accType.admin
+        });
 
-          promise.then(function(data) {
-            // Check that referenced account is returned
-            assert.deepEqual(data, [acc1]);
-            done();
-          });
+        promise.then(function(data) {
+          // Check that referenced account is returned
+          assert.deepEqual(data, [acc1]);
+          done();
+        });
     });
 
     it('it should get all accounts for a specific program',
@@ -794,6 +892,8 @@ describe('Accounts', function() {
         });
     });
 
+    // TODO: FILL IN MISSING COVERAGE
+
     xit('it should return a 403 error because staff cannot update other accounts',
       function(done) {
         var promise = accounts.updateAccount({
@@ -1151,585 +1251,145 @@ describe('Accounts', function() {
 
   describe('createAccount(req)', function() {
     xit('it should add an Admin account when requested by an existing admin', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Admin',
-            password: 'Password123'
-          },
-          user: accType.admin
-        })
-        .then(function(data) {
-          // confirm new user returned
-          assert.deepEqual(newAdminRes, data);
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // add newly created account to account list
-          initAcc.push(newAdminRes);
-          // confirm account list matches what was found in db
-          assert.deepEqual(data, initAcc);
-          // confirm new account added to Auth0
-          assert.isTrue(checkAuth0(auth0ID(newAdminRes.acct_id), newAdminRes));
-          // remove account from Auth0
-          deleteAuth0Acc(newAdminRes.acct_id);
-        });
+      createAccountTester(ADMIN, accType.admin, done);
     });
 
     xit('it should add a Staff account when requested by an existing admin', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          },
-          user: accType.admin
-        })
-        .then(function(data) {
-          // confirm new user returned
-          assert.deepEqual(newStaffRes, data);
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // add newly created account to account list
-          initAcc.push(newStaffRes);
-          // confirm account list matches what was found in db
-          assert.deepEqual(data, initAcc);
-          // confirm new account added to Auth0
-          assert.isTrue(checkAuth0(auth0ID(newStaffRes.acct_id), newStaffRes));
-          // remove account from Auth0
-          deleteAuth0Acc(newStaffRes.acct_id);
-        });
+      createAccountTester(STAFF, accType.admin, done);
     });
 
-    xit('it should add a volunteer account when requested', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Volunteer',
-            password: 'Password123'
-          }
-        })
-        .then(function(data) {
-          // confirm new user returned
-          assert.deepEqual(newVolunteerRes, data);
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // add newly created account to account list
-          initAcc.push(newVolunteerRes);
-          // confirm account list matches what was found in db
-          assert.deepEqual(data, initAcc);
-          // confirm new account added to Auth0
-          assert.isTrue(checkAuth0(auth0ID(newVolunteerRes.acct_id), newVolunteerRes));
-          // remove account from Auth0
-          deleteAuth0Acc(newVolunteerRes.acct_id);
-          done();
-        });
+    xit('it should add a volunteer account when requested by an existing admin', function(done) {
+      createAccountTester(VOLUNTEER, accType.admin, done);
     });
 
-    xit('it should add a coach account when requested', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Coach',
-            password: 'Password123'
-          }
-        })
-        .then(function(data) {
-          // confirm new user returned
-          assert.deepEqual(newCoachRes, data);
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // add newly created account to account list
-          initAcc.push(newCoachRes);
-          // confirm account list matches what was found in db
-          assert.deepEqual(data, initAcc);
-          // confirm new account added to Auth0
-          assert.isTrue(checkAuth0(auth0ID(newCoachRes.acct_id), newCoachRes));
-          // remove account from Auth0
-          deleteAuth0Acc(newCoachRes.acct_id);
-          done();
-        });
+    xit('it should add a coach account when requested by an existing admin', function(done) {
+      createAccountTester(COACH, accType.admin, done);
     });
 
     xit('it should return a 403 error because staff cannot create admin accounts', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          },
-          user: accType.staff
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates were made
-          assert.deepEqual(data, initAcc);
-          // TODO confirm all data on Auth0 unaffected
-          done();
-        });
+      createPermissionErrorTester(ADMIN, accType.staff, done);
     });
 
     xit('it should return a 403 error because Volunteers cannot create admin accounts', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Admin',
-            password: 'Password123'
-          },
-          user: accType.volunteer
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates were made
-          assert.deepEqual(data, initAcc);
-          // TODO confirm all data on Auth0 unaffected
-          done();
-        });
+      createPermissionErrorTester(ADMIN, accType.volunteer, done);
     });
 
     xit('it should return a 403 error because Coaches cannot create staff accounts', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          },
-          user: accType.coach
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates were made
-          assert.deepEqual(data, initAcc);
-          // TODO confirm all data on Auth0 unaffected
-          done();
-        });
+      createPermissionErrorTester(STAFF, accType.coach, done);
     });
 
     xit('it should return a 403 error because coaches cannot create admin accounts', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Admin',
-            password: 'Password123'
-          },
-          user: accType.coach
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates were made
-          assert.deepEqual(data, initAcc);
-          // TODO confirm all data on Auth0 unaffected
-          done();
-        });
+      createPermissionErrorTester(ADMIN, accType.coach, done);
     });
 
     xit('it should return a 403 error because volunteers cannot create staff accounts', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'first',
-            last_name: 'last',
-            email: '10@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          },
-          user: accType.volunteer
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'AccessDenied');
-          assert.equal(err.status, 403);
-          assert.equal(err.message, 'Access denied: this account does not have permission ' +
-            'for this action');
-          // get contents of accounts table
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates were made
-          assert.deepEqual(data, initAcc);
-          // TODO confirm all data on Auth0 unaffected
-          done();
-        });
+      createPermissionErrorTester(STAFF, accType.volunteer, done);
     });
 
     xit('it should return a 400 error because a first_name is missing', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            last_name: 'Smith',
-            email: 'garbage@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Request must have a first_name in the body');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+      createMissingFieldErrorTester('first_name', accType.admin, done);
     });
 
     xit('it should return a 400 error because a last_name is missing', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'Smith',
-            email: 'garbage@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Request must have a last_name in the body');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+      createMissingFieldErrorTester('last_name', accType.admin, done);
     });
 
     xit('it should return a 400 error because email is missing', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'Agent',
-            last_name: 'Smith',
-            acct_type: 'Volunteer',
-            password: 'Password123'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Request must specify email in the body');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+      createMissingFieldErrorTester('email', accType.admin, done);
     });
 
     xit('it should return a 400 error because type is missing', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'Agent',
-            last_name: 'Smith',
-            email: 'garbage@americascores.org',
-            password: 'Password123'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Request must specify type in the body');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+      createMissingFieldErrorTester('acct_type', accType.admin, done);
     });
 
     xit('it should return a 400 error because password is missing', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'Agent',
-            last_name: 'Smith',
-            email: 'garbage@americascores.org',
-            acct_type: 'Staff'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'MissingFieldError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Request must specify password in the body');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+      createMissingFieldErrorTester('password', accType.admin, done);
     });
 
     xit('it should return a 400 error because first_name is empty', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: '',
-            last_name: 'Smith',
-            email: 'garbage@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'BadRequestError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'first_name in body must not be empty');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+      createEmptyFieldErrorTester('first_name', accType.admin, done);
     });
 
     xit('it should return a 400 error because last_name is empty', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'Agent',
-            last_name: '',
-            email: 'garbage@americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'BadRequestError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'last_name in body must not be empty');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+      createEmptyFieldErrorTester('last_name', accType.admin, done);
     });
 
-    xit('it should return a 400 error because email is invalid', function(done) {
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'Agent',
-            last_name: 'Smith',
-            email: 'garbage.at.americascores.org',
-            acct_type: 'Staff',
-            password: 'Password123'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'BadRequestError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Email address does not fit expected format.');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
+    xit('it should return a 400 error because acct_type is empty', function(done) {
+      createEmptyFieldErrorTester('acct_type', accType.admin, done);
     });
-
-
-    xit('it should return a 400 error because the password supplied is too weak', function(done) {
-      // as of time of writing, Auth0 configured such that password must be longer
-      // than 8 characters and contain uppercase letter(s) and lowercase letter(s)
-      // in addition to containing at least one digit
-      accounts.createAccount(
-        {
-          body: {
-            first_name: 'Agent',
-            last_name: 'Smith',
-            email: 'garbage@americascores.org',
-            acct_type: 'Staff',
-            password: 'pass'
-          }
-        })
-        .catch(function(err) {
-          assert.equal(err.name, 'BadRequestError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'PasswordStrengthError: Password is too weak');
-
-          return getAllAccounts();
-        })
-        .then(function(data) {
-          // confirm no updates incurred
-          assert.deepEqual(data, initAcc);
-          done();
-        });
-    });
-
-    xit('it should throw error for trying to add an account that already exists',
-      function(done) {
-        accounts.createAccount({
-          body: {
-            first_name: 'Marcel',
-            last_name: 'Yogg',
-            email: 'myogg@americascores.org',
-            acct_type: 'Coach',
-            password: 'Password123'
-          }
-        })
-          .catch(function(err) {
-            assert.equal(err.name, 'Conflict');
-            assert.equal(err.status, 409);
-            assert.equal(err.message, 'Account already exists for email address supplied');
-
-            return getAllAccounts();
-          })
-          .then(function(data) {
-            // confirm no updates incurred
-            assert.deepEqual(data, initAcc);
-            done();
-          });
-      });
   });
-  /*
-  describe('deleteAccount(req)', function() {
-    xit('it should delete an account', function(done) {
-      var auth_id = auth0ID('1');
-      var promise = accounts.deleteAccount({
+
+  describe.skip('deleteAccount(req)', function() {
+    var createdDBId;
+    var createdAuth0Id;
+
+    // add a dummy account to auth0 and the db
+    before(function(done) {
+      // first add to auth0
+      auth0.createAuth0User(dummyAccount.first_name, dummyAccount.last_name, dummyAccount.username,
+        dummyAccount.email, dummyAccount.acct_type, dummyAccount.password).then(function(auth0Id) {
+          createdAuth0Id = auth0Id;
+          // then add to our db
+          query(accounts.CREATE_ACCT, dummyAccount.first_name, dummyAccount.last_name,
+            dummyAccount.email, dummyAccount.acct_type, auth0Id).then(function(acctId) {
+              createdDBId = acctId;
+              done();
+            });
+      });
+    });
+
+    xit('it should 403 when a coach tries to delete an account', function(done) {
+      deletePermissionErrorTester(accType.coach, done);
+    });
+
+    xit('it should 403 when a staff member tries to delete an account', function(done) {
+      deletePermissionErrorTester(accType.staff, done);
+    });
+
+    xit('it should 403 when a volunteer tries to delete an account', function(done) {
+      deletePermissionErrorTester(accType.volunteer, done);
+    });
+
+    xit('it should delete an account if an admin requests the action', function(done) {
+      accounts.deleteAccount({
         params: {
-          acct_id: 1
+          acct_id: createdDBId
         },
         user: accType.admin
-      });
-
-      promise.then(function(data) {
-        return accounts.getAccount({
-          params: {
-            acct_id: 1
-          }
+      }).then(function() {
+        auth0.getAuth0User(createdAuth0Id).catch(function(err) {
+          assertEqualError(err,
+            'ArgumentNotFoundError', 404, 'Invalid request: The given auth0_id' +
+            ' does not exist in the database'
+          );
+          verifyNoAccountChanges(done);
         });
-  // confirm user deleted for DB
-        done();
       });
     });
 
-    xit('it should return missing argument error', function(done) {
-      var promise = deleteAccount({
+    xit('it should return a 400 error if no id is passed', function(done) {
+      accounts.deleteAccount({
+        params: {},
         user: accType.admin
+      }).catch(function(err) {
+          assertEqualError(err, 'MissingFieldError', 400, 'Request must have a acct_id in the params.');
+          verifyNoAccountChanges(done);
       });
+    });
 
-      promise.then(function(data) {
-  // TODO verify error
-        done();
+    xit('it should 404 when passed the acct id is not recognized', function(done) {
+      accounts.deleteAccount({
+        params: {
+          acct_id: createdDBId
+        },
+        user: accType.admin
+      }).catch(function(err) {
+        assertEqualError(err,
+          'ArgumentNotFoundError', 404, 'Invalid request: The given acct_id' +
+          ' does not exist in the database'
+        );
+        verifyNoAccountChanges(done);
       });
     });
   });
-  */
-  /* describe('getAccount(req)', function() {
-    xit('it should retrieve a single account', function(done) {
-      var promise = accounts.getAccount({
-        query: {
-          acct_id: 1
-        },
-        user: accType.admin
-      });
-
-      promise.then(function(data) {
-        assert.deepEqual([acc1], data);
-        done();
-      });
-    });
-
-    xit('it should retrieve an empty object as acct_id DNE', function(done) {
-      var promise = accounts.getAccount({
-        query: {
-          acct_id: 404
-        },
-        user: accType.admin
-      });
-
-      promise.then(function(data) {
-        assert.deepEqual([], data);
-        done();
-      });
-    });*/
-  /* TODO - remove malformatting?
-    xit('it should return missing argument error', function(done) {
-      assert.throw(accounts.getAccount({}));
-      assert.throw(accounts.getAccount(malFormedDataReq));
-      assert.throw(accounts.getAccount({
-        params: {
-          id: 'bad'
-        }
-      })); */
-  // });
-  //  });
 });

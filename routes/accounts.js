@@ -80,11 +80,10 @@ const UPDATE_KEYS = ['first_name', 'last_name', 'email', 'acct_type'];
 const UPDATE_ACCT = 'UPDATE Acct ';
 const UPDATE_WHERE_ACCT = ' WHERE acct_id = ?';
 const UPDATE_ACCT_ALL = UPDATE_ACCT + 'SET ' +
-    'first_name="?", last_name="?", email="?", acct_type=?' +
+    'first_name=?, last_name=?, email=?, acct_type=?' +
     UPDATE_WHERE_ACCT;
 const UPDATE_REQS = [new Requirement('params', 'acct_id'), new Requirement('body', null)];
 
-// TODO: DO UPDATES IN AUTH0
 function updateAccount(req) {
   // Check that request has all necessary fields
   if (!reqHasRequirements(req, UPDATE_REQS)) {
@@ -149,6 +148,8 @@ function updateAccount(req) {
           return auth0.updateAuth0User(auth0Id, updatedBody).then(function() {
             return query(ACCOUNT_BY_ID, [account_id]);
           }).catch(function(err) {
+            console.log('Encountered an error trying to update account ' + account_id + '. Rolling back.');
+            console.log(err.toString());
             return query(UPDATE_ACCT_ALL, rollbackData);
           });
         });
@@ -168,17 +169,22 @@ const CREATE_REQS = [
   new Requirement('body', 'password')
 ];
 
+const CREATE_ACCT = 'INSERT INTO Acct ' +
+  '(first_name, last_name, email, acct_type, auth0_id) ' +
+  'VALUES ("?", "?", "?", ?, ?)';
+
 function createAccount(req) {
   if (!reqHasRequirements(CREATE_REQS)) {
       return errors.createUnsupportedRequestError();
   }
 }
 
+const DELETE_ACCT = 'DELETE FROM Acct WHERE acct_id = ?';
 function deleteAccount(req) {
   return [];
 }
 
 module.exports = {
   getAccounts, createAccount, updateAccount, deleteAccount,
-  UPDATE_ACCT_ALL
+  UPDATE_ACCT_ALL, DELETE_ACCT, CREATE_ACCT
 };
