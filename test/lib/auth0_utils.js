@@ -6,7 +6,31 @@ const auth0 = require('../../lib/auth0_utils');
 
 const ADMIN_AUTH0_ID = 'auth0|584377c428be27504a2bcf92';
 
+const TEST_EMAIL = 'test@email.com';
+
+function deleteUserIfExists(email) {
+  return auth0.getAuth0UserByEmail(email).then(function(user) {
+    // clear existing user so we don't get a duplicate email error on creation
+    return auth0.deleteAuth0User(user.user_id);
+  }).catch(function(err) {
+    // no user to delete, tests are good to go
+    return Promise.resolve();
+  });
+}
+
 describe('Auth0 Utils', function() {
+  before(function(done) {
+    deleteUserIfExists(TEST_EMAIL).then(function() {
+      done();
+    });
+  });
+
+  after(function(done) {
+    deleteUserIfExists(TEST_EMAIL).then(function() {
+      done();
+    });
+  });
+
   describe('getAuth0Id(acct_id)', function() {
     it('it should get the auth0 id for a given account id', function(done) {
       auth0.getAuth0Id('1').then(function(data) {
@@ -14,6 +38,7 @@ describe('Auth0 Utils', function() {
         done();
       });
     });
+
     it('it should 404 when the account id doesn\'t exist', function(done) {
       auth0.getAuth0Id('999').catch(function(err) {
         assert.equal(err.name, 'ArgumentNotFoundError');
