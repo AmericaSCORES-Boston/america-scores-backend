@@ -112,8 +112,6 @@ function testUpdateAuth0Error(auth0Id, updates, done) {
 }
 
 describe('Auth0 Utils', function() {
-  var createdAuth0Id;
-
   before(function(done) {
     Promise.each(EMAILS, function(email) {
       return deleteUserIfExists(email);
@@ -188,6 +186,18 @@ describe('Auth0 Utils', function() {
   });
 
   describe('createAuth0User(firstName, lastName, username, email, acctType, password)', function() {
+    var createdAuth0Id;
+
+    after(function(done) {
+      if (typeof createdAuth0Id !== null) {
+        auth0.deleteAuth0User(createdAuth0Id).then(function() {
+          done();
+        });
+      } else {
+        done();
+      }
+    });
+
     it('it should create an auth0 user for the given user data', function(done) {
       auth0.createAuth0User(FIRST, LAST, USERNAME, EMAIL, TYPE, PASSWORD)
         .then(function(userId) {
@@ -229,6 +239,23 @@ describe('Auth0 Utils', function() {
   });
 
   describe('updateAuth0UserFromParams(auth0_id, updates)', function() {
+    var createdAuth0Id;
+
+    beforeEach(function(done) {
+      auth0.createAuth0User(FIRST, LAST, USERNAME, EMAIL, TYPE, PASSWORD)
+        .then(function(userId) {
+          createdAuth0Id = userId;
+          done();
+      });
+    });
+
+    afterEach(function(done) {
+      deleteUserIfExists(EMAIL).then(function() {
+        createdAuth0Id = null;
+        done();
+      });
+    });
+
     it('it should update the email of the user', function(done) {
       testUpdateAuth0UserFromParams(createdAuth0Id, 'email', TEST_EMAIL, done);
     });
