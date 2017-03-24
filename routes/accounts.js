@@ -146,7 +146,7 @@ function updateAccount(req) {
             console.log('Encountered an error trying to update account ' + account_id + '. Rolling back.');
             console.log(err.toString());
             return query(UPDATE_ACCT_ALL, rollbackData).then(function() {
-              return errors.createISE();
+              return errors.create500();
             });
           });
         });

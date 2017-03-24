@@ -2,7 +2,10 @@
 
 const chai = require('chai');
 const assert = chai.assert;
+
 const errors = require('../../lib/errors');
+const testUtils = require('../../lib/test_utils');
+const assertEqualError = testUtils.assertEqualError;
 
 describe('errors', function() {
   describe('createAccessDeniedError()', function() {
@@ -10,11 +13,8 @@ describe('errors', function() {
       var promise = errors.createAccessDeniedError();
 
       promise.catch(function(err) {
-        assert.equal(err.name, 'AccessDenied');
-        assert.equal(err.status, 403);
-        assert.equal(err.message, 'Access denied: this account does not have permission ' +
-          'for this action');
-
+        assertEqualError(err, 'AccessDenied', 403,
+          'Access denied: this account does not have permission for this action');
         done();
       });
     });
@@ -25,10 +25,8 @@ describe('errors', function() {
         var promise = errors.createInvalidArgumentError('id', 'field', undefined);
 
         promise.catch(function(err) {
-          assert.equal(err.name, 'InvalidArgumentError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'Given field is of invalid format ' +
-              '(e.g. not an integer or negative)');
+          assertEqualError(err, 'InvalidArgumentError', 400,
+            'Given field is of invalid format (e.g. not an integer or negative)');
           assert.equal(err.propertyName, 'field');
           assert.equal(err.propertyValue, 'id');
           done();
@@ -38,9 +36,7 @@ describe('errors', function() {
         var promise = errors.createInvalidArgumentError('value', 'name', 'ERROR!');
 
         promise.catch(function(err) {
-          assert.equal(err.name, 'InvalidArgumentError');
-          assert.equal(err.status, 400);
-          assert.equal(err.message, 'ERROR!');
+          assertEqualError(err, 'InvalidArgumentError', 400, 'ERROR!');
           assert.equal(err.propertyName, 'name');
           assert.equal(err.propertyValue, 'value');
           done();
@@ -53,9 +49,8 @@ describe('errors', function() {
       var promise = errors.createUnsupportedRequestError();
 
       promise.catch(function(err) {
-        assert.equal(err.name, 'UnsupportedRequest');
-        assert.equal(err.status, 501);
-        assert.equal(err.message, 'The API does not support a request of this format. ' +
+        assertEqualError(err, 'UnsupportedRequest', 501,
+          'The API does not support a request of this format. ' +
           ' See the documentation for a list of options.');
         done();
       });
@@ -67,10 +62,8 @@ describe('errors', function() {
       var promise = errors.createArgumentNotFoundError('id', 'field');
 
       promise.catch(function(err) {
-        assert.equal(err.name, 'ArgumentNotFoundError');
-        assert.equal(err.status, 404);
-        assert.equal(err.message, 'Invalid request: The given field' +
-          ' does not exist in the database');
+        assertEqualError(err, 'ArgumentNotFoundError', 404,
+          'Invalid request: The given field does not exist in the database');
         assert.equal(err.propertyName, 'field');
         assert.equal(err.propertyValue, 'id');
         done();
@@ -81,30 +74,49 @@ describe('errors', function() {
   describe('createMissingFieldError(field, part)', function() {
     it('creates a missing field error for a specific request part', function(done) {
       errors.createMissingFieldError('field', 'body').catch(function(err) {
-        assert.equal(err.name, 'MissingFieldError');
-        assert.equal(err.status, 400);
-        assert.equal(err.message, 'Request must have a field in the body');
+        assertEqualError(err, 'MissingFieldError', 400, 'Request must have a field in the body');
         done();
       });
     });
 
     it('creates a general missing field error', function(done) {
       errors.createMissingFieldError('field').catch(function(err) {
-        assert.equal(err.name, 'MissingFieldError');
-        assert.equal(err.status, 400);
-        assert.equal(err.message, 'Request must have a field');
+        assertEqualError(err, 'MissingFieldError', 400, 'Request must have a field');
         done();
       });
     });
   });
 
-  describe('createISE()', function() {
-    it('creates an internal server error', function(done) {
-      errors.createISE().catch(function(err) {
-        assert.equal(err.name, 'InternalServerError');
-        assert.equal(err.status, 500);
-        assert.equal(err.message,
+  describe('create500()', function() {
+    it('creates a generic internal server error', function(done) {
+      errors.create500().catch(function(err) {
+        assertEqualError(err, 'Internal Server Error', 500,
           'The server encountered an unexpected condition which prevented it from fulfilling the request');
+        done();
+      });
+    });
+
+    it('creates an internal server error with a specific message', function(done) {
+      var custom = 'There was an error';
+      errors.create500({message: custom}).catch(function(err) {
+        assertEqualError(err, 'Internal Server Error', 500, custom);
+        done();
+      });
+    });
+  });
+
+  describe('create404(errorFields)', function() {
+    it('creates a generic 404 error', function(done) {
+      errors.create404().catch(function(err) {
+        assertEqualError(err, 'Not Found', 404, 'The requested resource could not be found');
+        done();
+      });
+    });
+
+    it('creates a 404 error with a specific message', function(done) {
+      var custom = 'There was an error';
+      errors.create404({message: custom}).catch(function(err) {
+        assertEqualError(err, 'Not Found', 404, custom);
         done();
       });
     });
