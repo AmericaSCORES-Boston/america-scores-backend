@@ -76,20 +76,25 @@ function createAccountTester(newAcctData, type, done) {
     user: type
   };
 
-  accounts.createAccount(req).then(function(newAcct) {
-    // confirm new user returned
-    assertEqualDB(newAcctData, newAcct);
-    // get contents of accounts table
-    getAllAccounts().then(function(dbAccts) {
-      // confirm account list matches what was found in db
-      assert.deepEqual(dbAccts, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, newAcct]);
-      auth0.getAuth0Id(newAcct.acct_id).then(function(auth0Id) {
-        auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-          // confirm new account added to Auth0
-          assertEqualAuth0DB(auth0Acct, newAcct);
-          // remove account from Auth0
-          deleteAccount(auth0Id, newAcct).then(function() {
-            done();
+  accounts.createAccount(req).then(function() {
+    query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct ' +
+      'WHERE first_name = ? AND last_name = ? AND email = ?',
+      [newAcctData.first_name, newAcctData.last_name, newAcctData.email]).then(function(accts) {
+      // confirm new user returned
+      var newAcct = accts[0];
+      assertEqualDB(newAcctData, newAcct);
+      // get contents of accounts table
+      getAllAccounts().then(function(dbAccts) {
+        // confirm account list matches what was found in db
+        assert.deepEqual(dbAccts, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9, newAcct]);
+        auth0.getAuth0Id(newAcct.acct_id).then(function(auth0Id) {
+          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+            // confirm new account added to Auth0
+            assertEqualAuth0DB(auth0Acct, newAcct);
+            // remove account from Auth0
+            deleteAccount(auth0Id, newAcct).then(function() {
+              done();
+            });
           });
         });
       });
@@ -128,7 +133,8 @@ function createMissingFieldErrorTester(field, type, done) {
   delete acct[field];
 
   createAccountErrorTester(acct, type,
-    'MissingFieldError', 400, 'Request must have a ' + field + ' in the body',
+    'Missing Field', 400,
+    'Request must have the following component(s): ' + field + ' (body)',
     done);
 }
 
@@ -136,13 +142,15 @@ function createEmptyFieldErrorTester(field, type, done) {
   var acct = Object.assign({}, dummyAccount);
   acct[field] = '';
   createAccountErrorTester(acct, type,
-    'InvalidArgumentError', 400, 'Last name cannot be empty.', done);
+    'Empty Field', 400,
+    'Request must have the following non-empty component(s): ' + field + ' (body)',
+    done);
 }
 
 function deletePermissionErrorTester(user, done) {
   accounts.deleteAccount({
     params: {
-      acct_id: createdDBId
+      account_id: createdDBId
     },
     user: user
   }).catch(function(err) {
@@ -175,7 +183,7 @@ function resetAccount(auth0Id, acct) {
 }
 
 function deleteAccount(auth0Id, acct) {
-  return auth0DeleteAuth0User(auth0Id).then(function(data) {
+  return auth0.deleteAuth0User(auth0Id).then(function(data) {
     return query(accounts.DELETE_ACCT, acct.acct_id);
   });
 }
@@ -1301,144 +1309,205 @@ describe('Accounts', function() {
   });
 
   describe('createAccount(req)', function() {
-    xit('it should add an Admin account when requested by an existing admin', function(done) {
-      createAccountTester(ADMIN, accType.admin, done);
+    before(function(done) {
+      auth0.getAuth0UserByEmail(dummyAccount.email).then(function(user) {
+        // clear existing user so we don't get a duplicate email error on creation
+        auth0.deleteAuth0User(user.user_id).then(function() {
+          done();
+        });
+      }).catch(function(err) {
+        // no user to delete, tests are good to go
+        done();
+      });
     });
 
-    xit('it should add a Staff account when requested by an existing admin', function(done) {
-      createAccountTester(STAFF, accType.admin, done);
+    it('it should add an Admin account when requested by an existing admin', function(done) {
+      var acct = Object.assign({}, dummyAccount);
+      createAccountTester(acct, accType.admin, done);
     });
 
-    xit('it should add a volunteer account when requested by an existing admin', function(done) {
-      createAccountTester(VOLUNTEER, accType.admin, done);
+    it('it should add a Staff account when requested by an existing admin', function(done) {
+      var acct = Object.assign({}, dummyAccount);
+      acct.acct_type = STAFF;
+      createAccountTester(acct, accType.admin, done);
     });
 
-    xit('it should add a coach account when requested by an existing admin', function(done) {
-      createAccountTester(COACH, accType.admin, done);
+    it('it should add a volunteer account when requested by an existing admin', function(done) {
+      var acct = Object.assign({}, dummyAccount);
+      acct.acct_type = VOLUNTEER;
+      createAccountTester(acct, accType.admin, done);
+    });
+
+    it('it should add a coach account when requested by an existing admin', function(done) {
+      var acct = Object.assign({}, dummyAccount);
+      acct.acct_type = COACH;
+      createAccountTester(acct, accType.admin, done);
     });
 
     xit('it should return a 403 error because staff cannot create admin accounts', function(done) {
-      createPermissionErrorTester(ADMIN, accType.staff, done);
+      var acct = Object.assign({}, dummyAccount);
+      createPermissionErrorTester(acct, accType.staff, done);
     });
 
     xit('it should return a 403 error because Volunteers cannot create admin accounts', function(done) {
-      createPermissionErrorTester(ADMIN, accType.volunteer, done);
+      var acct = Object.assign({}, dummyAccount);
+      createPermissionErrorTester(acct, accType.volunteer, done);
     });
 
     xit('it should return a 403 error because Coaches cannot create staff accounts', function(done) {
-      createPermissionErrorTester(STAFF, accType.coach, done);
+      var acct = Object.assign({}, dummyAccount);
+      acct.acct_type = STAFF;
+      createPermissionErrorTester(acct, accType.coach, done);
     });
 
     xit('it should return a 403 error because coaches cannot create admin accounts', function(done) {
-      createPermissionErrorTester(ADMIN, accType.coach, done);
+      var acct = Object.assign({}, dummyAccount);
+      createPermissionErrorTester(acct, accType.coach, done);
     });
 
     xit('it should return a 403 error because volunteers cannot create staff accounts', function(done) {
-      createPermissionErrorTester(STAFF, accType.volunteer, done);
+      var acct = Object.assign({}, dummyAccount);
+      acct.acct_type = STAFF;
+      createPermissionErrorTester(acct, accType.volunteer, done);
     });
 
-    xit('it should return a 400 error because a first_name is missing', function(done) {
+    it('it should return a 400 error because a first_name is missing', function(done) {
       createMissingFieldErrorTester('first_name', accType.admin, done);
     });
 
-    xit('it should return a 400 error because a last_name is missing', function(done) {
+    it('it should return a 400 error because a last_name is missing', function(done) {
       createMissingFieldErrorTester('last_name', accType.admin, done);
     });
 
-    xit('it should return a 400 error because email is missing', function(done) {
+    it('it should return a 400 error because email is missing', function(done) {
       createMissingFieldErrorTester('email', accType.admin, done);
     });
 
-    xit('it should return a 400 error because type is missing', function(done) {
+    it('it should return a 400 error because acct_type is missing', function(done) {
       createMissingFieldErrorTester('acct_type', accType.admin, done);
     });
 
-    xit('it should return a 400 error because password is missing', function(done) {
+    it('it should return a 400 error because password is missing', function(done) {
       createMissingFieldErrorTester('password', accType.admin, done);
     });
 
-    xit('it should return a 400 error because first_name is empty', function(done) {
+    it('it should return a 400 error because first_name is empty', function(done) {
       createEmptyFieldErrorTester('first_name', accType.admin, done);
     });
 
-    xit('it should return a 400 error because last_name is empty', function(done) {
+    it('it should return a 400 error because last_name is empty', function(done) {
       createEmptyFieldErrorTester('last_name', accType.admin, done);
     });
 
-    xit('it should return a 400 error because acct_type is empty', function(done) {
+    it('it should return a 400 error because acct_type is empty', function(done) {
       createEmptyFieldErrorTester('acct_type', accType.admin, done);
+    });
+
+    it('it should return a 400 error because acct_type is invalid', function(done) {
+      var acct = Object.assign({}, dummyAccount);
+      acct.acct_type = 'Invalid';
+      createAccountErrorTester(acct, accType.admin, 'Bad Request', 400, 'Account type must be one of: Admin, Coach, Staff, Volunteer', done);
+    });
+
+    it('it should return a 400 error because the password does not meet requirements', function(done) {
+      var acct = Object.assign({}, dummyAccount);
+      acct.password = 'weak';
+      createAccountErrorTester(acct, accType.admin, 'Bad Request', 400, 'Password is too weak', done);
     });
   });
 
-  describe.skip('deleteAccount(req)', function() {
+  describe('deleteAccount(req)', function() {
     var createdDBId;
     var createdAuth0Id;
 
     // add a dummy account to auth0 and the db
-    before(function(done) {
+    function createDummyAccount() {
       // first add to auth0
-      auth0.createAuth0User(dummyAccount.first_name, dummyAccount.last_name, dummyAccount.username,
-        dummyAccount.email, dummyAccount.acct_type, dummyAccount.password).then(function(auth0Id) {
-          createdAuth0Id = auth0Id;
-          // then add to our db
-          query(accounts.CREATE_ACCT, dummyAccount.first_name, dummyAccount.last_name,
-            dummyAccount.email, dummyAccount.acct_type, auth0Id).then(function(acctId) {
-              createdDBId = acctId;
-              done();
-            });
+      return auth0.createAuth0User(dummyAccount.first_name, dummyAccount.last_name, dummyAccount.username,
+      dummyAccount.email, dummyAccount.acct_type, dummyAccount.password).then(function(auth0Id) {
+        createdAuth0Id = auth0Id;
+        // then add to our db
+        return query(accounts.CREATE_ACCT,
+          [dummyAccount.first_name, dummyAccount.last_name, dummyAccount.email,
+           dummyAccount.acct_type, auth0Id]).then(function() {
+          return query(accounts.ACCOUNT_BY_AUTH, [createdAuth0Id]).then(function(accts) {
+            createdDBId = accts[0].acct_id;
+            return Promise.resolve();
+          });
+        });
+      });
+    }
+
+    afterEach(function(done) {
+      auth0.getAuth0UserByEmail(dummyAccount.email).then(function(user) {
+        // clear existing user so we don't get a duplicate email error on future creation
+        auth0.deleteAuth0User(user.user_id).then(function() {
+          query('DELETE FROM Acct WHERE auth0_id=?', [user.user_id]).then(function() {
+            done();
+          });
+        });
+      }).catch(function(err) {
+        // no user to delete, teardown is complete
+        done();
       });
     });
 
     xit('it should 403 when a coach tries to delete an account', function(done) {
-      deletePermissionErrorTester(accType.coach, done);
+      createDummyAccount().then(function() {
+        deletePermissionErrorTester(accType.coach, done);
+      });
     });
 
     xit('it should 403 when a staff member tries to delete an account', function(done) {
-      deletePermissionErrorTester(accType.staff, done);
+      createDummyAccount().then(function() {
+        deletePermissionErrorTester(accType.staff, done);
+      });
     });
 
     xit('it should 403 when a volunteer tries to delete an account', function(done) {
-      deletePermissionErrorTester(accType.volunteer, done);
+      createDummyAccount().then(function() {
+        deletePermissionErrorTester(accType.volunteer, done);
+      });
     });
 
-    xit('it should delete an account if an admin requests the action', function(done) {
-      accounts.deleteAccount({
-        params: {
-          acct_id: createdDBId
-        },
-        user: accType.admin
-      }).then(function() {
-        auth0.getAuth0User(createdAuth0Id).catch(function(err) {
-          assertEqualError(err,
-            'ArgumentNotFoundError', 404, 'Invalid request: The given auth0_id' +
-            ' does not exist in the database'
-          );
-          verifyNoAccountChanges(done);
+    it('it should delete an account if an admin requests the action', function(done) {
+      createDummyAccount().then(function() {
+        accounts.deleteAccount({
+          params: {
+            account_id: createdDBId
+          },
+          user: accType.admin
+        }).then(function() {
+          auth0.getAuth0User(createdAuth0Id).catch(function(err) {
+            assertEqualError(err,
+              'ArgumentNotFoundError', 404, 'Invalid request: The given auth0_id' +
+              ' does not exist in the database'
+            );
+            verifyNoAccountChanges(done);
+          });
         });
       });
     });
 
-    xit('it should return a 400 error if no id is passed', function(done) {
+    it('it should return a 400 error if no id is passed', function(done) {
       accounts.deleteAccount({
         params: {},
         user: accType.admin
       }).catch(function(err) {
-          assertEqualError(err, 'MissingFieldError', 400, 'Request must have a acct_id in the params.');
-          verifyNoAccountChanges(done);
+        assertEqualError(err, 'Missing Field', 400,
+          'Request must have the following component(s): account_id (params)');
+        verifyNoAccountChanges(done);
       });
     });
 
-    xit('it should 404 when passed the acct id is not recognized', function(done) {
+    it('it should 404 when passed the acct id is not recognized', function(done) {
       accounts.deleteAccount({
         params: {
-          acct_id: createdDBId
+          account_id: 999
         },
         user: accType.admin
       }).catch(function(err) {
-        assertEqualError(err,
-          'ArgumentNotFoundError', 404, 'Invalid request: The given acct_id' +
-          ' does not exist in the database'
-        );
+        assertEqualError(err, 'Not Found', 404, 'No account with id 999 exists in the database.');
         verifyNoAccountChanges(done);
       });
     });

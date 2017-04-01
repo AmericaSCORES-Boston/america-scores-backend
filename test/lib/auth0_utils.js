@@ -375,4 +375,27 @@ describe('Auth0 Utils', function() {
       });
     });
   });
+
+
+  describe('verifyPasswordStrength(password)', function() {
+    it('it should return false when the password is less than 8 characters', function() {
+      assert.isFalse(auth0.verifyPasswordStrength('aB3'));
+    });
+
+    it('it should return false when the password contains no numbers', function() {
+      assert.isFalse(auth0.verifyPasswordStrength('aBcDeFgHiJk'));
+    });
+
+    it('it should return false when the password contains no capital letters', function() {
+      assert.isFalse(auth0.verifyPasswordStrength('abcde12345'));
+    });
+
+    it('it should return false when the password contains no lowercase letters', function() {
+      assert.isFalse(auth0.verifyPasswordStrength('ABCDE12345'));
+    });
+
+    it('it should return true when the password satisfies the password policy', function() {
+      assert.isTrue(auth0.verifyPasswordStrength('aBcDe12345'));
+    });
+  });
 });

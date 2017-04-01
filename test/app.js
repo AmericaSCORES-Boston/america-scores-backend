@@ -177,15 +177,30 @@ describe('app.js', function() {
 
   describe('accounts endpoint', function() {
     var getAccountsStub;
+    var createAccountStub;
+    var updateAccountStub;
+    var deleteAccountStub;
 
     before(function() {
       getAccountsStub = sinon.stub(accounts, 'getAccounts', function() {
         return Promise.resolve('got the accounts');
       });
+      createAccountStub = sinon.stub(accounts, 'createAccount', function() {
+        return Promise.resolve('created the account');
+      });
+      updateAccountStub = sinon.stub(accounts, 'updateAccount', function() {
+        return Promise.resolve('updated the account');
+      });
+      deleteAccountStub = sinon.stub(accounts, 'deleteAccount', function() {
+        return Promise.resolve('deleted the account');
+      });
     });
 
     after(function() {
       accounts.getAccounts.restore();
+      accounts.createAccount.restore();
+      accounts.updateAccount.restore();
+      accounts.deleteAccount.restore();
     });
 
     it('GET /accounts', function(done) {
@@ -194,6 +209,36 @@ describe('app.js', function() {
         .expect('got the accounts', 200)
         .end(function() {
           assert.isTrue(getAccountsStub.called);
+          done();
+        });
+    });
+
+    it('POST /accounts', function(done) {
+      request(app)
+        .post('/accounts')
+        .expect('created the account', 200)
+        .end(function() {
+          assert.isTrue(createAccountStub.called);
+          done();
+        });
+    });
+
+    it('PUT /accounts/:account_id', function(done) {
+      request(app)
+        .put('/accounts/1')
+        .expect('updated the account', 200)
+        .end(function() {
+          assert.isTrue(updateAccountStub.called);
+          done();
+        });
+    });
+
+    it('DELETE /accounts/:account_id', function(done) {
+      request(app)
+        .delete('/accounts/1')
+        .expect('deleted the account', 200)
+        .end(function() {
+          assert.isTrue(deleteAccountStub.called);
           done();
         });
     });

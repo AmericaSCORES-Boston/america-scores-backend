@@ -76,11 +76,16 @@ app.route('/events/:event_id/students')
 app.route('/accounts')
   .get(function(req, res, next) {
     makeResponse(res, accounts.getAccounts(req));
-});
+  }).post(function(req, res, next) {
+    makeResponse(res, accounts.createAccount(req));
+  });
 
 app.route('/accounts/:account_id')
   .put(function(req, res, next) {
     makeResponse(res, accounts.updateAccount(req));
+  })
+  .delete(function(req, res, next) {
+    makeResponse(res, accounts.deleteAccount(req));
   });
 
 // Sites

@@ -4,6 +4,7 @@ const chai = require('chai');
 const assert = chai.assert;
 
 const errors = require('../../lib/errors');
+const Requirement = require('../../lib/utils').Requirement;
 const testUtils = require('../../lib/test_utils');
 const assertEqualError = testUtils.assertEqualError;
 
@@ -71,17 +72,47 @@ describe('errors', function() {
     });
   });
 
-  describe('createMissingFieldError(field, part)', function() {
-    it('creates a missing field error for a specific request part', function(done) {
-      errors.createMissingFieldError('field', 'body').catch(function(err) {
-        assertEqualError(err, 'MissingFieldError', 400, 'Request must have a field in the body');
+  describe('createMissingFieldError(missingFields)', function() {
+    var req1 = new Requirement('query', 'last_name');
+    var req2 = new Requirement('body', null);
+    it('creates a missing field error for a single missing field', function(done) {
+      errors.createMissingFieldError([req1]).catch(function(err) {
+        assertEqualError(err, 'Missing Field', 400,
+          'Request must have the following component(s): ' +
+          'last_name (query)');
         done();
       });
     });
 
-    it('creates a general missing field error', function(done) {
-      errors.createMissingFieldError('field').catch(function(err) {
-        assertEqualError(err, 'MissingFieldError', 400, 'Request must have a field');
+    it('creates a missing field error for multiple missing fields', function(done) {
+      errors.createMissingFieldError([req1, req2]).catch(function(err) {
+        assertEqualError(err, 'Missing Field', 400,
+          'Request must have the following component(s): ' +
+          'last_name (query), ' +
+          'body');
+        done();
+      });
+    });
+  });
+
+  describe('createEmptyFieldError(missingFields)', function() {
+    var req1 = new Requirement('query', 'last_name');
+    var req2 = new Requirement('body', 'first_name');
+    it('creates a missing field error for a single missing field', function(done) {
+      errors.createEmptyFieldError([req1]).catch(function(err) {
+        assertEqualError(err, 'Empty Field', 400,
+          'Request must have the following non-empty component(s): ' +
+          'last_name (query)');
+        done();
+      });
+    });
+
+    it('creates a missing field error for multiple missing fields', function(done) {
+      errors.createEmptyFieldError([req1, req2]).catch(function(err) {
+        assertEqualError(err, 'Missing Field', 400,
+          'Request must have the following non-empty component(s): ' +
+          'last_name (query), ' +
+          'first_name (body)');
         done();
       });
     });
@@ -122,6 +153,22 @@ describe('errors', function() {
     });
   });
 
+  describe('create400(errorFields)', function() {
+    it('creates a generic 400 error', function(done) {
+      errors.create400().catch(function(err) {
+        assertEqualError(err, 'Bad Request', 400, 'The request cannot be fulfilled due to bad syntax');
+        done();
+      });
+    });
+
+    it('creates a 400 error with a specific message', function(done) {
+      var custom = 'There was an error';
+      errors.create400({message: custom}).catch(function(err) {
+        assertEqualError(err, 'Bad Request', 400, custom);
+        done();
+      });
+    });
+  });
   describe('InvalidKeyError(key)', function() {
     it('creates an InvalidKeyError', function() {
       var invalidKeyError = new errors.InvalidKeyError('myKey');

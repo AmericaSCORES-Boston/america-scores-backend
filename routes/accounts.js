@@ -9,7 +9,13 @@ const reqHasRequirements = utils.reqHasRequirements;
 const makeQueryArgs = utils.makeQueryArgs;
 const Requirement = utils.Requirement;
 const PotentialQuery = utils.PotentialQuery;
+const COACH = require('../lib/constants').COACH;
+const STAFF = require('../lib/constants').STAFF;
+const VOLUNTEER = require('../lib/constants').VOLUNTEER;
+const ADMIN = require('../lib/constants').ADMIN;
 
+
+const ACCOUNT_TYPES = [COACH, STAFF, VOLUNTEER, ADMIN];
 
 const SELECT_ACCT = 'SELECT a.acct_id, a.first_name, a.last_name, a.email, a.acct_type ';
 const FROM_ACCT = 'FROM Acct a ';
@@ -161,6 +167,7 @@ function updateAccount(req) {
 const CREATE_REQS = [
   new Requirement('body', 'first_name'),
   new Requirement('body', 'last_name'),
+  new Requirement('body', 'username'),
   new Requirement('body', 'email'),
   new Requirement('body', 'acct_type'),
   new Requirement('body', 'password')
@@ -168,20 +175,88 @@ const CREATE_REQS = [
 
 const CREATE_ACCT = 'INSERT INTO Acct ' +
   '(first_name, last_name, email, acct_type, auth0_id) ' +
-  'VALUES ("?", "?", "?", ?, ?)';
+  'VALUES (?, ?, ?, ?, ?)';
+
 
 function createAccount(req) {
-  if (!reqHasRequirements(CREATE_REQS)) {
-      return errors.createUnsupportedRequestError();
+  var missingReqs = utils.findMissingRequirements(req, CREATE_REQS);
+  if (missingReqs.length !== 0) {
+    return errors.createMissingFieldError(missingReqs);
   }
+
+  var emptyReqs = utils.findEmptyRequirements(req, CREATE_REQS);
+  if (emptyReqs.length !== 0) {
+    return errors.createEmptyFieldError(emptyReqs);
+  }
+
+  var first_name = req.body.first_name;
+  var last_name = req.body.last_name;
+  var username = req.body.username;
+  var email = req.body.email;
+  var acct_type = req.body.acct_type;
+  var password = req.body.password;
+
+  // if given an invalid account type, throw a 400
+  if (!ACCOUNT_TYPES.includes(acct_type)) {
+    return errors.create400({
+      message: 'Account type must be one of: Admin, Coach, Staff, Volunteer'
+    });
+  }
+
+  if (!auth0.verifyPasswordStrength(password)) {
+    return errors.create400({
+      message: 'Password is too weak'
+    });
+  }
+
+  // first, create the auth0 user and get the id
+  return auth0.createAuth0User(first_name, last_name, username, email, acct_type, password)
+    .then(function(auth0_id) {
+    // then add the user to our database
+    return query(CREATE_ACCT, [first_name, last_name, email, acct_type, auth0_id])
+      .catch(function(err) {
+      // if there's an error adding to our database, rollback by deleting the auth0 user
+      console.log('Encountered an error trying to create account. Rolling back.');
+      console.log(err.toString());
+      return auth0.deleteAuth0User(auth0_id).finally(function() {
+        return errors.create500();
+      });
+    });
+  });
 }
 
+const DELETE_REQS = [new Requirement('params', 'account_id')];
 const DELETE_ACCT = 'DELETE FROM Acct WHERE acct_id = ?';
 function deleteAccount(req) {
-  return [];
+  var missingReqs = utils.findMissingRequirements(req, DELETE_REQS);
+  if (missingReqs.length !== 0) {
+    return errors.createMissingFieldError(missingReqs);
+  }
+
+  var acct_id = req.params.account_id;
+  // first, get the user from our database
+  return query('SELECT * FROM Acct WHERE acct_id = ?', [acct_id]).then(function(accts) {
+    // if no user with the given id is found, throw a 404
+    if (accts.length < 1) {
+      return errors.create404({
+        message: 'No account with id ' + acct_id + ' exists in the database.'
+      });
+    }
+    var acct = accts[0];
+    // delete from our database
+    return query(DELETE_ACCT, [acct_id]).then(function() {
+      // now, delete from auth0
+      return auth0.deleteAuth0User(acct.auth0_id).catch(function(err) {
+        // if there's an error deleting the auth0 user, rollback by adding back to our database
+        console.log('Encountered an error trying to delete account. Rolling back.');
+        console.log(err.toString());
+        return query(CREATE_ACCT, [acct.first_name, acct.last_name, acct.email, acct.acct_type, acct.auth0_id]);
+      });
+    });
+  });
 }
 
 module.exports = {
   getAccounts, createAccount, updateAccount, deleteAccount,
-  UPDATE_ACCT_ALL, DELETE_ACCT, CREATE_ACCT
+  UPDATE_ACCT_ALL, DELETE_ACCT, CREATE_ACCT, ACCOUNT_BY_AUTH
 };
