@@ -98,7 +98,7 @@ describe('errors', function() {
   describe('createEmptyFieldError(missingFields)', function() {
     var req1 = new Requirement('query', 'last_name');
     var req2 = new Requirement('body', 'first_name');
-    it('creates a missing field error for a single missing field', function(done) {
+    it('creates an empty field error for a single empty field', function(done) {
       errors.createEmptyFieldError([req1]).catch(function(err) {
         assertEqualError(err, 'Empty Field', 400,
           'Request must have the following non-empty component(s): ' +
@@ -107,9 +107,9 @@ describe('errors', function() {
       });
     });
 
-    it('creates a missing field error for multiple missing fields', function(done) {
+    it('creates an empty field error for multiple missing fields', function(done) {
       errors.createEmptyFieldError([req1, req2]).catch(function(err) {
-        assertEqualError(err, 'Missing Field', 400,
+        assertEqualError(err, 'Empty Field', 400,
           'Request must have the following non-empty component(s): ' +
           'last_name (query), ' +
           'first_name (body)');
