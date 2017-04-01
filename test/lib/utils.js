@@ -178,4 +178,135 @@ describe('utils', function() {
       });
     });
   });
+
+  describe('reqHasRequirements(requestObj, requirementsList)', function() {
+    var obj = {
+      'query': {
+        'testReq': '1',
+      },
+      'body': {
+      }
+    };
+    it('returns true when the request has no requirements',
+      function() {
+        assert.isTrue(utils.reqHasRequirements(obj, []));
+    });
+    it('returns true when the request has the specified requirements',
+      function() {
+        assert.isTrue(utils.reqHasRequirements(obj,
+            [new utils.Requirement('query', 'testReq')]));
+    });
+    it('returns true when the request has the specified requirement type if given no name',
+      function() {
+        assert.isTrue(utils.reqHasRequirements(obj,
+            [new utils.Requirement('body', null)]));
+    });
+    it('returns false when the request is missing specified requirements',
+      function() {
+        assert.isFalse(utils.reqHasRequirements(obj,
+            [new utils.Requirement('query', 'testReq2')]));
+    });
+    it('returns false when the request is missing specified type of requirements',
+      function() {
+        assert.isFalse(utils.reqHasRequirements(obj,
+            [new utils.Requirement('params', 'testReq3')]));
+    });
+  });
+
+  describe('findMissingRequirements(requestObj, requirementsList)', function() {
+    var obj = {
+      'query': {
+        'testReq': '1',
+      },
+      'body': {}
+    };
+    var req1 = new utils.Requirement('query', 'testReq2');
+    var req2 = new utils.Requirement('params', 'testReq3');
+
+    it('returns an empty list when the request has no requirements',
+      function() {
+        assert.lengthOf(utils.findMissingRequirements(obj, []), 0);
+    });
+
+    it('returns an empty list when the request has the specified requirements',
+      function() {
+        assert.lengthOf(utils.findMissingRequirements(obj, [new utils.Requirement('query', 'testReq')]), 0);
+    });
+
+    it('returns an empty list when the request has the specified requirement type if given no name',
+      function() {
+        assert.lengthOf(utils.findMissingRequirements(obj, [new utils.Requirement('body', null)]), 0);
+    });
+
+    it('returns the missing requirement when the request is missing specified requirements',
+      function() {
+        assert.deepEqual(utils.findMissingRequirements(obj, [req1]), [req1]);
+    });
+
+    it('returns the missing requirement when the request is missing specified type of requirements',
+      function() {
+        assert.deepEqual(utils.findMissingRequirements(obj, [req2]), [req2]);
+    });
+
+    it('returns all the missing requirements when the request is missing more than one',
+      function() {
+        assert.deepEqual(utils.findMissingRequirements(obj, [req1, req2]), [req1, req2]);
+    });
+  });
+
+  describe('findEmptyRequirements(requestObj, nonEmptyRequirements)', function() {
+    var obj = {
+      'query': {
+        'first_name': '',
+        'last_name': 'NotEmpty',
+        'title': ''
+      }
+    };
+    var req1 = new utils.Requirement('query', 'last_name');
+    var req2 = new utils.Requirement('query', 'first_name');
+    var req3 = new utils.Requirement('query', 'title');
+
+    it('returns an empty list when the request has no requirements', function() {
+      assert.lengthOf(utils.findEmptyRequirements(obj, []), 0);
+    });
+
+    it('returns an empty list when the request has the specified non-empty requirements', function() {
+      assert.lengthOf(utils.findEmptyRequirements(obj, [req1]), 0);
+    });
+
+    it('returns the empty requirement when the request has a specified empty value', function() {
+      assert.deepEqual(utils.findEmptyRequirements(obj, [req2]), [req2]);
+    });
+
+    it('returns the empty requirements when the request has multiple specified empty values', function() {
+      assert.deepEqual(utils.findEmptyRequirements(obj, [req1, req2, req3]), [req2, req3]);
+    });
+  });
+
+  describe('makeQueryArgs(requestObj, requirementsList)', function() {
+    var req1 = new utils.Requirement('query', 'testReq');
+    var req2 = new utils.Requirement('query', 'testReq2');
+    var req3 = new utils.Requirement('params', 'testReq3');
+    var obj = {
+      'query': {
+        'testReq': '1',
+        'testReq2': '2'
+      },
+      'params': {
+        'testReq3': '3'
+      }
+    };
+    it('creates a list of SQL query arguments from the requirements',
+      function() {
+        assert.deepEqual(utils.makeQueryArgs(obj, [req1, req2, req3]), ['1', '2', '3']);
+    });
+    it('preserves the requirements order in the query args it creates',
+      function() {
+        assert.deepEqual(utils.makeQueryArgs(obj, [req3, req1, req2]), ['3', '1', '2']);
+    });
+    it('returns no args when given an empty requirements list',
+      function() {
+        assert.deepEqual(utils.makeQueryArgs(obj, []), []);
+    });
+  });
 });

@@ -28,8 +28,11 @@ gulp.task('eslint', () => {
 });
 
 gulp.task('test', () => {
-  var stream = gulp.src('test/**/*.js', {read: false})
-    .pipe(mocha({reporter: 'spec', timeout: 5000}));
+  var stream = gulp.src('test/**/**.js', {read: false})
+    .pipe(mocha({reporter: 'spec', timeout: 5000})
+            .on('error', function(err) {
+              console.log(err.toString());
+            }));
 
   stream.on('end', function() {
     Promise.using(getSqlConnection(), function(connection) {
