@@ -1,6 +1,6 @@
 # America SCORES PACER Collection Backend
-[![Build Status](https://travis-ci.org/CS4500-AmericaSCORES/america-scores-backend.svg?branch=master)](https://travis-ci.org/CS4500-AmericaSCORES/america-scores-backend)
-[![Coverage Status](https://coveralls.io/repos/github/CS4500-AmericaSCORES/america-scores-backend/badge.svg)](https://coveralls.io/github/CS4500-AmericaSCORES/america-scores-backend)
+[![Build Status](https://travis-ci.org/AmericaSCORES-Boston/america-scores-backend.svg?branch=master)](https://travis-ci.org/AmericaSCORES-Boston/america-scores-backend)
+[![Coverage Status](https://coveralls.io/repos/github/AmericaSCORES-Boston/america-scores-backend/badge.svg?branch=master)](https://coveralls.io/github/AmericaSCORES-Boston/america-scores-backend?branch=master)
 
 The backend for the America SCORES data collection system.
 

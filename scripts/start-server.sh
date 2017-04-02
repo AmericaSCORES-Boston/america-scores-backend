@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+cd /amscores/backend
 if [ "$DEPLOYMENT_GROUP_NAME" == "Production" ]; then
   export NODE_ENV=production
 else
