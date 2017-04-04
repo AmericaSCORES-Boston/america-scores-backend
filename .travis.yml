@@ -34,12 +34,12 @@ deploy:
     upload-dir: prod
     on:
       branch: master
-    bucket: asb-deploy
+    bucket: asb-aws-deploy
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     region: us-east-1
-    bucket: asb-deploy
+    bucket: asb-aws-deploy
     key: prod/backend-latest.zip
     bundle_type: zip
     application: ASB-Backend
@@ -56,12 +56,12 @@ deploy:
     upload-dir: dev
     on:
       branch: develop
-    bucket: asb-deploy
+    bucket: asb-aws-deploy
   - provider: codedeploy
     access_key_id: $AMSCORES_AWS_KEY_ID
     secret_access_key: $AMSCORES_AWS_KEY_SECRET
     region: us-east-1
-    bucket: asb-deploy
+    bucket: asb-aws-deploy
     key: dev/backend-latest.zip
     bundle_type: zip
     application: ASB-Backend
