@@ -5,6 +5,8 @@ const chai = require('chai');
 const sinon = require('sinon');
 const assert = chai.assert;
 const utils = require('../../lib/utils');
+const ADMIN = require('../../lib/constants').ADMIN;
+const ADMIN_AUTH0_ID = require('../../lib/seed_constants').ADMIN_AUTH0_ID;
 
 const res = {
   send: function(data) {},
@@ -245,6 +247,15 @@ describe('utils', function() {
 
     it('returns the empty requirements when the request has multiple specified empty values', function() {
       assert.deepEqual(utils.findEmptyRequirements(obj, [req1, req2, req3]), [req2, req3]);
+    });
+  });
+
+  describe('getAccountType(auth0Id)', function() {
+    it('retrieves the account type for the given auth0 id', function(done) {
+      utils.getAccountType(ADMIN_AUTH0_ID).then(function(acct_type) {
+        assert.equal(ADMIN, acct_type);
+        done();
+      });
     });
   });
 

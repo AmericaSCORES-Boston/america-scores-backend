@@ -11,11 +11,11 @@ const assertEqualError = testUtils.assertEqualError;
 describe('errors', function() {
   describe('createAccessDeniedError()', function() {
     it('creates an access denied error', function(done) {
-      var promise = errors.createAccessDeniedError();
+      var promise = errors.createAccessDeniedError('TYPE');
 
       promise.catch(function(err) {
         assertEqualError(err, 'AccessDenied', 403,
-          'Access denied: this account does not have permission for this action');
+          'Access denied: this account type (TYPE) does not have permission for this action');
         done();
       });
     });
@@ -118,6 +118,17 @@ describe('errors', function() {
     });
   });
 
+  describe('createMissingAuthError()', function() {
+    it('creates a 400 error when the request is missing an auth0 id', function(done) {
+      errors.createMissingAuthError().catch(function(err) {
+        assertEqualError(err, 'Missing Field', 400,
+          'Request must have the following component(s): ' +
+          'auth0_id (auth)');
+        done();
+      });
+    });
+  });
+
   describe('create500()', function() {
     it('creates a generic internal server error', function(done) {
       errors.create500().catch(function(err) {
@@ -169,11 +180,20 @@ describe('errors', function() {
       });
     });
   });
+
   describe('InvalidKeyError(key)', function() {
     it('creates an InvalidKeyError', function() {
       var invalidKeyError = new errors.InvalidKeyError('myKey');
       assert.equal(invalidKeyError.name, 'InvalidKeyError');
       assert.equal(invalidKeyError.message, 'Tried to access invalid key: myKey');
+    });
+  });
+
+  describe('AuthError()', function() {
+    it('creates an AuthError', function() {
+      var authError = new errors.AuthError();
+      assert.equal(authError.name, 'AuthError');
+      assert.equal(authError.message, 'This endpoint requires an auth0_id in the auth portion of the request');
     });
   });
 });

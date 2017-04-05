@@ -15,10 +15,11 @@ const STAFF = require('../lib/constants').STAFF;
 const VOLUNTEER = require('../lib/constants').VOLUNTEER;
 const ADMIN = require('../lib/constants').ADMIN;
 
-
+const getAccountType = utils.getAccountType;
+const getReqAuth0Id = utils.getReqAuth0Id;
 const ACCOUNT_TYPES = [COACH, STAFF, VOLUNTEER, ADMIN];
 
-const SELECT_ACCT = 'SELECT a.acct_id, a.first_name, a.last_name, a.email, a.acct_type ';
+const SELECT_ACCT = 'SELECT a.acct_id, a.first_name, a.last_name, a.email, a.acct_type, a.auth0_id ';
 const FROM_ACCT = 'FROM Acct a ';
 
 const ALL_ACCOUNTS = SELECT_ACCT + FROM_ACCT;
@@ -59,11 +60,22 @@ const ACCOUNTS_QUERIES = [
  * /accounts?site_id=X
  */
 function getAccounts(req) {
-  /*
-  if (req.user.authorization !== 'Admin') {
-    return errors.createAccessDeniedError();
+  try {
+    var auth0_id = getReqAuth0Id(req);
+
+    return getAccountType(auth0_id).then(function(acct_type) {
+      if (acct_type !== ADMIN) {
+        return errors.createAccessDeniedError(acct_type);
+      } else {
+        return getAccountsHelper(req);
+      }
+    });
+  } catch (e) {
+    return errors.createMissingAuthError();
   }
-  */
+}
+
+function getAccountsHelper(req) {
   // With no params in the URL, give back all accounts
   if (Object.keys(req.query).length == 0) {
     return query(ALL_ACCOUNTS);
