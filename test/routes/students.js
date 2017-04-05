@@ -6,7 +6,7 @@ const assert = chai.assert;
 const query = require('../../lib/utils').query;
 
 // Require seed to reset database before each test
-const seed = require('../../lib/utils').seed;
+const seed = require('../../lib/seed').dbSeed;
 
 // Require test accounts
 // const constants = require('../../lib/constants');

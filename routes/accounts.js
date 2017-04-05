@@ -9,6 +9,7 @@ const reqHasRequirements = utils.reqHasRequirements;
 const makeQueryArgs = utils.makeQueryArgs;
 const Requirement = utils.Requirement;
 const PotentialQuery = utils.PotentialQuery;
+
 const COACH = require('../lib/constants').COACH;
 const STAFF = require('../lib/constants').STAFF;
 const VOLUNTEER = require('../lib/constants').VOLUNTEER;

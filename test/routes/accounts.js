@@ -16,6 +16,8 @@ const VOLUNTEER = accType.VOLUNTEER;
 const query = utils.query;
 
 const auth0 = require('../../lib/auth0_utils');
+const ACCTS = require('../../lib/seed_constants').ACCTS;
+const auth0Seed = require('../../lib/seed').auth0Seed;
 
 const testUtils = require('../../lib/test_utils');
 const assertEqualAuth0DB = testUtils.assertEqualAuth0DBAcct;
@@ -36,29 +38,6 @@ function getAllAccounts() {
   // Get contents of Accounts table in DB, used for asserts
   return query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct');
 }
-
-function seedAuth0(accts) {
-  console.log('  Seeding Auth0 accounts');
-  return Promise.each(accts, function(acct) {
-    return auth0.getAuth0Id(acct.acct_id).then(function(auth0Id) {
-      return auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-        var updates = {
-          first_name: acct.first_name,
-          last_name: acct.last_name,
-          acct_type: acct.acct_type
-        };
-
-        if (auth0Acct.email !== acct.email) {
-          updates['email'] = acct.email;
-        }
-
-        console.log('    Seeding ' + acct.first_name + ' ' + acct.last_name +
-            ' (' + acct.email + ') - ' + acct.acct_type);
-        return auth0.updateAuth0UserFromParams(auth0Id, updates);
-      });
-    });
-  });
-};
 
 function verifyNoAccountChanges(done) {
   // get contents of accounts table
@@ -317,7 +296,7 @@ describe('Accounts', function() {
     // Acct table
     getAllAccounts().then(function(data) {
       initAcc = data;
-      seedAuth0(initAcc).then(function() {
+      auth0Seed(ACCTS).then(function() {
         done();
       });
     });

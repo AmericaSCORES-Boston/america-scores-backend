@@ -3,13 +3,13 @@ var chai = require('chai');
 var assert = chai.assert;
 
 // Require seed to reset database before each test
-const utils = require('../../lib/utils');
+const reportSeed = require('../../lib/seed').dbReportSeed;
 
 // The file to be tested
 var reports = require('../../routes/reports');
 
 beforeEach(function() {
-    return utils.reportSeed();
+    return reportSeed();
   });
 
 // Reports testing block
