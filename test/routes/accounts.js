@@ -248,7 +248,7 @@ describe('Accounts', function() {
     });
 
     // Verify access errors
-    it('it should return a 400 error when no auth0 id is passed with the request', function(done) {
+    xit('it should return a 400 error when no auth0 id is passed with the request', function(done) {
       accounts.getAccounts({
         query: {}
       }).catch(function(err) {
