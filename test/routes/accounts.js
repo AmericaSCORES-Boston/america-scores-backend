@@ -858,26 +858,24 @@ describe('Accounts', function() {
     });
   });
 
-  describe.only('createAccount(req)', function() {
-    function deleteDummyAccount() {
-      return auth0.getAuth0UserByEmail(dummyAccount.email).then(function(user) {
-        return auth0.deleteAuth0User(user.user_id).then(function() {
-          return query('DELETE FROM Acct WHERE email = ?', dummyAccount.email);
-        });
-      }).catch(function(err) {
-        return Promise.resolve();
-      });
-    }
-
+  describe('createAccount(req)', function() {
     afterEach(function(done) {
       /* eslint-disable no-invalid-this */
-      this.timeout(0);
+      this.timeout(10000);
       /* eslint-enable no-invalid-this */
-      setTimeout(function() {
-        deleteDummyAccount().then(function() {
+      query('SELECT acct_id, auth0_id FROM Acct WHERE email = ?', [dummyAccount.email]).then(function(ids) {
+        if (ids.length == 1) {
+          setTimeout(function() {
+            auth0.deleteAuth0User(ids[0].auth0_id).then(function() {
+              query(accounts.DELETE_ACCT, [ids[0].acct_id]).then(function() {
+                done();
+              });
+            });
+          }, 3000);
+        } else {
           done();
-        });
-      }, 5000);
+        }
+      });
     });
 
     it('it should add an Admin account when requested by an existing admin', function(done) {
