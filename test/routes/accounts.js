@@ -65,10 +65,45 @@ function verifyNoAccountChanges(done) {
   // get contents of accounts table
   getAllAccounts().then(function(data) {
     // confirm no updates were made
-    assert.deepEqual(data, initAcc);
+    assert.deepEqual(data, ACCTS);
     // TODO confirm all data on Auth0 unaffected
     done();
   });
+}
+
+function updateAccountTester(target, updates, auth0Id, done, error) {
+  var updateAccount = Object.assign({}, target);
+  Object.assign(updateAccount, updates);
+
+  var promise = accounts.updateAccount({
+    params: {
+      acct_id: target.acct_id
+    },
+    body: updates,
+    auth: {
+      auth0_id: auth0Id
+    }
+  });
+
+  if (error !== undefined) {
+    promise.catch(function(err) {
+      assertEqualError(err, error.name, error.status, error.message);
+      verifyNoAccountChanges(done);
+    });
+  } else {
+    promise.then(function(data) {
+      assert.deepEqual(data, [updateAccount]);
+      auth0.getAuth0User(data[0].auth0_id).then(function(auth0Acct) {
+        assertEqualAuth0DB(auth0Acct, updateAccount);
+        getAllAccounts().then(function(accounts) {
+          var accts = ACCTS.slice();
+          accts[target.acct_id - 1] = updateAccount;
+          assert.deepEqual(accounts, accts);
+          done();
+        });
+      });
+    });
+  }
 }
 
 function createAccountTester(newAcctData, auth0_id, done) {
@@ -80,7 +115,7 @@ function createAccountTester(newAcctData, auth0_id, done) {
   };
 
   accounts.createAccount(req).then(function() {
-    query('SELECT acct_id, first_name, last_name, email, acct_type FROM Acct ' +
+    query('SELECT acct_id, first_name, last_name, email, acct_type, auth0_id FROM Acct ' +
       'WHERE first_name = ? AND last_name = ? AND email = ?',
       [newAcctData.first_name, newAcctData.last_name, newAcctData.email]).then(function(accts) {
       // confirm new user returned
@@ -89,16 +124,11 @@ function createAccountTester(newAcctData, auth0_id, done) {
       // get contents of accounts table
       getAllAccounts().then(function(dbAccts) {
         // confirm account list matches what was found in db
-        assert.deepEqual(dbAccts, [acc1, acc2, acc3, acc4, acc5, acc6, acc7, acc8, acc9, newAcct]);
-        auth0.getAuth0Id(newAcct.acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // confirm new account added to Auth0
-            assertEqualAuth0DB(auth0Acct, newAcct);
-            // remove account from Auth0
-            deleteAccount(auth0Id, newAcct).then(function() {
-              done();
-            });
-          });
+        assert.deepEqual(dbAccts, ACCTS.concat([newAcct]));
+        auth0.getAuth0User(newAcct.auth0_id).then(function(auth0Acct) {
+          // confirm new account added to Auth0
+          assertEqualAuth0DB(auth0Acct, newAcct);
+          done();
         });
       });
     });
@@ -171,8 +201,8 @@ function deletePermissionErrorTester(auth0_id, type, done) {
   });
 }
 
-function resetAccount(auth0Id, acct) {
-  return auth0.updateAuth0User(auth0Id, {
+function resetAccount(acct) {
+  return auth0.updateAuth0User(acct.auth0_id, {
     email: acct.email,
     user_metadata: {
       first_name: acct.first_name,
@@ -187,88 +217,6 @@ function resetAccount(auth0Id, acct) {
   });
 }
 
-function deleteAccount(auth0Id, acct) {
-  return auth0.deleteAuth0User(auth0Id).then(function(data) {
-    return query(accounts.DELETE_ACCT, acct.acct_id);
-  });
-}
-
-// objects to store the initial database tables
-var initAcc;
-
-// starting data from /utils.js.seed()
-var acc1 = {
-  acct_id: 1,
-  first_name: 'Ron',
-  last_name: 'Large',
-  email: 'ronlarge@americascores.org',
-  acct_type: 'Coach'
-};
-
-var acc2 = {
-  acct_id: 2,
-  first_name: 'Marcel',
-  last_name: 'Yogg',
-  email: 'myogg@americascores.org',
-  acct_type: 'Coach'
-};
-
-var acc3 = {
-  acct_id: 3,
-  first_name: 'Maggie',
-  last_name: 'Pam',
-  email: 'mp@americascores.org',
-  acct_type: 'Volunteer'
-};
-
-var acc4 = {
-  acct_id: 4,
-  first_name: 'Jeff',
-  last_name: 'Nguyen',
-  email: 'jnguyen@americascores.org',
-  acct_type: 'Volunteer'
-};
-
-var acc5 = {
-  acct_id: 5,
-  first_name: 'Larry',
-  last_name: 'Mulligan',
-  email: 'lmulligan@americascores.org',
-  acct_type: 'Staff'
-};
-
-var acc6 = {
-  acct_id: 6,
-  first_name: 'Jake',
-  last_name: 'Sky',
-  email: 'blue@americascores.org',
-  acct_type: 'Staff'
-};
-
-var acc7 = {
-  acct_id: 7,
-  first_name: 'Mark',
-  last_name: 'Pam',
-  email: 'redsoxfan@americascores.org',
-  acct_type: 'Admin'
-};
-
-var acc8 = {
-  acct_id: 8,
-  first_name: 'Amanda',
-  last_name: 'Diggs',
-  email: 'adiggs@americascores.org',
-  acct_type: 'Admin'
-};
-
-var acc9 = {
-  acct_id: 9,
-  first_name: 'Tom',
-  last_name: 'Lerner',
-  email: 'tlerner@americascores.org',
-  acct_type: 'Coach'
-};
-
 describe('Accounts', function() {
   // get original states of the database tables
   before(function(done) {
@@ -278,14 +226,13 @@ describe('Accounts', function() {
 
     // Acct table
     getAllAccounts().then(function(data) {
-      initAcc = data;
       auth0Seed(ACCTS).then(function() {
         done();
       });
     });
   });
 
-  describe.only('getAccounts(req)', function() {
+  describe('getAccounts(req)', function() {
     it('it should get all accounts in DB when requested by an admin', function(done) {
       // Retrieve all students when req.query.acct_type is empty
       accounts.getAccounts({
@@ -533,188 +480,72 @@ describe('Accounts', function() {
     });
   });
 
-  describe.only('updateAccount(req)', function() {
+  describe('updateAccount(req)', function() {
+    var affected_accounts = ACCTS.slice();
+
+    afterEach(function(done) {
+      /* eslint-disable no-invalid-this */
+      this.timeout(20000);
+      /* eslint-enable no-invalid-this */
+      Promise.each(affected_accounts, function(acct) {
+        return resetAccount(acct);
+      }).then(function() {
+        affected_accounts = ACCTS.slice();
+        done();
+      });
+    });
+
     it('it should update an account with all new fields', function(done) {
-      var body = {
+      var updates = {
         first_name: UPDATED_FIRST,
         last_name: UPDATED_LAST,
         email: UPDATED_EMAIL,
         acct_type: UPDATED_ACCT_TYPE
       };
 
-      var acct5_upd = Object.assign({}, ACCT_5);
-      acct5_upd.first_name = UPDATED_FIRST;
-      acct5_upd.last_name = UPDATED_LAST;
-      acct5_upd.email = UPDATED_EMAIL;
-      acct5_upd.acct_type = UPDATED_ACCT_TYPE;
+      affected_accounts = [ACCT_5];
 
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_5.acct_id
-        },
-        body: body,
-        auth: {
-          auth0_id: ADMIN_AUTH0_ID
-        }
-      }).then(function(data) {
-        // check that updated account is returned
-        assert.deepEqual(data, [acct5_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, body);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [ACCT_1, ACCT_2, ACCT_3, ACCT_4, acct5_upd, ACCT_6, ACCT_7, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_5).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
+      updateAccountTester(ACCT_5, updates, ADMIN_AUTH0_ID, done);
     });
 
     it('it should update an account with a new first name', function(done) {
-      var acct7_upd = Object.assign({}, ACCT_7);
-      acct7_upd.first_name = UPDATED_FIRST;
+      var updates = {
+        first_name: UPDATED_FIRST
+      };
 
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_7.acct_id
-        },
-        body: {
-          first_name: UPDATED_FIRST,
-        },
-        auth: {
-          auth0_id: ADMIN_AUTH0_ID
-        }
-      }).then(function(data) {
-        // check that updated account is returned
-        assert.deepEqual(data, [acct7_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, acct7_upd);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [ACCT_1, ACCT_2, ACCT_3, ACCT_4, ACCT_5, ACCT_6, acct7_upd, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_7).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
+      affected_accounts = [ACCT_7];
+
+      updateAccountTester(ACCT_7, updates, ADMIN_AUTH0_ID, done);
     });
 
     it('it should update an account with a new last name', function(done) {
-      var acct7_upd = Object.assign({}, ACCT_7);
-      acct7_upd.last_name = UPDATED_LAST;
+      var updates = {
+        last_name: UPDATED_LAST
+      };
 
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_7.acct_id
-        },
-        body: {
-          last_name: UPDATED_LAST,
-        },
-        auth: {
-          auth0_id: ADMIN_AUTH0_ID
-        }
-      }).then(function(data) {
-        // check that updated account is returned
-        assert.deepEqual(data, [acct7_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, acct7_upd);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [ACCT_1, ACCT_2, ACCT_3, ACCT_4, ACCT_5, ACCT_6, acct7_upd, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_7).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
+      affected_accounts = [ACCT_7];
+
+      updateAccountTester(ACCT_7, updates, ADMIN_AUTH0_ID, done);
     });
 
     it('it should update an account with a new email', function(done) {
-      var acct7_upd = Object.assign({}, ACCT_7);
-      acct7_upd.email = UPDATED_EMAIL;
+      var updates = {
+        email: UPDATED_EMAIL
+      };
 
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_7.acct_id
-        },
-        body: {
-          email: UPDATED_EMAIL,
-        },
-        auth: {
-          auth0_id: ADMIN_AUTH0_ID
-        }
-      }).then(function(data) {
-        // check that updated account is returned
-        assert.deepEqual(data, [acct7_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, acct7_upd);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [ACCT_1, ACCT_2, ACCT_3, ACCT_4, ACCT_5, ACCT_6, acct7_upd, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_7).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
+      affected_accounts = [ACCT_7];
+
+      updateAccountTester(ACCT_7, updates, ADMIN_AUTH0_ID, done);
     });
 
     it('it should update an account with a new auth level', function(done) {
-      var acct7_upd = Object.assign({}, ACCT_7);
-      acct7_upd.acct_type = UPDATED_ACCT_TYPE;
+      var updates = {
+        acct_type: UPDATED_ACCT_TYPE
+      };
 
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_7.acct_id
-        },
-        body: {
-          acct_type: UPDATED_ACCT_TYPE,
-        },
-        auth: {
-          auth0_id: ADMIN_AUTH0_ID
-        }
-      }).then(function(data) {
-        // check that updated account is returned
-        assert.deepEqual(data, [acct7_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, acct7_upd);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [ACCT_1, ACCT_2, ACCT_3, ACCT_4, ACCT_5, ACCT_6, acct7_upd, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_7).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
+      affected_accounts = [ACCT_7];
+
+      updateAccountTester(ACCT_7, updates, ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 501 error because body is missing', function(done) {
@@ -991,226 +822,158 @@ describe('Accounts', function() {
     });
 
     it('it should allow volunteers to update their own email and name', function(done) {
-      var acct3_upd = Object.assign({}, ACCT_3);
-      acct3_upd.first_name = UPDATED_FIRST;
-      acct3_upd.last_name = UPDATED_LAST;
-      acct3_upd.email = UPDATED_EMAIL;
-
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_3.acct_id
-        },
-        body: {
-          first_name: UPDATED_FIRST,
-          last_name: UPDATED_LAST,
-          email: UPDATED_EMAIL
-        },
-        auth: {
-          auth0_id: VOLUNTEER_AUTH0_ID
-        }
-      }).then(function(data) {
-        // confirm the returned data matches updated object
-        assert.deepEqual(data, [acct3_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, acct3_upd);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [ACCT_1, ACCT_2, acct3_upd, ACCT_4, ACCT_5, ACCT_6, ACCT_7, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_3).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
-    });
-
-    it('it should allow coaches to update their own email and name', function(done) {
-      var acct1_upd = Object.assign({}, ACCT_1);
-      acct1_upd.first_name = UPDATED_FIRST;
-      acct1_upd.last_name = UPDATED_LAST;
-      acct1_upd.email = UPDATED_EMAIL;
-
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_1.acct_id
-        },
-        body: {
-          first_name: UPDATED_FIRST,
-          last_name: UPDATED_LAST,
-          email: UPDATED_EMAIL
-        },
-        auth: {
-          auth0_id: COACH_AUTH0_ID
-        }
-      }).then(function(data) {
-        // confirm the returned data matches updated object
-        assert.deepEqual(data, [acct1_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, acct1_upd);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [acct1_upd, ACCT_2, ACCT_3, ACCT_4, ACCT_5, ACCT_6, ACCT_7, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_1).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
-    });
-
-    it('it should allow staff to update their own email and name', function(done) {
-      var body = {
+      var updates = {
         first_name: UPDATED_FIRST,
         last_name: UPDATED_LAST,
         email: UPDATED_EMAIL
       };
-      var acct5_upd = Object.assign(ACCT_5, body);
 
-      accounts.updateAccount({
-        params: {
-          acct_id: ACCT_5.acct_id
-        },
-        body: body,
-        auth: {
-          auth0_id: STAFF_AUTH0_ID
-        }
-      }).then(function(data) {
-        // confirm the returned data matches updated object
-        assert.deepEqual(data, [acct5_upd]);
-        auth0.getAuth0Id(data[0].acct_id).then(function(auth0Id) {
-          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
-            // check that the auth0 account got updated
-            assertEqualAuth0DB(auth0Acct, acct5_upd);
-            getAllAccounts().then(function(accounts) {
-              // check that only the target account was updated in the db
-              assert.deepEqual(accounts,
-                [ACCT_1, ACCT_2, ACCT_3, ACCT_4, acct5_upd, ACCT_6, ACCT_7, ACCT_8, ACCT_9]);
-              // reset the auth0 and db accounts
-              resetAccount(auth0Id, ACCT_5).then(function(data) {
-                done();
-              });
-            });
-          });
-        });
-      });
+      affected_accounts = [ACCT_3];
+
+      updateAccountTester(ACCT_3, updates, VOLUNTEER_AUTH0_ID, done);
+    });
+
+    it('it should allow coaches to update their own email and name', function(done) {
+      var updates = {
+        first_name: UPDATED_FIRST,
+        last_name: UPDATED_LAST,
+        email: UPDATED_EMAIL
+      };
+
+      affected_accounts = [ACCT_1];
+
+      updateAccountTester(ACCT_1, updates, COACH_AUTH0_ID, done);
+    });
+
+    it('it should allow staff to update their own email and name', function(done) {
+      var updates = {
+        first_name: UPDATED_FIRST,
+        last_name: UPDATED_LAST,
+        email: UPDATED_EMAIL
+      };
+
+      affected_accounts = [ACCT_5];
+
+      updateAccountTester(ACCT_5, updates, COACH_AUTH0_ID, done);
     });
   });
 
   describe('createAccount(req)', function() {
-    before(function(done) {
-      auth0.getAuth0UserByEmail(dummyAccount.email).then(function(user) {
-        // clear existing user so we don't get a duplicate email error on creation
-        auth0.deleteAuth0User(user.user_id).then(function() {
-          done();
+    function deleteDummyAccount() {
+      return auth0.getAuth0UserByEmail(dummyAccount.email).then(function(user) {
+        return auth0.deleteAuth0User(user.user_id).then(function() {
+          return query('DELETE FROM Acct WHERE email = ?', dummyAccount.email);
         });
       }).catch(function(err) {
-        // no user to delete, tests are good to go
+        return Promise.resolve();
+      });
+    }
+
+    // TODO: this is gross but we call it twice because auth0 can take some time to update =/
+    beforeEach(function(done) {
+      deleteDummyAccount().then(function() {
+        done();
+      });
+    });
+
+    afterEach(function(done) {
+      deleteDummyAccount().then(function() {
         done();
       });
     });
 
     it('it should add an Admin account when requested by an existing admin', function(done) {
       var acct = Object.assign({}, dummyAccount);
-      createAccountTester(acct, accType.admin, done);
+      createAccountTester(acct, ADMIN_AUTH0_ID, done);
     });
 
     it('it should add a Staff account when requested by an existing admin', function(done) {
       var acct = Object.assign({}, dummyAccount);
       acct.acct_type = STAFF;
-      createAccountTester(acct, accType.admin, done);
+      createAccountTester(acct, ADMIN_AUTH0_ID, done);
     });
 
     it('it should add a volunteer account when requested by an existing admin', function(done) {
       var acct = Object.assign({}, dummyAccount);
       acct.acct_type = VOLUNTEER;
-      createAccountTester(acct, accType.admin, done);
+      createAccountTester(acct, ADMIN_AUTH0_ID, done);
     });
 
     it('it should add a coach account when requested by an existing admin', function(done) {
       var acct = Object.assign({}, dummyAccount);
       acct.acct_type = COACH;
-      createAccountTester(acct, accType.admin, done);
+      createAccountTester(acct, ADMIN_AUTH0_ID, done);
     });
 
     xit('it should return a 403 error because staff cannot create admin accounts', function(done) {
       var acct = Object.assign({}, dummyAccount);
-      createPermissionErrorTester(acct, accType.staff, done);
+      createPermissionErrorTester(acct, STAFF_AUTH0_ID, done);
     });
 
     xit('it should return a 403 error because Volunteers cannot create admin accounts', function(done) {
       var acct = Object.assign({}, dummyAccount);
-      createPermissionErrorTester(acct, accType.volunteer, done);
+      createPermissionErrorTester(acct, VOLUNTEER_AUTH0_ID, done);
     });
 
     xit('it should return a 403 error because Coaches cannot create staff accounts', function(done) {
       var acct = Object.assign({}, dummyAccount);
       acct.acct_type = STAFF;
-      createPermissionErrorTester(acct, accType.coach, done);
+      createPermissionErrorTester(acct, COACH_AUTH0_ID, done);
     });
 
     xit('it should return a 403 error because coaches cannot create admin accounts', function(done) {
       var acct = Object.assign({}, dummyAccount);
-      createPermissionErrorTester(acct, accType.coach, done);
+      createPermissionErrorTester(acct, COACH_AUTH0_ID, done);
     });
 
     xit('it should return a 403 error because volunteers cannot create staff accounts', function(done) {
       var acct = Object.assign({}, dummyAccount);
       acct.acct_type = STAFF;
-      createPermissionErrorTester(acct, accType.volunteer, done);
+      createPermissionErrorTester(acct, VOLUNTEER_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because a first_name is missing', function(done) {
-      createMissingFieldErrorTester('first_name', accType.admin, done);
+      createMissingFieldErrorTester('first_name', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because a last_name is missing', function(done) {
-      createMissingFieldErrorTester('last_name', accType.admin, done);
+      createMissingFieldErrorTester('last_name', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because email is missing', function(done) {
-      createMissingFieldErrorTester('email', accType.admin, done);
+      createMissingFieldErrorTester('email', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because acct_type is missing', function(done) {
-      createMissingFieldErrorTester('acct_type', accType.admin, done);
+      createMissingFieldErrorTester('acct_type', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because password is missing', function(done) {
-      createMissingFieldErrorTester('password', accType.admin, done);
+      createMissingFieldErrorTester('password', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because first_name is empty', function(done) {
-      createEmptyFieldErrorTester('first_name', accType.admin, done);
+      createEmptyFieldErrorTester('first_name', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because last_name is empty', function(done) {
-      createEmptyFieldErrorTester('last_name', accType.admin, done);
+      createEmptyFieldErrorTester('last_name', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because acct_type is empty', function(done) {
-      createEmptyFieldErrorTester('acct_type', accType.admin, done);
+      createEmptyFieldErrorTester('acct_type', ADMIN_AUTH0_ID, done);
     });
 
     it('it should return a 400 error because acct_type is invalid', function(done) {
       var acct = Object.assign({}, dummyAccount);
       acct.acct_type = 'Invalid';
-      createAccountErrorTester(acct, accType.admin, 'Bad Request', 400, 'Account type must be one of: Admin, Coach, Staff, Volunteer', done);
+      createAccountErrorTester(acct, ADMIN_AUTH0_ID, 'Bad Request', 400, 'Account type must be one of: Admin, Coach, Staff, Volunteer', done);
     });
 
     it('it should return a 400 error because the password does not meet requirements', function(done) {
       var acct = Object.assign({}, dummyAccount);
       acct.password = 'weak';
-      createAccountErrorTester(acct, accType.admin, 'Bad Request', 400, 'Password is too weak', done);
+      createAccountErrorTester(acct, ADMIN_AUTH0_ID, 'Bad Request', 400, 'Password is too weak', done);
     });
   });
 
