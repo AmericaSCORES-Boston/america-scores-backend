@@ -15,8 +15,8 @@ const STAFF = require('../lib/constants').STAFF;
 const VOLUNTEER = require('../lib/constants').VOLUNTEER;
 const ADMIN = require('../lib/constants').ADMIN;
 
-const getAccountType = utils.getAccountType;
-const getReqAuth0Id = utils.getReqAuth0Id;
+// const getAccountType = utils.getAccountType;
+// const getReqAuth0Id = utils.getReqAuth0Id;
 const ACCOUNT_TYPES = [COACH, STAFF, VOLUNTEER, ADMIN];
 
 const SELECT_ACCT = 'SELECT a.acct_id, a.first_name, a.last_name, a.email, a.acct_type, a.auth0_id ';
