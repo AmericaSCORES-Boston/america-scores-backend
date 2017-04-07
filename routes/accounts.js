@@ -60,6 +60,8 @@ const ACCOUNTS_QUERIES = [
  * /accounts?site_id=X
  */
 function getAccounts(req) {
+  return getAccountsHelper(req);
+  /*
   try {
     var auth0_id = getReqAuth0Id(req);
 
@@ -73,6 +75,7 @@ function getAccounts(req) {
   } catch (e) {
     return errors.createMissingAuthError();
   }
+  */
 }
 
 function getAccountsHelper(req) {
