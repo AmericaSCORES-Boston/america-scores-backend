@@ -8,12 +8,11 @@ const utils = require('../../lib/utils');
 // The file to be tested
 var reports = require('../../routes/reports');
 
-beforeEach(function() {
-    return utils.reportSeed();
-  });
-
 // Reports testing block
 describe('Reports', function() {
+  beforeEach(function() {
+    return utils.reportSeed();
+  });
   describe('getReports()', function() {
     xit('should successfully generate a CSV report of all students and their stats', function(done) {
       // NOTE: the third column is intentionally left empty, as per request from Alicia
@@ -21,9 +20,9 @@ describe('Reports', function() {
         report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
-        'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, 50, 08/19/2016, 45, 18, 421\n' +
-        'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
-        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 05/19/2016, 7, 7, 7\n'
+        'Annabeth Chase, LMElementaryBoys, , 05/19/2016, 55, 56, 57, 12/02/2016, 40, 12, 500\n' +
+        'Brian Smith, YawkeyGirls, , 05/18/2016, 44, 16, 50, 05/19/2016, 45, 18, 421\n' +
+        'Percy Jackson, LMElementaryBoys, , 05/19/2016, 7, 7, null, 05/19/2016, 7, 7, 7\n'
       };
       var promise = reports.getReports({});
 
@@ -35,18 +34,18 @@ describe('Reports', function() {
   });
 
   describe('getReportByProgram(req)', function() {
-    xit('should successfully generate a CSV report of students and their stats', function(done) {
+    it('should successfully generate a CSV report of students and their stats', function(done) {
         // NOTE: the third column is intentionally left empty, as per request from Alicia
       var expectedCSV = {
         report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
-        'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, 500, 08/19/2016, 45, 18, 421\n'
+        'Brian Smith, YawkeyGirls, , 05/18/2016, 44, 16, 50, 05/19/2016, 45, 18, 421\n'
       };
 
       var req = {
         params: {
-          program_id: 1
+          program_id: 2
         }
       };
 
@@ -58,18 +57,18 @@ describe('Reports', function() {
       });
     });
 
-    xit('should successfully generate a CSV report of students and their stats 2', function(done) {
+    it('should successfully generate a CSV report of students and their stats 2', function(done) {
       var expectedCSV = {
         report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
         'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
         'POST-Weight (lbs), POST-PACER Score\n' +
-        'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
-        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 05/19/2016, 7, 7, 7\n'
+        'Annabeth Chase, LMElementaryBoys, , 05/19/2016, 55, 56, 57, 12/02/2016, 40, 12, 500\n' +
+        'Percy Jackson, LMElementaryBoys, , 05/19/2016, 5, 5, 5, 12/02/2016, 7, 7, 7\n'
       };
 
       var req = {
         params: {
-          program_id: 2
+          program_id: 1
         }
       };
 
@@ -97,7 +96,7 @@ describe('Reports', function() {
       });
     });
 
-    xit('should return empty if given program_id is not in the database', function(done) {
+    it('should return empty if given program_id is not in the database', function(done) {
       var req = {
         params: {
           program_id: 3921893
