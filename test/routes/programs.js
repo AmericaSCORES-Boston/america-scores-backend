@@ -1,5 +1,5 @@
 const programs = require('../../routes/programs');
-const seed = require('../../lib/utils').seed;
+const seed = require('../../lib/seed').dbSeed;
 const chai = require('chai');
 const assert = chai.assert;
 

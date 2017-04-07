@@ -41,6 +41,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.1.2",
     "sinon": "^1.17.6",
+    "string-format": "^0.5.0",
     "supertest": "^2.0.1"
   }
 }

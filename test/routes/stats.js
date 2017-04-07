@@ -3,7 +3,7 @@ var chai = require('chai');
 var assert = chai.assert;
 
 // Require seed to reset database before each test
-const seed = require('../../lib/utils').seed;
+const seed = require('../../lib/seed').dbSeed;
 
 // The file to be tested
 const stats = require('../../routes/stats');
