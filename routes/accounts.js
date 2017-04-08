@@ -10,10 +10,10 @@ const makeQueryArgs = utils.makeQueryArgs;
 const Requirement = utils.Requirement;
 const PotentialQuery = utils.PotentialQuery;
 
-const COACH = require('../lib/constants').COACH;
-const STAFF = require('../lib/constants').STAFF;
-const VOLUNTEER = require('../lib/constants').VOLUNTEER;
-const ADMIN = require('../lib/constants').ADMIN;
+const COACH = require('../lib/constants/utils').COACH;
+const STAFF = require('../lib/constants/utils').STAFF;
+const VOLUNTEER = require('../lib/constants/utils').VOLUNTEER;
+const ADMIN = require('../lib/constants/utils').ADMIN;
 
 // const getAccountType = utils.getAccountType;
 // const getReqAuth0Id = utils.getReqAuth0Id;
