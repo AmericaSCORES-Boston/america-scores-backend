@@ -285,4 +285,10 @@ describe('utils', function() {
         assert.deepEqual(utils.makeQueryArgs(obj, []), []);
     });
   });
+
+  describe('getSqlDateString(date)', function() {
+    it('makes a SQL date string from the given date', function() {
+      assert.equal(utils.getSqlDateString(new Date(2017, 4, 8)), '2017-05-08');
+    });
+  });
 });

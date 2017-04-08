@@ -60,13 +60,23 @@ CREATE TABLE AcctToProgram
     FOREIGN KEY (program_id) REFERENCES Program(program_id)
 );
 
+CREATE TABLE Season
+(
+    season_id int NOT NULL AUTO_INCREMENT,
+    season ENUM('Fall', 'Spring'),
+    year YEAR,
+    PRIMARY KEY (season_id)
+);
+
 CREATE TABLE Event
 (
     event_id int NOT NULL AUTO_INCREMENT,
     program_id int,
+    season_id int,
     event_date date,
     PRIMARY KEY (event_id),
-    FOREIGN KEY (program_id) REFERENCES Program(program_id)
+    FOREIGN KEY (program_id) REFERENCES Program(program_id),
+    FOREIGN KEY (season_id) REFERENCES Season(season_id)
 );
 
 CREATE TABLE Measurement
@@ -80,23 +90,4 @@ CREATE TABLE Measurement
     PRIMARY KEY (measurement_id),
     FOREIGN KEY (student_id) REFERENCES Student(student_id),
     FOREIGN KEY (event_id) REFERENCES Event(event_id)
-);
-
-CREATE TABLE Season
-(
-    season_id int NOT NULL AUTO_INCREMENT,
-    season ENUM('Fall', 'Spring'),
-    year YEAR,
-    PRIMARY KEY (season_id)
-);
-
-
-CREATE TABLE EventToSeason
-(
-    id int NOT NULL AUTO_INCREMENT,
-    event_id int NOT NULL,
-    season_id int NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (event_id) REFERENCES Event(event_id),
-    FOREIGN KEY (season_id) REFERENCES Season(season_id)
 );

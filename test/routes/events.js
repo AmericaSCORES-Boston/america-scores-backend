@@ -1,282 +1,152 @@
-const events = require('../../routes/events');
-const seed = require('../../lib/seed').dbSeed;
 const chai = require('chai');
 const assert = chai.assert;
 
-const event1 = {event_id: 1, program_id: 1, event_date: new Date(2016, 4, 19)};
-const event2 = {event_id: 2, program_id: 2, event_date: new Date(2016, 4, 18)};
-const event3 = {event_id: 3, program_id: 1, event_date: new Date(2016, 4, 19)};
-const event4 = {event_id: 4, program_id: 1, event_date: new Date(2016, 11, 02)};
-const event5 = {event_id: 5, program_id: 3, event_date: new Date(2016, 4, 19)};
-const event6 = {event_id: 6, program_id: 4, event_date: new Date(2016, 4, 19)};
-const allEvents = [event1, event2, event3, event4, event5, event6];
-const eventsDeleted = [event2, event3, event4, event5, event6];
-const newEvent = {event_id: 7, program_id: 1, event_date: new Date(2016, 4, 20)};
-const eventsNew = [event1, event2, event3, event4, event5, event6, newEvent];
+const events = require('../../routes/events');
+const seed = require('../../lib/seed').dbSeed;
+const constants = require('../../lib/constants/seed');
+const getSqlDateString = require('../../lib/utils').getSqlDateString;
+const assertEqualError = require('../../lib/test_utils').assertEqualError;
+const Event = require('../../lib/models/event').Event;
 
-describe('GET', function(done) {
-  it('/events', function(done) {
-    var req = {
-      params: {
-      },
-    };
-    var promise = events.getEvents(req);
-    promise.then(function(data) {
-      assert.deepEqual(allEvents, data);
-      done();
-    });
-  });
-  it('/events/:event_id', function(done) {
-    var req = {
-      params: {
-        event_id: 1
-      },
-    };
-    var promise = events.getEvent(req);
-    promise.then(function(data) {
-      assert.deepEqual([event1], data);
-      done();
-    });
-  });
-  it('/events/:event_id (nonexistent event_id)', function(done) {
-    var req = {
-      params: {
-        event_id: -1
-      },
-    };
-    var promise = events.getEvent(req);
-    promise.then(function(data) {
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-  it('/events/:event_id (invalid event_id)', function(done) {
-    var req = {
-      params: {
-        event_id: 'id'
-      },
-    };
-    var promise = events.getEvent(req);
-    promise.then(function(data) {
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-  it('/students/:student_id/events', function(done) {
-    var req = {
-      params: {
-        student_id: 1
-      },
-    };
-    var promise = events.getEventsByStudent(req);
-    promise.then(function(data) {
-      assert.deepEqual([event1, event2], data);
-      done();
-    });
-  });
-  it('/students/:student_id/events (nonexistent student_id)', function(done) {
-    var req = {
-      params: {
-        student_id: -1
-      },
-    };
-    var promise = events.getEventsByStudent(req);
-    promise.then(function(data) {
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-  it('/students/:student_id/events (invalid student_id)', function(done) {
-    var req = {
-      params: {
-        student_id: 'id'
-      },
-    };
-    var promise = events.getEventsByStudent(req);
-    promise.then(function(data) {
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-  it('/programs/:program_id/events', function(done) {
-    var req = {
-      params: {
-        program_id: 1
-      },
-    };
-    var promise = events.getEventsByProgram(req);
-    promise.then(function(data) {
-      assert.deepEqual([event1, event3, event4], data);
-      done();
-    });
-  });
-  it('/programs/:program_id/events (nonexistent student_id)', function(done) {
-    var req = {
-      params: {
-        program_id: -1
-      },
-    };
-    var promise = events.getEventsByProgram(req);
-    promise.then(function(data) {
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-  it('/programs/:program_id/events (invalid student_id)', function(done) {
-    var req = {
-      params: {
-        program_id: 'id'
-      },
-    };
-    var promise = events.getEventsByProgram(req);
-    promise.then(function(data) {
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-});
+const EVENTS = constants.EVENTS;
+const EVENT_1 = constants.EVENT_1;
+const EVENT_2 = constants.EVENT_2;
+const EVENT_3 = constants.EVENT_3;
+const EVENT_4 = constants.EVENT_4;
 
-describe('POST', function() {
+const NEW_EVENT = new Event(1, 1, new Date(2016, 5, 20), 7);
+
+
+function getEventsTester(func, params, assertion, expected, done) {
+  func({
+    params: params
+  }).then(function(data) {
+    assertion(data, expected);
+    done();
+  });
+}
+
+describe('Events', function() {
   before(function(done) {
     seed().then(function() {
       done();
     });
   });
-  afterEach(function(done) {
-    seed().then(function() {
-      done();
+
+  describe('getEvents(req)', function() {
+    it('gets all events', function(done) {
+      getEventsTester(events.getEvents, {}, assert.deepEqual, EVENTS, done);
     });
   });
-  it('/accounts/:acct_id/programs/:program_id/events', function(done) {
-    var req = {
-      params: {
-        program_id: 1
-      },
-      body: {
-        event_date: '2016-05-20'
-      }
-    };
-    var promise = events.createEvent(req);
-    promise.then(function(data) {
-      events.getEvents().then(function(data) {
-        assert.deepEqual(eventsNew, data);
+
+  describe('getEvent(req)', function() {
+    it('gets a single event by id', function(done) {
+      getEventsTester(events.getEvent, {event_id: 1}, assert.deepEqual, [EVENT_1], done);
+    });
+
+    it('returns nothing when the event id DNE', function(done) {
+      getEventsTester(events.getEvent, {event_id: -1}, assert.lengthOf, 0, done);
+    });
+  });
+
+  describe('getEventsByStudent(req)', function() {
+    it('gets the events related to a student', function(done) {
+      getEventsTester(events.getEventsByStudent, {student_id: 1}, assert.deepEqual, [EVENT_1, EVENT_2], done);
+    });
+
+    it('returns no events when the student id does not exist', function(done) {
+      getEventsTester(events.getEventsByStudent, {student_id: -1}, assert.lengthOf, 0, done);
+    });
+  });
+
+  describe('getEventsByProgram(req)', function() {
+    it('gets all events related to a program', function(done) {
+      getEventsTester(events.getEventsByProgram, {program_id: 1}, assert.deepEqual, [EVENT_1, EVENT_3, EVENT_4], done);
+    });
+
+    it('returns no events when the program id does not exist', function(done) {
+      getEventsTester(events.getEventsByProgram, {program_id: -1}, assert.lengthOf, 0, done);
+    });
+  });
+
+  describe('createEvent', function() {
+    afterEach(function(done) {
+      seed().then(function() {
+        done();
       });
-      assert.deepEqual([newEvent], data);
-      done();
     });
-  });
-  it('/programs/:program_id/events (program DNE)', function(done) {
-    var req = {
-      params: {
-        program_id: 8
-      },
-      body: {
-        event_date: '2016-05-20'
-      }
-    };
-    events.createEvent(req).then(function(data) {
-      events.getEvents().then(function(data) {
-        assert.deepEqual(allEvents, data);
+
+    function createEvent(programId, body) {
+      return events.createEvent({
+        params: {
+          program_id: programId
+        },
+        body: body
       });
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-  it('/accounts/:acct_id/programs/:program_id/events (invalid id)', function(done) {
-    var req = {
-      params: {
-        program_id: -3
-      },
-      body: {
-        event_date: '2016-05-20'
-      }
-    };
-    events.createEvent(req).then(function(data) {
-      events.getEvents().then(function(data) {
-        assert.deepEqual(allEvents, data);
+    }
+
+    function createEventTester(programId, eventDate, assertion, expectedCreated, expectedAll, done) {
+      createEvent(programId, {event_date: eventDate}).then(function(data) {
+        assertion(data, expectedCreated);
+        events.getEvents().then(function(data) {
+          assert.deepEqual(data, expectedAll);
+          done();
+        });
       });
-      assert.deepEqual([], data);
-      done();
+    }
+
+    function createEventErrorTester(body, errName, errStatus, errMsg, done) {
+      createEvent(1, body).catch(function(err) {
+        assertEqualError(err, errName, errStatus, errMsg);
+        done();
+      });
+    }
+
+    // TODO: fix after season logic is implemented
+    xit('creates a new event for the given program', function(done) {
+      createEventTester(1, getSqlDateString(NEW_EVENT.event_date), assert.deepEqual, NEW_EVENT, EVENTS.concat([NEW_EVENT]), done);
+    });
+
+    it('does not create an event when the program id DNE', function(done) {
+      createEventTester(-1, getSqlDateString(NEW_EVENT.event_date), assert.lengthOf, 0, EVENTS, done);
+    });
+
+    it('returns a 400 error if the date is malformed', function(done) {
+      createEventErrorTester({event_date: '2015/12/12'}, 'Malformed Date Error', 400, 'Malformed date YYYY-MM-DD', done);
+    });
+
+    it('returns a 400 error if the date is missing', function(done) {
+      createEventErrorTester({}, 'Missing Date Error', 400, 'Missing event_date', done);
     });
   });
-  it('/accounts/:acct_id/programs/:program_id/events (Malformed date)', function(done) {
-    var req = {
-      params: {
-        program_id: 1
-      },
-      body: {
-        event_date: '2016-5-20'
-      }
-    };
-    events.createEvent(req)
-    .catch(function(err) {
-      assert.equal(err.status, 400);
-      assert.equal(err.message, 'Malformed date YYYY-MM-DD');
-      done();
+
+  describe('deleteEvent(req)', function() {
+    afterEach(function(done) {
+      seed().then(function() {
+        done();
+      });
     });
-  });
-  it('/accounts/:acct_id/programs/:program_id/events (No date)', function(done) {
-    var req = {
-      params: {
-        program_id: 1
-      },
-      body: {
-      }
-    };
-    events.createEvent(req)
-    .catch(function(err) {
-      assert.equal(err.status, 400);
-      assert.equal(err.message, 'Missing event_date');
-      done();
+
+    function deleteEventTester(eventId, assertion, expected, expectedAll, done) {
+      events.deleteEvent({
+        params: {
+          event_id: eventId
+        }
+      }).then(function(data) {
+        assertion(data, expected);
+        events.getEvents().then(function(data) {
+          assert.deepEqual(data, expectedAll);
+          done();
+        });
+      });
+    }
+
+    it('deletes an event by id', function(done) {
+      deleteEventTester(1, assert.deepEqual, [EVENT_1], EVENTS.slice(1), done);
     });
-  });
-});
-describe('DELETE', function() {
-  before(function(done) {
-    seed().then(function() {
-      done();
-    });
-  });
-  afterEach(function(done) {
-    seed().then(function() {
-      done();
-    });
-  });
-  it('/events/:events_id', function(done) {
-    var req = {
-      params: {
-        event_id: 1,
-      },
-    };
-    events.deleteEvent(req).then(function(data) {
-      assert.deepEqual([event1], data);
-      return events.getEvents();
-    })
-    .then(function(data) {
-      assert.deepEqual(eventsDeleted, data);
-      done();
-    });
-  });
-  it('/events/:events_id (nonexistent event_id)', function(done) {
-    var req = {
-      params: {
-        event_id: -1,
-      },
-    };
-    events.deleteEvent(req).then(function(data) {
-      assert.deepEqual([], data);
-      done();
-    });
-  });
-  it('/events/:events_id (invalid event_id)', function(done) {
-    var req = {
-      params: {
-        event_id: 'id',
-      },
-    };
-    events.deleteEvent(req).then(function(data) {
-      assert.deepEqual([], data);
-      done();
+
+    it('does nothing when given an invalid event id', function(done) {
+      deleteEventTester(-1, assert.lengthOf, 0, EVENTS, done);
     });
   });
 });
