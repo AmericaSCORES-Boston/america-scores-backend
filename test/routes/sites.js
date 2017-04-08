@@ -4,7 +4,7 @@ const chai = require('chai');
 const assert = chai.assert;
 const sites = require('../../routes/sites');
 const seed = require('../../lib/seed').dbSeed;
-const SC = require('../../lib/seed_constants');
+const SC = require('../../lib/constants/seed');
 
 const SITE_1 = SC.SITE_1;
 const SITE_2 = SC.SITE_2;

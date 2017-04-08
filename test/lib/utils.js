@@ -5,8 +5,8 @@ const chai = require('chai');
 const sinon = require('sinon');
 const assert = chai.assert;
 const utils = require('../../lib/utils');
-const ADMIN = require('../../lib/constants').ADMIN;
-const ADMIN_AUTH0_ID = require('../../lib/seed_constants').ADMIN_AUTH0_ID;
+const ADMIN = require('../../lib/constants/utils').ADMIN;
+const ADMIN_AUTH0_ID = require('../../lib/constants/auth0').ADMIN_AUTH0_ID;
 
 const res = {
   send: function(data) {},
