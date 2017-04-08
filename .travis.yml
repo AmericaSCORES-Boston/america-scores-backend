@@ -11,7 +11,7 @@ script:
   - ./scripts/travis-config.sh
   - npm run eslint -- --failTaskOnError
   - npm run seed
-  - npm run cover -- --failTaskOnError
+  - npm run build-test -- --failTaskOnError
 
 services:
   - mysql

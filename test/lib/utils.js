@@ -49,8 +49,7 @@ describe('utils', function() {
     });
   });
   describe('isValidDate(date)', function() {
-    it.only('returns true because the date is valid', function() {
-      assert.isTrue(false);
+    it('returns true because the date is valid', function() {
       assert.isTrue(utils.isValidDate('2017-01-01'));
     });
 
