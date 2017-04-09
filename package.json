@@ -4,9 +4,11 @@
   "description": "The backend for the America SCORES data collection app.",
   "main": "index.js",
   "scripts": {
+    "build-test": "gulp seed && npm run coverage",
     "test": "gulp seed && gulp test",
     "eslint": "gulp eslint",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec && open coverage/lcov-report/index.html",
+    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "seed": "gulp seed",
     "start": "pm2 start app.js -n amscores_backend",
     "debug": "pm2 start app.js -n amscores_backend_debug --node-args=\"--debug=7000\"",
