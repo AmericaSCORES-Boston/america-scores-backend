@@ -5,6 +5,7 @@ const isValidDate = utils.isValidDate;
 const errors = require('../lib/errors');
 const createMissingDateError = errors.createMissingDateError;
 const createMalformedDateError = errors.createMalformedDateError;
+const q = require('../lib/constants/queries');
 
 // TODO: THESE SHOULD 404 WHEN GIVEN INVALID IDS
 
@@ -32,21 +33,24 @@ function getEventsByProgram(req) {
 function createEvent(req) {
   var program_id = req.params.program_id;
   var event_date = req.body.event_date;
+
   if(!defined(event_date)) {
     return createMissingDateError();
   }
+
   if(!isValidDate(event_date)) {
     return createMalformedDateError();
   }
-  return query('SELECT * FROM Program WHERE program_id = ?', [program_id])
-  .then(function(data) {
-    if (data.length == 1 && data[0].program_id == program_id) {
-      return query('INSERT INTO Event (program_id, event_date) VALUES (?, DATE(?))', [program_id, event_date])
-      .then(function(data) {
-        return query('SELECT * FROM Event WHERE event_id = ?', [data.insertId]);
-      });
-    }
-    return Promise.resolve([]);
+
+  return utils.getSeasonId(event_date).then(function(season_id) {
+    return query('SELECT * FROM Program WHERE program_id = ?', [program_id]).then(function(data) {
+      if (data.length == 1 && data[0].program_id == program_id) {
+        return query(q.INSERT_EVENT, [program_id, season_id, event_date]).then(function(data) {
+          return query('SELECT * FROM Event WHERE event_id = ?', [data.insertId]);
+        });
+      }
+      return Promise.resolve([]);
+    });
   });
 }
 
