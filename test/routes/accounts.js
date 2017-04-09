@@ -7,21 +7,22 @@ const Promise = require('bluebird');
 const accounts = require('../../routes/accounts');
 const utils = require('../../lib/utils');
 
-const accType = require('../../lib/constants');
-const ADMIN = accType.ADMIN;
-const STAFF = accType.STAFF;
-const COACH = accType.COACH;
-const VOLUNTEER = accType.VOLUNTEER;
+const constants = require('../../lib/constants/utils');
+const ADMIN = constants.ADMIN;
+const STAFF = constants.STAFF;
+const COACH = constants.COACH;
+const VOLUNTEER = constants.VOLUNTEER;
 
-const SC = require('../../lib/seed_constants');
-const ADMIN_AUTH0_ID = SC.ADMIN_AUTH0_ID;
-const STAFF_AUTH0_ID = SC.STAFF_AUTH0_ID;
-const COACH_AUTH0_ID = SC.COACH_AUTH0_ID;
-const VOLUNTEER_AUTH0_ID = SC.VOLUNTEER_AUTH0_ID;
+const A0_CONST = require('../../lib/constants/auth0');
+const ADMIN_AUTH0_ID = A0_CONST.ADMIN_AUTH0_ID;
+const STAFF_AUTH0_ID = A0_CONST.STAFF_AUTH0_ID;
+const COACH_AUTH0_ID = A0_CONST.COACH_AUTH0_ID;
+const VOLUNTEER_AUTH0_ID = A0_CONST.VOLUNTEER_AUTH0_ID;
 
 const query = utils.query;
 
 const auth0 = require('../../lib/auth0_utils');
+const SC = require('../../lib/constants/seed');
 const ACCTS = SC.ACCTS;
 const ACCT_1 = SC.ACCT_1;
 const ACCT_2 = SC.ACCT_2;
@@ -752,7 +753,7 @@ describe('Accounts', function() {
     xit('it should return a 403 error because staff cannot update their own type', function(done) {
       accounts.updateAccount({
         params: {
-          acct_id: ACCT_5.acct_id  // id for the accType.staff constant
+          acct_id: ACCT_5.acct_id
         },
         body: {
           acct_type: ADMIN
@@ -776,7 +777,7 @@ describe('Accounts', function() {
     xit('it should return a 403 error because coaches cannot update their own type', function(done) {
       accounts.updateAccount({
         params: {
-          acct_id: ACCT_1.acct_id // id for the accType.coach constant
+          acct_id: ACCT_1.acct_id
         },
         body: {
           acct_type: ADMIN
@@ -800,7 +801,7 @@ describe('Accounts', function() {
     xit('it should return a 403 error because volunteers cannot update their own type', function(done) {
       accounts.updateAccount({
         params: {
-          acct_id: ACCT_3.acct_id // id for the accType.volunteer constant
+          acct_id: ACCT_3.acct_id
         },
         body: {
           acct_type: ADMIN
@@ -1011,19 +1012,19 @@ describe('Accounts', function() {
 
     xit('it should 403 when a coach tries to delete an account', function(done) {
       createDummyAccount().then(function() {
-        deletePermissionErrorTester(accType.coach, done);
+        deletePermissionErrorTester(COACH_AUTH0_ID, done);
       });
     });
 
     xit('it should 403 when a staff member tries to delete an account', function(done) {
       createDummyAccount().then(function() {
-        deletePermissionErrorTester(accType.staff, done);
+        deletePermissionErrorTester(STAFF_AUTH0_ID, done);
       });
     });
 
     xit('it should 403 when a volunteer tries to delete an account', function(done) {
       createDummyAccount().then(function() {
-        deletePermissionErrorTester(accType.volunteer, done);
+        deletePermissionErrorTester(VOLUNTEER_AUTH0_ID, done);
       });
     });
 
@@ -1033,7 +1034,9 @@ describe('Accounts', function() {
           params: {
             account_id: createdDBId
           },
-          user: accType.admin
+          auth: {
+            auth0_id: ADMIN_AUTH0_ID
+          }
         }).then(function() {
           auth0.getAuth0User(createdAuth0Id).catch(function(err) {
             assertEqualError(err,
@@ -1049,7 +1052,9 @@ describe('Accounts', function() {
     it('it should return a 400 error if no id is passed', function(done) {
       accounts.deleteAccount({
         params: {},
-        user: accType.admin
+        auth: {
+          auth0_id: ADMIN_AUTH0_ID
+        }
       }).catch(function(err) {
         assertEqualError(err, 'Missing Field', 400,
           'Request must have the following component(s): account_id (params)');
@@ -1062,7 +1067,9 @@ describe('Accounts', function() {
         params: {
           account_id: 999
         },
-        user: accType.admin
+        auth: {
+          auth0_id: ADMIN_AUTH0_ID
+        }
       }).catch(function(err) {
         assertEqualError(err, 'Not Found', 404, 'No account with id 999 exists in the database.');
         verifyNoAccountChanges(done);
