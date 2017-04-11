@@ -4,9 +4,11 @@ const Promise = require('bluebird');
 const chai = require('chai');
 const sinon = require('sinon');
 const assert = chai.assert;
+
 const utils = require('../../lib/utils');
-const ADMIN = require('../../lib/constants/utils').ADMIN;
-const ADMIN_AUTH0_ID = require('../../lib/constants/auth0').ADMIN_AUTH0_ID;
+const q = require('../../lib/constants/queries');
+const a = require('../../lib/constants/auth0');
+const c = require('../../lib/constants/utils');
 
 const res = {
   send: function(data) {},
@@ -252,8 +254,8 @@ describe('utils', function() {
 
   describe('getAccountType(auth0Id)', function() {
     it('retrieves the account type for the given auth0 id', function(done) {
-      utils.getAccountType(ADMIN_AUTH0_ID).then(function(acct_type) {
-        assert.equal(ADMIN, acct_type);
+      utils.getAccountType(a.ADMIN_AUTH0_ID).then(function(acct_type) {
+        assert.equal(c.ADMIN, acct_type);
         done();
       });
     });
@@ -289,6 +291,36 @@ describe('utils', function() {
   describe('getSqlDateString(date)', function() {
     it('makes a SQL date string from the given date', function() {
       assert.equal(utils.getSqlDateString(new Date(2017, 4, 8)), '2017-05-08');
+    });
+  });
+
+  describe('getSeasonId(dateString)', function() {
+    after(function(done) {
+      utils.query(q.DELETE_SEASON_BY_ID, [4]).then(function() {
+        done();
+      });
+    });
+
+    it('returns a season id for a season that already exists in the database', function(done) {
+      utils.getSeasonId('2016-12-12').then(function(seasonId) {
+        assert.equal(seasonId, 2);
+        utils.query(q.SELECT_SEASON).then(function(seasons) {
+          assert.lengthOf(seasons, 3);
+          done();
+        });
+      });
+    });
+
+    it('returns a season id after creating a season in the database', function(done) {
+      utils.getSeasonId('2010-01-26').then(function(seasonId) {
+        assert.equal(seasonId, 4);
+        utils.query(q.SELECT_SEASON).then(function(seasons) {
+          assert.lengthOf(seasons, 4);
+          assert.equal(seasons[3].season, c.SPRING);
+          assert.equal(seasons[3].year, 2010);
+          done();
+        });
+      });
     });
   });
 });

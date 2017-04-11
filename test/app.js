@@ -9,6 +9,7 @@ const students = require('../routes/students');
 const accounts = require('../routes/accounts');
 const sites = require('../routes/sites');
 const programs = require('../routes/programs');
+const seasons = require('../routes/seasons');
 const events = require('../routes/events');
 const stats = require('../routes/stats');
 
@@ -467,6 +468,30 @@ describe('app.js', function() {
         .expect('got the programs for an account', 200)
         .end(function() {
           assert.isTrue(getProgramsByAccountStub.called);
+          done();
+        });
+    });
+  });
+
+  describe('seasons endpoint', function() {
+    var getSeasonsStub;
+
+    before(function() {
+      getSeasonsStub = sinon.stub(seasons, 'getSeasons', function() {
+        return Promise.resolve('got the seasons');
+      });
+    });
+
+    after(function() {
+      seasons.getSeasons.restore();
+    });
+
+    it('GET /seasons', function(done) {
+      request(app)
+        .get('/seasons')
+        .expect('got the seasons', 200)
+        .end(function() {
+          assert.isTrue(getSeasonsStub.called);
           done();
         });
     });

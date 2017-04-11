@@ -87,7 +87,7 @@ describe('Events', function() {
 
     function createEventTester(programId, eventDate, assertion, expectedCreated, expectedAll, done) {
       createEvent(programId, {event_date: eventDate}).then(function(data) {
-        assertion(data, expectedCreated);
+        assertion(data, [expectedCreated]);
         events.getEvents().then(function(data) {
           assert.deepEqual(data, expectedAll);
           done();
@@ -102,8 +102,7 @@ describe('Events', function() {
       });
     }
 
-    // TODO: fix after season logic is implemented
-    xit('creates a new event for the given program', function(done) {
+    it('creates a new event for the given program', function(done) {
       createEventTester(1, getSqlDateString(NEW_EVENT.event_date), assert.deepEqual, NEW_EVENT, EVENTS.concat([NEW_EVENT]), done);
     });
 

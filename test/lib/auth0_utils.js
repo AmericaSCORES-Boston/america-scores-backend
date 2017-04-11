@@ -241,7 +241,7 @@ describe('Auth0 Utils', function() {
 
     before(function(done) {
       /* eslint-disable no-invalid-this */
-      this.timeout(10000);
+      this.timeout(15000);
       /* eslint-enable no-invalid-this */
       Promise.each(EMAILS, function(email) {
         return deleteUserIfExists(email);
@@ -251,7 +251,7 @@ describe('Auth0 Utils', function() {
             createdAuth0Id = userId;
             done();
           });
-        }, 5000);
+        }, 10000);
       });
     });
 
@@ -330,7 +330,7 @@ describe('Auth0 Utils', function() {
 
   describe('deleteAuth0User(auth0_id)', function() {
     /* eslint-disable no-invalid-this */
-    this.timeout(10000);
+    this.timeout(15000);
     /* eslint-enable no-invalid-this */
 
     beforeEach(function(done) {
@@ -338,7 +338,7 @@ describe('Auth0 Utils', function() {
         auth0.createAuth0User(FIRST, LAST, USERNAME, EMAIL, TYPE, PASSWORD).then(function(userId) {
           done();
         });
-      }, 5000);
+      }, 10000);
     });
 
     afterEach(function(done) {

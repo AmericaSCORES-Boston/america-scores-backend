@@ -49,7 +49,7 @@ gulp.task('test', () => {
 });
 
 gulp.task('seed', () => {
-  seed.dbSeed();
+  return seed.seed();
 });
 
 gulp.task('demoSeed', () => {

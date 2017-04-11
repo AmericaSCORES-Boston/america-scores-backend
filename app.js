@@ -13,6 +13,7 @@ const students = require('./routes/students');
 const sites = require('./routes/sites');
 const programs = require('./routes/programs');
 const events = require('./routes/events');
+const seasons = require('./routes/seasons');
 const stats = require('./routes/stats');
 const accounts = require('./routes/accounts');
 
@@ -175,6 +176,12 @@ app.route('/programs/:program_id/events')
 app.route('/programs/:program_id/events')
   .post(function(req, res, next) {
     makeResponse(res, events.createEvent(req));
+  });
+
+// Seasons
+app.route('/seasons/')
+  .get(function(req, res, next) {
+    makeResponse(res, seasons.getSeasons(req));
   });
 
 // Stats
