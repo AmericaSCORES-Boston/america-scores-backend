@@ -8,12 +8,13 @@ const reportSeed = require('../../lib/seed').dbReportSeed;
 // The file to be tested
 var reports = require('../../routes/reports');
 
-beforeEach(function() {
-    return reportSeed();
-  });
 
 // Reports testing block
 describe('Reports', function() {
+  beforeEach(function() {
+    return reportSeed();
+  });
+
   describe('getReports()', function() {
     xit('should successfully generate a CSV report of all students and their stats', function(done) {
       // NOTE: the third column is intentionally left empty, as per request from Alicia

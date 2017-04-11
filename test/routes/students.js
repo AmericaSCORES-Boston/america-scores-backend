@@ -105,31 +105,31 @@ var hazel = {
   'dob': new Date(28, 11, 17)
 };
 
-// ADD BEFORE EACH TO reseed
-beforeEach(function() {
-  return seed();
-});
-
-// Get the original state of the database
-before(function() {
-  getAllStudents()
-  .then(function(data) {
-    // Remember the Student table
-    oldDB = data;
-    studentCount = data.length;
-
-    return query('SELECT * FROM StudentToProgram');
-  })
-  .then(function(data) {
-    // Remember the StudentToProgram table
-    oldPrograms = data;
-    programMatchCount = data.length;
-  });
-});
-
 // Students testing block
 describe('Students', function() {
-  describe('getStudents(req)', function() {
+  // ADD BEFORE EACH TO reseed
+  beforeEach(function() {
+    return seed();
+  });
+
+  // Get the original state of the database
+  before(function() {
+    getAllStudents()
+    .then(function(data) {
+      // Remember the Student table
+      oldDB = data;
+      studentCount = data.length;
+
+      return query('SELECT * FROM StudentToProgram');
+    })
+    .then(function(data) {
+      // Remember the StudentToProgram table
+      oldPrograms = data;
+      programMatchCount = data.length;
+    });
+  });
+
+    describe('getStudents(req)', function() {
     it('should get all the students in the database', function(done) {
       var promise = students.getStudents({
         // Express has empty query, params, and body by default in req
