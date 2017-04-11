@@ -3,67 +3,18 @@
 const chai = require('chai');
 const assert = chai.assert;
 const sites = require('../../routes/sites');
-const utils = require('../../lib/utils');
+const seed = require('../../lib/seed').dbSeed;
+const SC = require('../../lib/constants/seed');
 
-const site1 = {
-  site_id: 1,
-    site_name: 'Lin-Manuel Elementary',
-    site_address: '1155 Tremont Street, Roxbury Crossing, MA'
-};
-const site2 = {
-  site_id: 2,
-  site_name: 'Yawkey Boys and Girls Club',
-  site_address: '115 Warren St, Roxbury, MA'
-};
-const site3 = {
-  site_id: 3,
-  site_name: 'Hamilton Elementary',
-  site_address: '625 Columbus Avenue, Boston, MA'
-};
-const site4 = {
-  site_id: 4,
-  site_name: 'Lafayette Middle School',
-  site_address: '111 Huntington Avenue, Boston, MA'
-};
-const site5 = {
-  site_id: 5,
-  site_name: 'Washington Intermediate School',
-  site_address: '1776 Beacon Street, Boston, MA'
-};
-const site6 = {
-  site_id: 6,
-  site_name: 'Schuyler High School',
-  site_address: '232 Boylston Street, Boston, MA'
-};
-const site7 = {
-  site_id: 7,
-  site_name: 'Jefferson Elementary',
-  site_address: '72 Kneeland Street, Boston, MA'
-};
-const site8 = {
-  site_id: 8,
-  site_name: 'Clear Brook High School',
-  site_address: '451 Charles Street, Boston, MA'
-};
-const site9 = {
-  site_id: 9,
-  site_name: 'Amelia Earheart Elementary',
-  site_address: '371 Clarendon Street, Boston, MA'
-};
-const site10 = {
-  site_id: 10,
-  site_name: 'Philip Elementary',
-  site_address: '843 Massachusetts Avenue, Boston, MA'
-};
-const site11 = {
-  site_id: 11,
-  site_name: 'YMCA',
-  site_address: '230 Huntington Avenue, Boston, MA'
-};
+const SITE_1 = SC.SITE_1;
+const SITE_2 = SC.SITE_2;
+const SITE_3 = SC.SITE_3;
+const SITE_9 = SC.SITE_9;
+const SITES = SC.SITES;
 
 describe('Sites', function() {
   beforeEach(function() {
-    return utils.seed();
+    return seed();
   });
 
   describe('getSites(req)', function() {
@@ -71,7 +22,7 @@ describe('Sites', function() {
       var promise = sites.getSites({});
 
       promise.then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
         done();
       });
     });
@@ -86,7 +37,7 @@ describe('Sites', function() {
       });
 
       promise.then(function(data) {
-        assert.deepEqual([site1, site2], data);
+        assert.deepEqual([SITE_1, SITE_2], data);
         done();
       });
     });
@@ -113,7 +64,7 @@ describe('Sites', function() {
       };
       sites.getSites({})
       .then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
 
         return sites.createSite({
           body: newData
@@ -123,11 +74,11 @@ describe('Sites', function() {
         return sites.getSites({});
       })
       .then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11, {
+        assert.deepEqual(SITES.concat([{
           site_id: 12,
           site_name: newData.site_name,
           site_address: newData.site_address
-        }], data);
+        }]), data);
         done();
       });
     });
@@ -145,7 +96,7 @@ describe('Sites', function() {
         return sites.getSites({});
       })
       .then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
         done();
       });
     });
@@ -157,7 +108,7 @@ describe('Sites', function() {
         return sites.getSites({});
       })
       .then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
         done();
       });
     });
@@ -174,7 +125,7 @@ describe('Sites', function() {
         return sites.getSites({});
       })
       .then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
         done();
       });
     });
@@ -191,7 +142,7 @@ describe('Sites', function() {
         return sites.getSites({});
       })
       .then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
         done();
       });
     });
@@ -206,7 +157,7 @@ describe('Sites', function() {
       });
 
       promise.then(function(data) {
-        assert.deepEqual([site1], data);
+        assert.deepEqual([SITE_1], data);
         done();
       });
     });
@@ -233,7 +184,7 @@ describe('Sites', function() {
         }
       })
       .then(function(data) {
-        assert.deepEqual([site9], data);
+        assert.deepEqual([SITE_9], data);
 
         return sites.updateSite({
           params: {
@@ -306,7 +257,7 @@ describe('Sites', function() {
         }
       })
       .then(function(data) {
-        assert.deepEqual([site3], data);
+        assert.deepEqual([SITE_3], data);
 
         return sites.deleteSite({
           params: {
@@ -329,7 +280,7 @@ describe('Sites', function() {
 
     it('does nothing when told to delete a site that doesn\'t exist', function(done) {
       sites.getSites({}).then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
 
         return sites.deleteSite({
           params: {
@@ -341,7 +292,7 @@ describe('Sites', function() {
         return sites.getSites({});
       })
       .then(function(data) {
-        assert.deepEqual([site1, site2, site3, site4, site5, site6, site7, site8, site9, site10, site11], data);
+        assert.deepEqual(SITES, data);
         done();
       });
     });

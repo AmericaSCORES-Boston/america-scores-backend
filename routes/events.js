@@ -2,6 +2,12 @@ const utils = require('../lib/utils');
 const query = utils.query;
 const defined = utils.defined;
 const isValidDate = utils.isValidDate;
+const errors = require('../lib/errors');
+const createMissingDateError = errors.createMissingDateError;
+const createMalformedDateError = errors.createMalformedDateError;
+const q = require('../lib/constants/queries');
+
+// TODO: THESE SHOULD 404 WHEN GIVEN INVALID IDS
 
 function getEvents(req) {
   return query('SELECT * FROM Event');
@@ -22,24 +28,29 @@ function getEventsByProgram(req) {
   return query('SELECT * FROM Event WHERE program_id = ?', [id]);
 }
 
+// TODO: add season logic
+// TODO: pull errors from lib/errors
 function createEvent(req) {
   var program_id = req.params.program_id;
   var event_date = req.body.event_date;
+
   if(!defined(event_date)) {
-    return Promise.reject({status: 400, message: 'Missing event_date'});
+    return createMissingDateError();
   }
+
   if(!isValidDate(event_date)) {
-    return Promise.reject({status: 400, message: 'Malformed date YYYY-MM-DD'});
+    return createMalformedDateError();
   }
-  return query('SELECT * FROM Program WHERE program_id = ?', [program_id])
-  .then(function(data) {
-    if (data.length == 1 && data[0].program_id == program_id) {
-      return query('INSERT INTO Event (program_id, event_date) VALUES (?, DATE(?))', [program_id, event_date])
-      .then(function(data) {
-        return query('SELECT * FROM Event WHERE event_id = ?', [data.insertId]);
-      });
-    }
-    return Promise.resolve([]);
+
+  return utils.getSeasonId(event_date).then(function(season_id) {
+    return query('SELECT * FROM Program WHERE program_id = ?', [program_id]).then(function(data) {
+      if (data.length == 1 && data[0].program_id == program_id) {
+        return query(q.INSERT_EVENT, [program_id, season_id, event_date]).then(function(data) {
+          return query('SELECT * FROM Event WHERE event_id = ?', [data.insertId]);
+        });
+      }
+      return Promise.resolve([]);
+    });
   });
 }
 
@@ -59,6 +70,8 @@ function deleteEvent(req) {
     return Promise.resolve([]);
   });
 };
+
+// TODO: Probably want an update season option?
 
 module.exports = {
   getEvents,

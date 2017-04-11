@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 const getSqlConnection = require('./config/connection').getSqlConnection;
 const yargs = require('yargs');
 const mocha = require('gulp-mocha');
-const utils = require('./lib/utils');
+const seed = require('./lib/seed');
 
 gulp.task('eslint', () => {
   var stream = gulp.src(['**/*.js', '!node_modules/**', '!coverage/**'])
@@ -49,13 +49,13 @@ gulp.task('test', () => {
 });
 
 gulp.task('seed', () => {
-  utils.seed();
+  return seed.seed();
 });
 
 gulp.task('demoSeed', () => {
-  utils.demoSeed();
+  seed.dbDemoSeed();
 });
 
 gulp.task('reportSeed', () => {
-  utils.reportSeed();
+  seed.dbReportSeed();
 });

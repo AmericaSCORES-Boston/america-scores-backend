@@ -3,7 +3,7 @@ var chai = require('chai');
 var assert = chai.assert;
 
 // Require seed to reset database before each test
-const seed = require('../../lib/utils').seed;
+const seed = require('../../lib/seed').dbSeed;
 
 // The file to be tested
 const stats = require('../../routes/stats');
@@ -139,12 +139,12 @@ var updateBatch = [{
   pacer: 18
 }];
 
-// Add before each to reset database between tests
-beforeEach(function() {
-  return seed();
-});
-
 describe('stats', function() {
+  // Add before each to reset database between tests
+  beforeEach(function() {
+    return seed();
+  });
+
   describe('getStats(req)', function() {
     it('should get all the stats in the database', function(done) {
       // GET all doesn't need anything from the request, so pass in empty

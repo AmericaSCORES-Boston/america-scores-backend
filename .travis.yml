@@ -11,13 +11,13 @@ script:
   - ./scripts/travis-config.sh
   - npm run eslint -- --failTaskOnError
   - npm run seed
-  - npm run test -- --failTaskOnError
+  - npm run build-test -- --failTaskOnError
 
 services:
   - mysql
 
 after_success:
-  - ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha $(find test -name '*.js') -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+  - npm run coveralls
 
 before_deploy:
   - zip -r backend-latest config/config.js config/connection.js database/ lib/ routes/ scripts/ app.js appspec.yml gulpfile.js package.json
