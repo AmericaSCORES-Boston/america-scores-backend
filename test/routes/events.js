@@ -8,7 +8,7 @@ const getSqlDateString = require('../../lib/utils').getSqlDateString;
 const assertEqualError = require('../../lib/test_utils').assertEqualError;
 const Event = require('../../lib/models/event').Event;
 
-const EVENTS = constants.EVENTS;
+const EVENTS = constants.TEST_EVENTS;
 const EVENT_1 = constants.EVENT_1;
 const EVENT_2 = constants.EVENT_2;
 const EVENT_3 = constants.EVENT_3;

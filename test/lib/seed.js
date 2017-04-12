@@ -5,41 +5,57 @@ const assert = chai.assert;
 
 const seed = require('../../lib/seed');
 const utils = require('../../lib/utils');
+const q = require('../../lib/constants/queries');
 
 describe('seed utils', function() {
   describe('demoSeed()', function() {
-    it('seeds the db with demo data', function(done) {
-      seed.dbDemoSeed().then(function() {
-        return utils.query('SELECT * FROM Site');
-      })
-      .then(function(rows) {
-        assert.equal(rows.length, 11);
-        return utils.query('SELECT * FROM Program');
-      })
-      .then(function(rows) {
-        assert.equal(rows.length, 4);
-        return utils.query('SELECT * FROM Student');
-      })
-      .then(function(rows) {
-        assert.equal(rows.length, 6);
-        return utils.query('SELECT * FROM StudentToProgram');
-      })
-      .then(function(rows) {
-        assert.equal(rows.length, 7);
-        return utils.query('SELECT * FROM Acct');
-      })
-      .then(function(rows) {
-        assert.equal(rows.length, 9);
-        return utils.query('SELECT * FROM AcctToProgram');
-      })
-      .then(function(rows) {
-        assert.equal(rows.length, 7);
-        return utils.query('SELECT * FROM Event');
-      })
-      .then(function(rows) {
-        assert.equal(rows.length, 6);
+    before(function(done) {
+      seed.demoSeed().then(function() {
         done();
       });
+    });
+
+    function queryForLength(query, expectedLength, done) {
+      utils.query(query).then(function(rows) {
+        assert.lengthOf(rows, expectedLength);
+        done();
+      });
+    }
+
+    it('it inserts all the demo students in the db', function(done) {
+      queryForLength(q.SELECT_STUDENT, 20, done);
+    });
+
+    it('it inserts all the demo sites in the db', function(done) {
+      queryForLength(q.SELECT_SITE, 3, done);
+    });
+
+    it('it inserts all the demo programs in the db', function(done) {
+      queryForLength(q.SELECT_PROGRAM, 4, done);
+    });
+
+    it('it inserts all the demo student/program associations in the db', function(done) {
+      queryForLength(q.SELECT_STUDENT_TO_PROGRAM, 20, done);
+    });
+
+    it('it inserts all the demo accounts in the db', function(done) {
+      queryForLength(q.SELECT_ACCT, 1, done);
+    });
+
+    it('it inserts all the demo account/program associations in the db', function(done) {
+      queryForLength(q.SELECT_ACCT_TO_PROGRAM, 4, done);
+    });
+
+    it('it inserts all the demo seasons in the db', function(done) {
+      queryForLength(q.SELECT_SEASON, 1, done);
+    });
+
+    it('it inserts all the demo events in the db', function(done) {
+      queryForLength(q.SELECT_EVENT, 6, done);
+    });
+
+    it('it inserts all the demo stats in the db', function(done) {
+      queryForLength(q.SELECT_STAT, 30, done);
     });
   });
 });

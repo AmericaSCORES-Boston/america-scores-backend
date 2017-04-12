@@ -14,7 +14,13 @@ const programsNew = [program1, program2, program3, program4, newProgram];
 const updatedProgram = {program_id: 1, site_id: 1, program_name: 'Updated'};
 const programsUpdated = [updatedProgram, program2, program3, program4];
 
-describe('GET', function(done) {
+describe('GET', function() {
+  before(function(done) {
+    seed().then(function() {
+      done();
+    });
+  });
+
   it('/programs', function(done) {
     var req = {
       params: {

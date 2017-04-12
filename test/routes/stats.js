@@ -141,8 +141,10 @@ var updateBatch = [{
 
 describe('stats', function() {
   // Add before each to reset database between tests
-  beforeEach(function() {
-    return seed();
+  before(function(done) {
+    seed().then(function() {
+      done();
+    });
   });
 
   describe('getStats(req)', function() {
@@ -291,6 +293,12 @@ describe('stats', function() {
   });
 
   describe('uploadPacerStats(req)', function() {
+    beforeEach(function(done) {
+      seed().then(function() {
+        done();
+      });
+    });
+
     // Create a brand new set of stats w/ PACER data
     it('should create stats with PACER data for multiple students',
     function(done) {
@@ -525,6 +533,12 @@ describe('stats', function() {
   });
 
   describe('uploadBMIStats(req)', function() {
+    beforeEach(function(done) {
+      seed().then(function() {
+        done();
+      });
+    });
+
     // Create a brand new set of stats w/ height/weight data
     it('should create stats with BMI data for multiple students',
     function(done) {
@@ -774,6 +788,12 @@ describe('stats', function() {
   });
 
   describe('updateStat(req)', function() {
+    beforeEach(function(done) {
+      seed().then(function() {
+        done();
+      });
+    });
+
     // update existing stats
     it('should update stats in the database', function(done) {
       var req = {
@@ -910,6 +930,12 @@ describe('stats', function() {
   });
 
   describe('deleteStat(req)', function() {
+    beforeEach(function(done) {
+      seed().then(function() {
+        done();
+      });
+    });
+
     // delete existing stats
     it('should delete stats in the database', function(done) {
       var req = {

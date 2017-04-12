@@ -5,6 +5,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const assert = chai.assert;
 
+const seed = require('../../lib/seed').testSeed;
 const utils = require('../../lib/utils');
 const q = require('../../lib/constants/queries');
 const a = require('../../lib/constants/auth0');
@@ -16,6 +17,15 @@ const res = {
 };
 
 describe('utils', function() {
+  before(function(done) {
+    /* eslint-disable no-invalid-this */
+    this.timeout(20000);
+    /* eslint-enable no-invalid-this */
+    seed().then(function() {
+      done();
+    });
+  });
+
   describe('makeResponse(res, promise)', function() {
     var resSendSpy;
     var resStatusSpy;
