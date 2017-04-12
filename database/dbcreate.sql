@@ -74,6 +74,7 @@ CREATE TABLE Event
     program_id int,
     season_id int,
     event_date date,
+    pre_season TINYINT(1),
     PRIMARY KEY (event_id),
     FOREIGN KEY (program_id) REFERENCES Program(program_id),
     FOREIGN KEY (season_id) REFERENCES Season(season_id)

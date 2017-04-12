@@ -14,7 +14,7 @@ const EVENT_2 = constants.EVENT_2;
 const EVENT_3 = constants.EVENT_3;
 const EVENT_4 = constants.EVENT_4;
 
-const NEW_EVENT = new Event(1, 1, new Date(2016, 5, 20), 7);
+const NEW_EVENT = new Event(1, 1, new Date(2016, 5, 20), 1, 7);
 
 
 function getEventsTester(func, params, assertion, expected, done) {
@@ -85,8 +85,8 @@ describe('Events', function() {
       });
     }
 
-    function createEventTester(programId, eventDate, assertion, expectedCreated, expectedAll, done) {
-      createEvent(programId, {event_date: eventDate}).then(function(data) {
+    function createEventTester(programId, eventDate, preSeason, assertion, expectedCreated, expectedAll, done) {
+      createEvent(programId, {event_date: eventDate, pre_season: preSeason}).then(function(data) {
         assertion(data, [expectedCreated]);
         events.getEvents().then(function(data) {
           assert.deepEqual(data, expectedAll);
@@ -103,19 +103,30 @@ describe('Events', function() {
     }
 
     it('creates a new event for the given program', function(done) {
-      createEventTester(1, getSqlDateString(NEW_EVENT.event_date), assert.deepEqual, NEW_EVENT, EVENTS.concat([NEW_EVENT]), done);
+      createEventTester(1, getSqlDateString(NEW_EVENT.event_date), 'true',
+        assert.deepEqual, NEW_EVENT, EVENTS.concat([NEW_EVENT]), done);
     });
 
     it('does not create an event when the program id DNE', function(done) {
-      createEventTester(-1, getSqlDateString(NEW_EVENT.event_date), assert.lengthOf, 0, EVENTS, done);
+      createEventTester(-1, getSqlDateString(NEW_EVENT.event_date), 'false',
+        assert.lengthOf, 0, EVENTS, done);
     });
 
     it('returns a 400 error if the date is malformed', function(done) {
-      createEventErrorTester({event_date: '2015/12/12'}, 'Malformed Date Error', 400, 'Malformed date YYYY-MM-DD', done);
+      createEventErrorTester({event_date: '2015/12/12', pre_season: 'true'},
+        'Malformed Date Error', 400, 'Malformed date YYYY-MM-DD', done);
+    });
+
+    it('returns a 400 error if the pre_season tag is missing', function(done) {
+      createEventErrorTester({event_date: '2009-10-14'}, 'Missing Field', 400,
+        'Request must have the following component(s): pre_season (body)',
+        done);
     });
 
     it('returns a 400 error if the date is missing', function(done) {
-      createEventErrorTester({}, 'Missing Date Error', 400, 'Missing event_date', done);
+      createEventErrorTester({pre_season: 'false'}, 'Missing Field', 400,
+        'Request must have the following component(s): event_date (body)',
+        done);
     });
   });
 

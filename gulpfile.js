@@ -52,6 +52,10 @@ gulp.task('seed', () => {
   return seed.seed();
 });
 
+gulp.task('dbSeed', () => {
+  return seed.dbSeed();
+});
+
 gulp.task('demoSeed', () => {
   seed.dbDemoSeed();
 });
