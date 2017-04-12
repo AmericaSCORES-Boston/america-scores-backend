@@ -51,12 +51,14 @@ gulp.task('test', () => {
 
 gulp.task('seed', () => {
   var seedType = yargs.argv.demo ? c.DEMO : c.TEST;
-  var seeder = seed.dbSeed(seedType);
 
   if (yargs.argv.auth0) {
-    seeder.then(function() {
-      return seed.auth0Seed(seedType);
-    });
+    if (seedType == c.DEMO) {
+      return seed.demoSeed();
+    } else {
+      return seed.testSeed();
+    }
+  } else {
+    return seed.dbSeed(seedType);
   }
-  return seeder;
 });
