@@ -10,6 +10,7 @@
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha $(find test -name '*.js') -- -R spec",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "seed": "gulp seed",
+    "dbseed": "gulp dbSeed",
     "start": "pm2 start app.js -n amscores_backend",
     "debug": "pm2 start app.js -n amscores_backend_debug --node-args=\"--debug=7000\"",
     "stop": "if [[ ! -z $(pm2 list | grep amscores_backend) ]]; then pm2 delete amscores_backend; fi"

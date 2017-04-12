@@ -53,7 +53,7 @@ function createEvent(req) {
     return createMalformedDateError();
   }
 
-  var pre_season = autoParse(req.body.pre_season);
+  var pre_season = autoParse(req.body.pre_season, Boolean);
 
   return utils.getSeasonId(event_date).then(function(season_id) {
     return query('SELECT * FROM Program WHERE program_id = ?', [program_id]).then(function(data) {
