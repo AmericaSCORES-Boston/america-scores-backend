@@ -11,6 +11,8 @@ const q = require('../../lib/constants/queries');
 const a = require('../../lib/constants/auth0');
 const c = require('../../lib/constants/utils');
 
+const assertEqualError = require('../../lib/test_utils').assertEqualError;
+
 const res = {
   send: function(data) {},
   status: function(status) {}
@@ -339,6 +341,21 @@ describe('utils', function() {
           assert.equal(seasons[3].year, 2010);
           done();
         });
+      });
+    });
+  });
+
+  describe('rollback(err, logMsg, rollbackFunction)', function() {
+    it('performs the rollbackFunction and returns a 500 error', function(done) {
+      var mutable = {foo: 'bar'};
+      utils.rollback('error', 'log', function() {
+        mutable.foo = 'baz';
+        return Promise.resolve();
+      }).catch(function(err) {
+        assertEqualError(err, 'Internal Server Error', 500,
+          'The server encountered an unexpected condition which prevented it from fulfilling the request');
+        assert.equal(mutable.foo, 'baz');
+        done();
       });
     });
   });
