@@ -16,6 +16,7 @@ const events = require('./routes/events');
 const seasons = require('./routes/seasons');
 const stats = require('./routes/stats');
 const accounts = require('./routes/accounts');
+const reports = require('./routes/reports');
 
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
@@ -185,8 +186,8 @@ app.route('/seasons/')
   });
 
 // Stats
- app.route('/stats')
-   .get(function(req, res, next) {
+app.route('/stats')
+  .get(function(req, res, next) {
     makeResponse(res, stats.getStats(req));
   });
 
@@ -220,6 +221,11 @@ app.route('/events/:event_id/stats/bmi')
     makeResponse(res, stats.uploadBMIStats(req));
   });
 
+// Reports
+app.route('/reports')
+  .get(function(req, res, next) {
+    makeResponse(res, reports.getReport(req));
+  });
 
 var server = app.listen(config.server.port);
 console.log('Listening on port ' + config.server.port);

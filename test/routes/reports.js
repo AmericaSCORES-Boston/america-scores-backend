@@ -1,53 +1,116 @@
-// Require the testing dependencies
+'use strict';
+
 var chai = require('chai');
 var assert = chai.assert;
-
 var csv = require('fast-csv');
 
-// Require seed to reset database before each test
+const reports = require('../../routes/reports');
 const seed = require('../../lib/seed').demoSeed;
+const c = require('../../lib/constants/utils');
+const ReportRowFromCSV = require('../../lib/models/report_row').ReportRowFromCSV;
+const assertEqualError = require('../../lib/test_utils').assertEqualError;
 
-// The file to be tested
-var reports = require('../../routes/reports');
+function assertEqualReportRows(rows, expected) {
+  assert.lengthOf(rows, expected.length);
+  rows.forEach(function(row, i) {
+    assertEqualReportRow(row, expected[i]);
+  });
+}
 
-var TestRow = function(student_id, first_name, last_name, site_name, program_name,
-  pre_date, pre_height, pre_weight, pre_pacer,
-  post_date, post_height, post_weight, post_pacer) {
-  this.student_id = student_id;
-  this.first_name = first_name;
-  this.last_name = last_name;
-  this.site_name = site_name;
-  this.program_name = program_name;
-  this.pre_date = pre_date;
-  this.pre_height = pre_height;
-  this.pre_weight = pre_weight;
-  this.pre_pacer = pre_pacer;
-  this.post_date = post_date;
-  this.post_height = post_height;
-  this.post_weight = post_weight;
-  this.post_pacer = post_pacer;
-};
+function assertEqualReportRow(row, expected) {
+  assert.equal(row.student_id, expected.student_id);
+  assert.equal(row.first_name, expected.first_name);
+  assert.equal(row.last_name, expected.last_name);
+  assert.equal(row.site_name, expected.site_name);
+  assert.equal(row.program_name, expected.program_name);
+  if (row.pre_date === null) {
+    assert.isNull(expected.pre_date);
+  } else {
+    assert.equal(row.pre_date.getFullYear(), expected.pre_date.getFullYear());
+    assert.equal(row.pre_date.getMonth(), expected.pre_date.getMonth());
+    assert.equal(row.pre_date.getDate(), expected.pre_date.getDate());
+  }
+  assert.equal(row.pre_height, expected.pre_height);
+  assert.equal(row.pre_weight, expected.pre_weight);
+  assert.equal(row.pre_pacer, expected.pre_pacer);
+  if (row.post_date === null) {
+    assert.isNull(expected.post_date);
+  } else {
+    assert.equal(row.post_date.getFullYear(), expected.post_date.getFullYear());
+    assert.equal(row.post_date.getMonth(), expected.post_date.getMonth());
+    assert.equal(row.post_date.getDate(), expected.post_date.getDate());
+  }
+  assert.equal(row.post_height, expected.post_height);
+  assert.equal(row.post_weight, expected.post_weight);
+  assert.equal(row.post_pacer, expected.post_pacer);
+}
 
-// Reports testing block
 describe('Reports', function() {
   var results = [];
   before(function(done) {
     seed().then(function() {
       csv
-        .fromPath('test/test_report.csv')
+        .fromPath('test/test_report.csv', {headers: true})
         .on('data', function(data) {
-          results.push(new TestRow(data[0], data[1], data[2], data[3], data[4], data[5],
-            data[6], data[7], data[8], data[9],
-            data[10], data[11], data[12], data[13]));
+          results.push(new ReportRowFromCSV(
+            data.student_id,
+            data.first_name,
+            data.last_name,
+            data.site_name,
+            data.program_name,
+            data.pre_date,
+            data.pre_height,
+            data.pre_weight,
+            data.pre_pacer,
+            data.post_date,
+            data.post_height,
+            data.post_weight,
+            data.post_pacer
+          ));
         }).on('end', function() {
+          console.log(results);
           done();
         });
     });
   });
 
   describe('getReport(req)', function() {
-    xit('should return all of the pre/post season stats for the given season', function(done) {
-      done();
+    it('it should return all of the pre/post season stats for the given season', function(done) {
+      reports.getReport({
+        query: {
+          season: c.SPRING,
+          year: 2017
+        }
+      }).then(function(rows) {
+        assertEqualReportRows(rows, results);
+        done();
+      });
+    });
+
+    it('it should 404 when the requested season is not found in the database', function(done) {
+      reports.getReport({
+        query: {
+          season: c.FALL,
+          year: 2015
+        }
+      }).catch(function(err) {
+        assertEqualError(err, 'Season Not Found', 404,
+          'The requested season (' + c.FALL + ' 2015) does not exist in the database');
+        done();
+      });
+    });
+
+    it('it should 400 when the required query components are not included in the request', function(done) {
+      reports.getReport({
+        query: {
+          season: c.SPRING
+        }
+      }).catch(function(err) {
+        assertEqualError(err, 'Missing Field', 400,
+          'Request must have the following component(s): ' +
+          'year (query)');
+        done();
+      });
     });
   });
 

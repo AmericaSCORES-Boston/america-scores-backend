@@ -304,6 +304,15 @@ describe('utils', function() {
     });
   });
 
+  describe('getJSDate(dateString)', function() {
+    it('makes a javascript date object from a sql date string', function() {
+      var createdDate = utils.getJSDate('2017-02-01');
+      assert.equal(createdDate.getFullYear(), 2017);
+      assert.equal(createdDate.getMonth(), 1);
+      assert.equal(createdDate.getDate(), 1);
+    });
+  });
+
   describe('getSeasonId(dateString)', function() {
     after(function(done) {
       utils.query(q.DELETE_SEASON_BY_ID, [4]).then(function() {

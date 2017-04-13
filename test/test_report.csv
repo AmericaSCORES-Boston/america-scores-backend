@@ -1,14 +1,4 @@
 student_id,first_name,last_name,site_name,program_name,pre_date,pre_height,pre_weight,pre_pacer,post_date,post_height,post_weight,post_pacer
-11,Natalia,Rudova,"Baker Elementary School","Baker Girls ES",2017-01-16,50,88,5,2017-04-13,50,90,4
-13,Amaya,Heywood,"Baker Elementary School","Baker Girls ES",2017-01-16,49,91,5,2017-04-13,49,90,5
-15,Cathy,Sampson,"Baker Elementary School","Baker Girls ES",2017-01-16,46,88,5,2017-04-13,47,86,7
-17,Laurel,Rialto,"Baker Elementary School","Baker Girls ES",2017-01-16,50,88,6,2017-04-13,51,87,7
-19,Olivia,Escoboza,"Baker Elementary School","Baker Girls ES",2017-01-16,48,87,6,2017-04-13,48,89,6
-12,Ricky,Hayes,"Baker Elementary School","Baker Boys ES",2017-02-01,42,77,5,2017-06-17,43,78,6
-14,Ray,Jackson,"Baker Elementary School","Baker Boys ES",2017-02-01,44,91,6,2017-06-17,44,89,7
-16,George,Hardy,"Baker Elementary School","Baker Boys ES",2017-02-01,50,78,7,2017-06-17,50,78,5
-18,Charlie,Becker,"Baker Elementary School","Baker Boys ES",2017-02-01,46,82,5,2017-06-17,47,80,8
-20,Carter,Dixon,"Baker Elementary School","Baker Boys ES",2017-02-01,48,78,6,2017-06-17,49,80,9
 1,Alice,Cooper,"Turnbull High School","Turnbull SFS",2017-02-27,65,140,9,NULL,NULL,NULL,NULL
 2,Danny,Hannigan,"Turnbull High School","Turnbull SFS",2017-02-27,61,123,10,NULL,NULL,NULL,NULL
 3,Rebecca,White,"Turnbull High School","Turnbull SFS",2017-02-27,58,105,11,NULL,NULL,NULL,NULL
@@ -19,3 +9,13 @@ student_id,first_name,last_name,site_name,program_name,pre_date,pre_height,pre_w
 8,Michael,Schmuel,"Rainbow Brook High School","RB SFS",NULL,NULL,NULL,NULL,2017-05-12,63,176,9
 9,Elise,Rodriguez,"Rainbow Brook High School","RB SFS",NULL,NULL,NULL,NULL,2017-05-12,72,174,10
 10,Jared,Cunningham,"Rainbow Brook High School","RB SFS",NULL,NULL,NULL,NULL,2017-05-12,73,192,6
+11,Natalia,Rudova,"Baker Elementary School","Baker Girls ES",2017-01-16,50,88,5,2017-04-13,50,90,4
+12,Ricky,Hayes,"Baker Elementary School","Baker Boys ES",2017-02-01,42,77,5,2017-06-17,43,78,6
+13,Amaya,Heywood,"Baker Elementary School","Baker Girls ES",2017-01-16,49,91,5,2017-04-13,49,90,5
+14,Ray,Jackson,"Baker Elementary School","Baker Boys ES",2017-02-01,44,91,6,2017-06-17,44,89,7
+15,Cathy,Sampson,"Baker Elementary School","Baker Girls ES",2017-01-16,46,88,5,2017-04-13,47,86,7
+16,George,Hardy,"Baker Elementary School","Baker Boys ES",2017-02-01,50,78,7,2017-06-17,50,78,5
+17,Laurel,Rialto,"Baker Elementary School","Baker Girls ES",2017-01-16,50,88,6,2017-04-13,51,87,7
+18,Charlie,Becker,"Baker Elementary School","Baker Boys ES",2017-02-01,46,82,5,2017-06-17,47,80,8
+19,Olivia,Escoboza,"Baker Elementary School","Baker Girls ES",2017-01-16,48,87,6,2017-04-13,48,89,6
+20,Carter,Dixon,"Baker Elementary School","Baker Boys ES",2017-02-01,48,78,6,2017-06-17,49,80,9
