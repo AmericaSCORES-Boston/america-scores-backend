@@ -137,7 +137,7 @@ function updateAccount(req) {
 
       for (var i = 0; i < bodyKeys.length; i++) {
         bodyKey = bodyKeys[i];
-        if (UPDATE_KEYS.includes(bodyKey)) {
+        if (UPDATE_KEYS.indexOf(bodyKey) >= 0) {
           bodyValue = body[bodyKey];
           // Add to the query statement for our database
           setStatement += bodyKey + '="' + bodyValue + '",';
@@ -213,7 +213,7 @@ function createAccount(req) {
   var password = req.body.password;
 
   // if given an invalid account type, throw a 400
-  if (!ACCOUNT_TYPES.includes(acct_type)) {
+  if (ACCOUNT_TYPES.indexOf(acct_type) < 0) {
     return errors.create400({
       message: 'Account type must be one of: Admin, Coach, Staff, Volunteer'
     });
