@@ -4,17 +4,19 @@ const chai = require('chai');
 const assert = chai.assert;
 const sites = require('../../routes/sites');
 const seed = require('../../lib/seed').dbSeed;
-const SC = require('../../lib/constants/seed');
+const s = require('../../lib/constants/seed');
 
-const SITE_1 = SC.SITE_1;
-const SITE_2 = SC.SITE_2;
-const SITE_3 = SC.SITE_3;
-const SITE_9 = SC.SITE_9;
-const SITES = SC.SITES;
+const SITE_1 = s.SITE_1;
+const SITE_2 = s.SITE_2;
+const SITE_3 = s.SITE_3;
+const SITE_9 = s.SITE_9;
+const SITES = s.TEST_SITES;
 
 describe('Sites', function() {
-  beforeEach(function() {
-    return seed();
+  beforeEach(function(done) {
+    seed().then(function() {
+      done();
+    });
   });
 
   describe('getSites(req)', function() {

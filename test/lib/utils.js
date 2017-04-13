@@ -5,6 +5,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const assert = chai.assert;
 
+const seed = require('../../lib/seed').testSeed;
 const utils = require('../../lib/utils');
 const q = require('../../lib/constants/queries');
 const a = require('../../lib/constants/auth0');
@@ -16,6 +17,15 @@ const res = {
 };
 
 describe('utils', function() {
+  before(function(done) {
+    /* eslint-disable no-invalid-this */
+    this.timeout(20000);
+    /* eslint-enable no-invalid-this */
+    seed().then(function() {
+      done();
+    });
+  });
+
   describe('makeResponse(res, promise)', function() {
     var resSendSpy;
     var resStatusSpy;
@@ -291,6 +301,15 @@ describe('utils', function() {
   describe('getSqlDateString(date)', function() {
     it('makes a SQL date string from the given date', function() {
       assert.equal(utils.getSqlDateString(new Date(2017, 4, 8)), '2017-05-08');
+    });
+  });
+
+  describe('getJSDate(dateString)', function() {
+    it('makes a javascript date object from a sql date string', function() {
+      var createdDate = utils.getJSDate('2017-02-01');
+      assert.equal(createdDate.getFullYear(), 2017);
+      assert.equal(createdDate.getMonth(), 1);
+      assert.equal(createdDate.getDate(), 1);
     });
   });
 
