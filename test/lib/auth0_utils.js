@@ -66,7 +66,7 @@ function testCreateError(props, done) {
   var tester = Object.assign({}, TEST_USER);
   var key;
   for (key in props) {
-    if (VALID_USER_KEYS.includes(key)) {
+    if (VALID_USER_KEYS.indexOf(key) > 0) {
       tester[key] = props[key];
     }
   };

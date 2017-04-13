@@ -68,7 +68,6 @@ describe('Reports', function() {
             data.post_pacer
           ));
         }).on('end', function() {
-          console.log(results);
           done();
         });
     });
