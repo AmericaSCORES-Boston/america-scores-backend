@@ -29,7 +29,7 @@ var TestRow = function(student_id, first_name, last_name, site_name, program_nam
 };
 
 // Reports testing block
-describe.only('Reports', function() {
+describe('Reports', function() {
   var results = [];
   before(function(done) {
     seed().then(function() {
