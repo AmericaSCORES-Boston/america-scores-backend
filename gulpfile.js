@@ -10,7 +10,7 @@ const seed = require('./lib/seed');
 const c = require('./lib/constants/utils');
 
 gulp.task('eslint', () => {
-  var stream = gulp.src(['**/*.js', '!node_modules/**', '!coverage/**'])
+  var stream = gulp.src(['**/*.js', '!node_modules/**', '!coverage/**', '!docs/**'])
   .pipe(eslint({
     quiet: true,
     globals: [

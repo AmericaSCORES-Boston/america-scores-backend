@@ -2,6 +2,7 @@
 
 const env = process.env.NODE_ENV || 'development';
 const config = require('./config/config.js')[env];
+const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -32,6 +33,11 @@ app.use(function(req, res, next) {
 app.get('/', function(req, res) {
   res.status(405);
   res.send('Route not implemented');
+});
+
+app.get('/docs', function(req, res) {
+  app.use(express.static('docs/apidoc'));
+  res.sendFile(path.join(__dirname, 'docs/apidoc/index.html'));
 });
 
 // Students
