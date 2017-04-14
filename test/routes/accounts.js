@@ -574,6 +574,9 @@ describe('Accounts', function() {
         params: {
           acct_id: ACCT_1.acct_id
         },
+        body: {
+          unknown: 'foobar'
+        },
         auth: {
           auth0_id: ADMIN_AUTH0_ID
         }

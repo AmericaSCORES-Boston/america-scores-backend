@@ -14,7 +14,7 @@ const query = utils.query;
 
 describe('seed utils', function() {
   /* eslint-disable no-invalid-this */
-  this.timeout(30000);
+  this.timeout(15000);
   /* eslint-enable no-invalid-this */
   const TEST_STUDENT_COUNT = 4;
   const TEST_SITE_COUNT = 11;
@@ -170,6 +170,9 @@ describe('seed utils', function() {
   });
 
   describe('auth0Seed(type, accts)', function(done) {
+    /* eslint-disable no-invalid-this */
+    this.timeout(30000);
+    /* eslint-enable no-invalid-this */
     const TEST_AUTH0_FIRST = 'Foo';
     const DEMO_AUTH0_FIRST = 'Bar';
     const DEMO_ACCT_1 = s.DEMO_ACCTS[0];
@@ -181,7 +184,7 @@ describe('seed utils', function() {
             done();
           });
         });
-      }, 10000);
+      }, 5000);
     });
 
     after(function(done) {
@@ -202,25 +205,29 @@ describe('seed utils', function() {
 
     it('it defaults to seeding auth0 with the test acct data when no type/accts are specified', function(done) {
       seed.auth0Seed().then(function() {
-        auth0.getAuth0User(s.ACCT_1.auth0_id).then(function(acct) {
-          assert.equal(acct.user_metadata.first_name, s.ACCT_1.first_name);
-          auth0.getAuth0User(DEMO_ACCT_1.auth0_id).then(function(acct) {
-            assert.equal(acct.user_metadata.first_name, DEMO_AUTH0_FIRST);
-            done();
+        setTimeout(function() {
+          auth0.getAuth0User(s.ACCT_1.auth0_id).then(function(acct) {
+            assert.equal(acct.user_metadata.first_name, s.ACCT_1.first_name);
+            auth0.getAuth0User(DEMO_ACCT_1.auth0_id).then(function(acct) {
+              assert.equal(acct.user_metadata.first_name, DEMO_AUTH0_FIRST);
+              done();
+            });
           });
-        });
+        }, 10000);
       });
     });
 
     it('it defaults to seeding auth0 with the demo acct data when no accts are specified but the type is demo', function(done) {
       seed.auth0Seed(c.DEMO).then(function() {
-        auth0.getAuth0User(DEMO_ACCT_1.auth0_id).then(function(acct) {
-          assert.equal(acct.user_metadata.first_name, DEMO_ACCT_1.first_name);
-          auth0.getAuth0User(s.ACCT_1.auth0_id).then(function(acct) {
-            assert.equal(acct.user_metadata.first_name, TEST_AUTH0_FIRST);
-            done();
+        setTimeout(function() {
+          auth0.getAuth0User(DEMO_ACCT_1.auth0_id).then(function(acct) {
+            assert.equal(acct.user_metadata.first_name, DEMO_ACCT_1.first_name);
+            auth0.getAuth0User(s.ACCT_1.auth0_id).then(function(acct) {
+              assert.equal(acct.user_metadata.first_name, TEST_AUTH0_FIRST);
+              done();
+            });
           });
-        });
+        }, 10000);
       });
     });
 
