@@ -569,6 +569,32 @@ describe('Accounts', function() {
       });
     });
 
+    it('it should 400 because there is an unrecognized update key in the body', function(done) {
+      accounts.updateAccount({
+        params: {
+          acct_id: ACCT_1.acct_id
+        },
+        body: {
+          unknown: 'foobar'
+        },
+        auth: {
+          auth0_id: ADMIN_AUTH0_ID
+        }
+      }).catch(function(err) {
+        assertEqualError(err, 'UnsupportedRequest', 501,
+          'The API does not support a request of this format. ' +
+          ' See the documentation for a list of options.');
+        auth0.getAuth0Id(ACCT_1.acct_id).then(function(auth0Id) {
+          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+            // check that the auth0 account did not get updated
+            assertEqualAuth0DB(auth0Acct, ACCT_1);
+            verifyNoAccountChanges(done);
+          });
+        });
+      });
+    });
+
+
     it('should not update if request is missing params section', function(done) {
       accounts.updateAccount({
         body: {
