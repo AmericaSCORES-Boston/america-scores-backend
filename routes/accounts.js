@@ -137,7 +137,7 @@ function updateAccount(req) {
 
       for (var i = 0; i < bodyKeys.length; i++) {
         bodyKey = bodyKeys[i];
-        if (UPDATE_KEYS.includes(bodyKey)) {
+        if (UPDATE_KEYS.indexOf(bodyKey) >= 0) {
           bodyValue = body[bodyKey];
           // Add to the query statement for our database
           setStatement += bodyKey + '="' + bodyValue + '",';
@@ -165,11 +165,18 @@ function updateAccount(req) {
           return auth0.updateAuth0User(auth0Id, updatedBody).then(function() {
             return query(ACCOUNT_BY_ID, [account_id]);
           }).catch(function(err) {
+            return utils.rollback(err,
+              'Encountered an error trying to update account ' + account_id + '. Rolling back.',
+              function() {
+                return query(UPDATE_ACCT_ALL, rollbackData);
+              });
+            /*
             console.log('Encountered an error trying to update account ' + account_id + '. Rolling back.');
             console.log(err.toString());
             return query(UPDATE_ACCT_ALL, rollbackData).then(function() {
               return errors.create500();
             });
+            */
           });
         });
       });
@@ -213,7 +220,7 @@ function createAccount(req) {
   var password = req.body.password;
 
   // if given an invalid account type, throw a 400
-  if (!ACCOUNT_TYPES.includes(acct_type)) {
+  if (ACCOUNT_TYPES.indexOf(acct_type) < 0) {
     return errors.create400({
       message: 'Account type must be one of: Admin, Coach, Staff, Volunteer'
     });
@@ -232,11 +239,18 @@ function createAccount(req) {
     return query(CREATE_ACCT, [first_name, last_name, email, acct_type, auth0_id])
       .catch(function(err) {
       // if there's an error adding to our database, rollback by deleting the auth0 user
+      return utils.rollback(err,
+        'Encountered an error trying to create account. Rolling back.',
+        function() {
+          return auth0.deleteAuth0User(auth0_id);
+        });
+      /*
       console.log('Encountered an error trying to create account. Rolling back.');
       console.log(err.toString());
       return auth0.deleteAuth0User(auth0_id).finally(function() {
         return errors.create500();
       });
+      */
     });
   });
 }
@@ -264,9 +278,16 @@ function deleteAccount(req) {
       // now, delete from auth0
       return auth0.deleteAuth0User(acct.auth0_id).catch(function(err) {
         // if there's an error deleting the auth0 user, rollback by adding back to our database
+        return utils.rollback(err,
+          'Encountered an error trying to delete account. Rolling back.',
+          function() {
+            return query(CREATE_ACCT, [acct.first_name, acct.last_name, acct.email, acct.acct_type, acct.auth0_id]);
+          });
+        /*
         console.log('Encountered an error trying to delete account. Rolling back.');
         console.log(err.toString());
         return query(CREATE_ACCT, [acct.first_name, acct.last_name, acct.email, acct.acct_type, acct.auth0_id]);
+        */
       });
     });
   });

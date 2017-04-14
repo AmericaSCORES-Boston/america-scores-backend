@@ -5,10 +5,13 @@ const chai = require('chai');
 const sinon = require('sinon');
 const assert = chai.assert;
 
+const seed = require('../../lib/seed').testSeed;
 const utils = require('../../lib/utils');
 const q = require('../../lib/constants/queries');
 const a = require('../../lib/constants/auth0');
 const c = require('../../lib/constants/utils');
+
+const assertEqualError = require('../../lib/test_utils').assertEqualError;
 
 const res = {
   send: function(data) {},
@@ -16,6 +19,15 @@ const res = {
 };
 
 describe('utils', function() {
+  before(function(done) {
+    /* eslint-disable no-invalid-this */
+    this.timeout(20000);
+    /* eslint-enable no-invalid-this */
+    seed().then(function() {
+      done();
+    });
+  });
+
   describe('makeResponse(res, promise)', function() {
     var resSendSpy;
     var resStatusSpy;
@@ -294,6 +306,15 @@ describe('utils', function() {
     });
   });
 
+  describe('getJSDate(dateString)', function() {
+    it('makes a javascript date object from a sql date string', function() {
+      var createdDate = utils.getJSDate('2017-02-01');
+      assert.equal(createdDate.getFullYear(), 2017);
+      assert.equal(createdDate.getMonth(), 1);
+      assert.equal(createdDate.getDate(), 1);
+    });
+  });
+
   describe('getSeasonId(dateString)', function() {
     after(function(done) {
       utils.query(q.DELETE_SEASON_BY_ID, [4]).then(function() {
@@ -320,6 +341,21 @@ describe('utils', function() {
           assert.equal(seasons[3].year, 2010);
           done();
         });
+      });
+    });
+  });
+
+  describe('rollback(err, logMsg, rollbackFunction)', function() {
+    it('performs the rollbackFunction and returns a 500 error', function(done) {
+      var mutable = {foo: 'bar'};
+      utils.rollback('error', 'log', function() {
+        mutable.foo = 'baz';
+        return Promise.resolve();
+      }).catch(function(err) {
+        assertEqualError(err, 'Internal Server Error', 500,
+          'The server encountered an unexpected condition which prevented it from fulfilling the request');
+        assert.equal(mutable.foo, 'baz');
+        done();
       });
     });
   });

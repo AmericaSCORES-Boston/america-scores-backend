@@ -12,6 +12,7 @@ const programs = require('../routes/programs');
 const seasons = require('../routes/seasons');
 const events = require('../routes/events');
 const stats = require('../routes/stats');
+const reports = require('../routes/reports');
 
 describe('app.js', function() {
   var app;
@@ -705,6 +706,30 @@ describe('app.js', function() {
         .expect('uploaded the BMI stats', 200)
         .end(function() {
           assert.isTrue(uploadBMIStatsStub.called);
+          done();
+        });
+    });
+  });
+
+  describe('reports endpoint', function() {
+    var getReportStub;
+
+    before(function() {
+      getReportStub = sinon.stub(reports, 'getReport', function() {
+        return Promise.resolve('got the report');
+      });
+    });
+
+    after(function() {
+      reports.getReport.restore();
+    });
+
+    it('GET /reports', function(done) {
+      request(app)
+        .get('/reports')
+        .expect('got the report', 200)
+        .end(function() {
+          assert.isTrue(getReportStub.called);
           done();
         });
     });

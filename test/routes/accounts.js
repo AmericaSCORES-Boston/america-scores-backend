@@ -5,6 +5,7 @@ const assert = chai.assert;
 const Promise = require('bluebird');
 
 const accounts = require('../../routes/accounts');
+const seed = require('../../lib/seed').testSeed;
 const utils = require('../../lib/utils');
 
 const constants = require('../../lib/constants/utils');
@@ -20,10 +21,11 @@ const COACH_AUTH0_ID = A0_CONST.COACH_AUTH0_ID;
 const VOLUNTEER_AUTH0_ID = A0_CONST.VOLUNTEER_AUTH0_ID;
 
 const query = utils.query;
+const q = require('../../lib/constants/queries');
 
 const auth0 = require('../../lib/auth0_utils');
 const SC = require('../../lib/constants/seed');
-const ACCTS = SC.ACCTS;
+const ACCTS = SC.TEST_ACCTS;
 const ACCT_1 = SC.ACCT_1;
 const ACCT_2 = SC.ACCT_2;
 const ACCT_3 = SC.ACCT_3;
@@ -33,7 +35,6 @@ const ACCT_6 = SC.ACCT_6;
 const ACCT_7 = SC.ACCT_7;
 const ACCT_8 = SC.ACCT_8;
 const ACCT_9 = SC.ACCT_9;
-const auth0Seed = require('../../lib/seed').auth0Seed;
 
 const testUtils = require('../../lib/test_utils');
 const assertEqualAuth0DB = testUtils.assertEqualAuth0DBAcct;
@@ -59,7 +60,7 @@ const UPDATED_ACCT_TYPE = COACH;
 
 function getAllAccounts() {
   // Get contents of Accounts table in DB, used for asserts
-  return query('SELECT acct_id, first_name, last_name, email, acct_type, auth0_id FROM Acct');
+  return query(q.SELECT_ACCT);
 }
 
 function verifyNoAccountChanges(done) {
@@ -225,11 +226,8 @@ describe('Accounts', function() {
     this.timeout(20000);
     /* eslint-enable no-invalid-this */
 
-    // Acct table
-    getAllAccounts().then(function(data) {
-      auth0Seed(ACCTS).then(function() {
-        done();
-      });
+    seed().then(function() {
+      done();
     });
   });
 
@@ -570,6 +568,32 @@ describe('Accounts', function() {
         });
       });
     });
+
+    it('it should 400 because there is an unrecognized update key in the body', function(done) {
+      accounts.updateAccount({
+        params: {
+          acct_id: ACCT_1.acct_id
+        },
+        body: {
+          unknown: 'foobar'
+        },
+        auth: {
+          auth0_id: ADMIN_AUTH0_ID
+        }
+      }).catch(function(err) {
+        assertEqualError(err, 'UnsupportedRequest', 501,
+          'The API does not support a request of this format. ' +
+          ' See the documentation for a list of options.');
+        auth0.getAuth0Id(ACCT_1.acct_id).then(function(auth0Id) {
+          auth0.getAuth0User(auth0Id).then(function(auth0Acct) {
+            // check that the auth0 account did not get updated
+            assertEqualAuth0DB(auth0Acct, ACCT_1);
+            verifyNoAccountChanges(done);
+          });
+        });
+      });
+    });
+
 
     it('should not update if request is missing params section', function(done) {
       accounts.updateAccount({

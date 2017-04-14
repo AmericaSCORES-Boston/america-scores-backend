@@ -7,6 +7,7 @@ const getSqlConnection = require('./config/connection').getSqlConnection;
 const yargs = require('yargs');
 const mocha = require('gulp-mocha');
 const seed = require('./lib/seed');
+const c = require('./lib/constants/utils');
 
 gulp.task('eslint', () => {
   var stream = gulp.src(['**/*.js', '!node_modules/**', '!coverage/**'])
@@ -49,13 +50,15 @@ gulp.task('test', () => {
 });
 
 gulp.task('seed', () => {
-  return seed.seed();
-});
+  var seedType = yargs.argv.demo ? c.DEMO : c.TEST;
 
-gulp.task('demoSeed', () => {
-  seed.dbDemoSeed();
-});
-
-gulp.task('reportSeed', () => {
-  seed.dbReportSeed();
+  if (yargs.argv.auth0) {
+    if (seedType == c.DEMO) {
+      return seed.demoSeed();
+    } else {
+      return seed.testSeed();
+    }
+  } else {
+    return seed.dbSeed(seedType);
+  }
 });

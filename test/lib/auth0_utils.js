@@ -4,6 +4,7 @@ const chai = require('chai');
 const assert = chai.assert;
 const Promise = require('bluebird');
 
+const seed = require('../../lib/seed').testSeed;
 const auth0 = require('../../lib/auth0_utils');
 const testUtils = require('../../lib/test_utils');
 const assertEqualError = testUtils.assertEqualError;
@@ -65,7 +66,7 @@ function testCreateError(props, done) {
   var tester = Object.assign({}, TEST_USER);
   var key;
   for (key in props) {
-    if (VALID_USER_KEYS.includes(key)) {
+    if (VALID_USER_KEYS.indexOf(key) > 0) {
       tester[key] = props[key];
     }
   };
@@ -111,11 +112,16 @@ function testUpdateAuth0Error(auth0Id, updates, done) {
 }
 
 describe('Auth0 Utils', function() {
+  /* eslint-disable no-invalid-this */
+  this.timeout(15000);
+  /* eslint-enable no-invalid-this */
   before(function(done) {
-    Promise.each(EMAILS, function(email) {
-      return deleteUserIfExists(email);
-    }).then(function() {
-      done();
+    seed().then(function() {
+      Promise.each(EMAILS, function(email) {
+        return deleteUserIfExists(email);
+      }).then(function() {
+        done();
+      });
     });
   });
 
@@ -240,9 +246,6 @@ describe('Auth0 Utils', function() {
     var createdAuth0Id;
 
     before(function(done) {
-      /* eslint-disable no-invalid-this */
-      this.timeout(15000);
-      /* eslint-enable no-invalid-this */
       Promise.each(EMAILS, function(email) {
         return deleteUserIfExists(email);
       }).then(function() {

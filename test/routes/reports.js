@@ -1,35 +1,113 @@
-// Require the testing dependencies
+'use strict';
+
 var chai = require('chai');
 var assert = chai.assert;
+var csv = require('fast-csv');
 
-// Require seed to reset database before each test
-const reportSeed = require('../../lib/seed').dbReportSeed;
+const reports = require('../../routes/reports');
+const seed = require('../../lib/seed').demoSeed;
+const c = require('../../lib/constants/utils');
+const ReportRowFromCSV = require('../../lib/models/report_row').ReportRowFromCSV;
+const assertEqualError = require('../../lib/test_utils').assertEqualError;
 
-// The file to be tested
-var reports = require('../../routes/reports');
+function assertEqualReportRows(rows, expected) {
+  assert.lengthOf(rows, expected.length);
+  rows.forEach(function(row, i) {
+    assertEqualReportRow(row, expected[i]);
+  });
+}
 
+function assertEqualReportRow(row, expected) {
+  assert.equal(row.student_id, expected.student_id);
+  assert.equal(row.first_name, expected.first_name);
+  assert.equal(row.last_name, expected.last_name);
+  assert.equal(row.site_name, expected.site_name);
+  assert.equal(row.program_name, expected.program_name);
+  if (row.pre_date === null) {
+    assert.isNull(expected.pre_date);
+  } else {
+    assert.equal(row.pre_date.getFullYear(), expected.pre_date.getFullYear());
+    assert.equal(row.pre_date.getMonth(), expected.pre_date.getMonth());
+    assert.equal(row.pre_date.getDate(), expected.pre_date.getDate());
+  }
+  assert.equal(row.pre_height, expected.pre_height);
+  assert.equal(row.pre_weight, expected.pre_weight);
+  assert.equal(row.pre_pacer, expected.pre_pacer);
+  if (row.post_date === null) {
+    assert.isNull(expected.post_date);
+  } else {
+    assert.equal(row.post_date.getFullYear(), expected.post_date.getFullYear());
+    assert.equal(row.post_date.getMonth(), expected.post_date.getMonth());
+    assert.equal(row.post_date.getDate(), expected.post_date.getDate());
+  }
+  assert.equal(row.post_height, expected.post_height);
+  assert.equal(row.post_weight, expected.post_weight);
+  assert.equal(row.post_pacer, expected.post_pacer);
+}
 
-// Reports testing block
 describe('Reports', function() {
-  beforeEach(function() {
-    return reportSeed();
+  var results = [];
+  before(function(done) {
+    seed().then(function() {
+      csv
+        .fromPath('test/test_report.csv', {headers: true})
+        .on('data', function(data) {
+          results.push(new ReportRowFromCSV(
+            data.student_id,
+            data.first_name,
+            data.last_name,
+            data.site_name,
+            data.program_name,
+            data.pre_date,
+            data.pre_height,
+            data.pre_weight,
+            data.pre_pacer,
+            data.post_date,
+            data.post_height,
+            data.post_weight,
+            data.post_pacer
+          ));
+        }).on('end', function() {
+          done();
+        });
+    });
   });
 
-  describe('getReports()', function() {
-    xit('should successfully generate a CSV report of all students and their stats', function(done) {
-      // NOTE: the third column is intentionally left empty, as per request from Alicia
-      var expectedCSV = {
-        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
-        'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
-        'POST-Weight (lbs), POST-PACER Score\n' +
-        'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, 50, 08/19/2016, 45, 18, 421\n' +
-        'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
-        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 05/19/2016, 7, 7, 7\n'
-      };
-      var promise = reports.getReports({});
+  describe('getReport(req)', function() {
+    it('it should return all of the pre/post season stats for the given season', function(done) {
+      reports.getReport({
+        query: {
+          season: c.SPRING,
+          year: 2017
+        }
+      }).then(function(rows) {
+        assertEqualReportRows(rows, results);
+        done();
+      });
+    });
 
-      promise.then(function(data) {
-        assert.deepEqual(data, expectedCSV);
+    it('it should 404 when the requested season is not found in the database', function(done) {
+      reports.getReport({
+        query: {
+          season: c.FALL,
+          year: 2015
+        }
+      }).catch(function(err) {
+        assertEqualError(err, 'Season Not Found', 404,
+          'The requested season (' + c.FALL + ' 2015) does not exist in the database');
+        done();
+      });
+    });
+
+    it('it should 400 when the required query components are not included in the request', function(done) {
+      reports.getReport({
+        query: {
+          season: c.SPRING
+        }
+      }).catch(function(err) {
+        assertEqualError(err, 'Missing Field', 400,
+          'Request must have the following component(s): ' +
+          'year (query)');
         done();
       });
     });
@@ -37,49 +115,7 @@ describe('Reports', function() {
 
   describe('getReportByProgram(req)', function() {
     xit('should successfully generate a CSV report of students and their stats', function(done) {
-        // NOTE: the third column is intentionally left empty, as per request from Alicia
-      var expectedCSV = {
-        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
-        'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
-        'POST-Weight (lbs), POST-PACER Score\n' +
-        'Brian Smith, LMElementaryBoys, , 05/18/2016, 44, 16, 500, 08/19/2016, 45, 18, 421\n'
-      };
-
-      var req = {
-        params: {
-          program_id: 1
-        }
-      };
-
-      var promise = reports.getReportByProgram(req);
-
-      promise.then(function(data) {
-        assert.deepEqual(data, expectedCSV);
-        done();
-      });
-    });
-
-    xit('should successfully generate a CSV report of students and their stats 2', function(done) {
-      var expectedCSV = {
-        report: 'Player: Player Name, Data Entry Group: Data Entry Group Name, Player Data ID, PRE-Measurement Date, ' +
-        'PRE-Height (in), PRE-Weight (lbs), PRE-PACER Score, POST-Measurement Date, POST-Height (in), ' +
-        'POST-Weight (lbs), POST-PACER Score\n' +
-        'Annabeth Chase, YawkeyGirls, , 05/18/2016, 71, 17, 57, 08/19/2016, 40, 12, 500\n' +
-        'Percy Jackson, YawkeyGirls, , 05/18/2016, 5, 5, 5, 05/19/2016, 7, 7, 7\n'
-      };
-
-      var req = {
-        params: {
-          program_id: 2
-        }
-      };
-
-      var promise = reports.getReportByProgram(req);
-
-      promise.then(function(data) {
-        assert.deepEqual(data, expectedCSV);
-        done();
-      });
+      done();
     });
 
     xit('should return error if given program_id is not an int', function(done) {

@@ -108,24 +108,27 @@ var hazel = {
 // Students testing block
 describe('Students', function() {
   // ADD BEFORE EACH TO reseed
-  beforeEach(function() {
-    return seed();
+  beforeEach(function(done) {
+    seed().then(function() {
+      done();
+    });
   });
 
   // Get the original state of the database
-  before(function() {
-    getAllStudents()
-    .then(function(data) {
-      // Remember the Student table
-      oldDB = data;
-      studentCount = data.length;
-
-      return query('SELECT * FROM StudentToProgram');
-    })
-    .then(function(data) {
-      // Remember the StudentToProgram table
-      oldPrograms = data;
-      programMatchCount = data.length;
+  before(function(done) {
+    seed().then(function() {
+      getAllStudents().then(function(data) {
+        // Remember the Student table
+        oldDB = data;
+        studentCount = data.length;
+        return query('SELECT * FROM StudentToProgram');
+      })
+      .then(function(data) {
+        // Remember the StudentToProgram table
+        oldPrograms = data;
+        programMatchCount = data.length;
+        done();
+      });
     });
   });
 
