@@ -38,6 +38,12 @@ describe('app.js', function() {
       .expect(404, done);
   });
 
+  it('generates the docs', function(done) {
+    request(app)
+      .get('/docs')
+      .expect(200, done);
+  });
+
   describe('students endpoint', function() {
     var getStudentsStub;
     var getStudentStub;
