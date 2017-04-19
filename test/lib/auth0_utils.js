@@ -10,7 +10,7 @@ const testUtils = require('../../lib/test_utils');
 const assertEqualError = testUtils.assertEqualError;
 const assertEqualAuth0DB = testUtils.assertEqualAuth0DBAcct;
 
-const EXISTING_USERNAME = 'test1';
+const EXISTING_USERNAME = 'asb_test_user_1';
 const ACCT = Object.assign({username: EXISTING_USERNAME}, require('../../lib/constants/seed').ACCT_1);
 const AUTH0_ID = ACCT.auth0_id;
 
