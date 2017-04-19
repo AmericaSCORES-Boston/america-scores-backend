@@ -11,6 +11,8 @@ const q = require('../../lib/constants/queries');
 const a = require('../../lib/constants/auth0');
 const c = require('../../lib/constants/utils');
 
+const AUTH0_ID = a.ACCT1_AUTH0_ID;
+
 const assertEqualError = require('../../lib/test_utils').assertEqualError;
 
 const res = {
@@ -147,7 +149,7 @@ describe('utils', function() {
 
   describe('getAccountID()', function() {
     it('gets the account id for a auth0_id', function(done) {
-      utils.getAccountID('auth0|584377c428be27504a2bcf92').then(function(data) {
+      utils.getAccountID(AUTH0_ID).then(function(data) {
         assert.equal(data, 1);
         done();
       });
