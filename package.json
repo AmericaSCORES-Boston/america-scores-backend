@@ -17,13 +17,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/CS4500-AmericaSCORES/america-scores-backend"
+    "url": "https://github.com/CS4500-AmericaSCOfRES/america-scores-backend"
   },
   "author": "",
   "license": "ISC",
   "apidoc": {
-      "title": "America SCORES Boston API",
-      "url": "http://52.54.56.68/api"
+    "title": "America SCORES Boston API",
+    "url": "http://52.54.56.68/api"
   },
   "dependencies": {
     "auth0": "^2.5.0",

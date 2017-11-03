@@ -81,11 +81,10 @@ function getStat(req) {
 function uploadPacerStats(req) {
   var event_id = req.params.event_id;
   var field = 'event_id';
-
+  console.log('uploadPacerStats');
   if (!isPositiveInteger(event_id)) {
     return createInvalidArgumentError(event_id, field);
   }
-
   return events.getEvent(req).then(function(data) {
     if (data.length === 0) {
       return createArgumentNotFoundError(event_id, field);
@@ -102,13 +101,17 @@ function uploadPacerStats(req) {
     }
 
     var statsList = req.body.stats;
-
+    console.log("yeh kya hai");
+    console.log(statsList);
     return Promise.map(statsList, (measurement) => {
+      console.log(measurement);
       if(!defined(measurement.student_id)) {
         // TODO: Missing student_id for this stat, can't insert
+          console.log('1 Student_id doesnt exist');
       }
       if(!isPositiveInteger(measurement.student_id)) {
         // TODO: Invalid student_id, can't insert.
+          console.log('2 Student_id doesnt exist');
       }
       return students.getStudent({
         params: {
@@ -116,17 +119,23 @@ function uploadPacerStats(req) {
         }
       })
       .then(function(data) {
+        console.log('trying to save')
         if (data.length === 0) {
           // TODO: Student_id doesn't exist. Can't add due to referential integrity
+            console.log('3 Student_id doesnt exist');
         }
         // Check if stat already exists (search by student_id + event_id)
         return query('SELECT * FROM Measurement WHERE student_id=? AND event_id=?', [measurement.student_id, event_id])
           .then(function(data) {
-            if (!defined(measurement.pacer) || !isPositiveInteger(measurement.pacer)) {
+            if (!defined(measurement.pacerLevel) || !isPositiveInteger(measurement.pacerLevel)) {
+              console.log(measurement)
+                console.log(measurement.pacerLevel)
               // TODO: PACER data is invalid. Can't insert.
+                console.log('PACER data is invalid. Cant insert.');
             }
             if (data.length === 0) {
-              return query('INSERT INTO Measurement (student_id, event_id, pacer) VALUES (?, ?, ?)', [measurement.student_id, event_id, measurement.pacer]);
+              console.log('saving sucesss')
+              return query('INSERT INTO Measurement (student_id, event_id, pacer) VALUES (?, ?, ?)', [measurement.student_id, event_id, measurement.pacerLevel]);
             }
             return query('UPDATE Measurement SET pacer = ? WHERE student_id = ? AND event_id = ?', [measurement.pacer, measurement.student_id, event_id]);
           });

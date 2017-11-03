@@ -41,24 +41,35 @@ const CREATE_EVENT_REQS = [
 ];
 
 function createEvent(req) {
+  console.log('done today');
+  console.log(req.params);
+  console.log(req.body);
   var missingReqs = utils.findMissingRequirements(req, CREATE_EVENT_REQS);
 
   if (missingReqs.length !== 0) {
+    console.log('MissingReqs.length !== 0')
     return errors.createMissingFieldError(missingReqs);
   }
   var program_id = req.params.program_id;
   var event_date = req.body.event_date;
 
   if (!isValidDate(event_date)) {
+      console.log('isValidDate(event_date)')
     return createMalformedDateError();
   }
-
+  console.log(program_id);
+  console.log(event_date);
   var pre_season = autoParse(req.body.pre_season, Boolean);
-
+  console.log(pre_season);
+  console.log('ecexuting getSeasonId');
   return utils.getSeasonId(event_date).then(function(season_id) {
+    console.log('season_id')
+    console.log(season_id)
     return query('SELECT * FROM Program WHERE program_id = ?', [program_id]).then(function(data) {
+      console.log(data);
       if (data.length == 1 && data[0].program_id == program_id) {
         return query(q.INSERT_EVENT, [program_id, season_id, event_date, pre_season]).then(function(data) {
+          console.log(data)
           return query('SELECT * FROM Event WHERE event_id = ?', [data.insertId]);
         });
       }
