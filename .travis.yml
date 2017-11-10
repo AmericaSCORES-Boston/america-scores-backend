@@ -10,7 +10,7 @@ script:
   - mysql -u travis america_scores < database/dbcreate.sql
   - ./scripts/travis-config.sh
   - npm run eslint -- --failTaskOnError
-  - npm run build-test -- --auth0 --failTaskOnError
+ # - npm run build-test -- --auth0 --failTaskOnError
 
 services:
   - mysql
