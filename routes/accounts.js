@@ -261,6 +261,7 @@ function createAccount(req) {
 
 const DELETE_REQS = [new Requirement('params', 'account_id')];
 const DELETE_ACCT = 'DELETE FROM Acct WHERE acct_id = ?';
+
 function deleteAccount(req) {
   var missingReqs = utils.findMissingRequirements(req, DELETE_REQS);
   if (missingReqs.length !== 0) {
@@ -277,7 +278,11 @@ function deleteAccount(req) {
       });
     }
     var acct = accts[0];
+
     // delete from our database
+    //   return query(DELETE_ACCT, [acct_id]);
+
+      // open this code when you have auth id associated with account
     return query(DELETE_ACCT, [acct_id]).then(function() {
       // now, delete from auth0
       return auth0.deleteAuth0User(acct.auth0_id).catch(function(err) {
@@ -287,11 +292,6 @@ function deleteAccount(req) {
           function() {
             return query(CREATE_ACCT, [acct.first_name, acct.last_name, acct.email, acct.acct_type, acct.auth0_id]);
           });
-        /*
-        console.log('Encountered an error trying to delete account. Rolling back.');
-        console.log(err.toString());
-        return query(CREATE_ACCT, [acct.first_name, acct.last_name, acct.email, acct.acct_type, acct.auth0_id]);
-        */
       });
     });
   });

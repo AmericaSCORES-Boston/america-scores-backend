@@ -178,6 +178,7 @@ function createStudent(req) {
     defined(req.body.dob) && defined(req.params) && defined(req.params.program_id)) {
       // Ensure that the given birthdate is valid
       if (!isValidDate(req.body.dob)) {
+        console.log(req.body.dob)
         return createInvalidArgumentError(req.body.dob, 'dob',
         'Failed due to invalid birthdate. Try yyyy-mm-dd.');
       }

@@ -31,6 +31,12 @@ function getReport(req) {
       });
     }
     var seasonId = seasons[0].season_id;
+    console.log('printing sesaons array')
+      console.log(seasons)
+      console.log('printing query')
+      console.log(q.SEASON_RESULTS_SUBQUERY)
+      console.log('season report')
+      console.log(q.SELECT_SEASON_REPORT)
     return query(q.SELECT_SEASON_REPORT, [seasonId, seasonId, seasonId, seasonId]);
   });
 }
