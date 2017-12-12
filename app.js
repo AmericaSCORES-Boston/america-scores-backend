@@ -61,8 +61,8 @@ app.use(jwtCheck);
 // If we do not get the correct credentials, we’ll return an appropriate message
 app.use(function(err, req, res, next) {
     console.log('jwtcheck')
-    console.log(req.headers)
-    console.log('error is')
+/*    console.log(req.headers)
+    console.log('error is')*/
     console.log(err)
     if (err.name === 'UnauthorizedError') {
         res.status(401).json({message: 'UnAuthorized Access'});
