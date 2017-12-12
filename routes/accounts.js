@@ -203,7 +203,7 @@ const CREATE_ACCT = 'INSERT INTO Acct ' +
 
 function createAccount(req) {
   console.log('backend');
-  req.body.acct_type = 'Coach'
+  console.log(req.body)
     var missingReqs = utils.findMissingRequirements(req, CREATE_REQS);
   if (missingReqs.length !== 0) {
     return errors.createMissingFieldError(missingReqs);
@@ -222,7 +222,7 @@ function createAccount(req) {
   var password = req.body.password;
   console.log(acct_type)
   // if given an invalid account type, throw a 400
-  if (ACCOUNT_TYPES.indexOf(acct_type) < 0) {x
+  if (ACCOUNT_TYPES.indexOf(acct_type) < 0) {
     return errors.create400({
       message: 'Account type must be one of: Admin, Coach, Staff, Volunteer'
     });
@@ -279,8 +279,8 @@ function deleteAccount(req) {
     }
     var acct = accts[0];
 
-    // delete from our database
-    //   return query(DELETE_ACCT, [acct_id]);
+    // delete from our database -- bhupendra
+      //return query(DELETE_ACCT, [acct_id]);
 
       // open this code when you have auth id associated with account
     return query(DELETE_ACCT, [acct_id]).then(function() {

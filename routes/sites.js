@@ -92,7 +92,7 @@ function updateSite(req) {
 /**
  * Deletes a site with given id.
  *
- * @param {Object} req The given request object
+ * @param {Object} req The given request   object
  * @return {Promise} The promise
  */
 function deleteSite(req) {

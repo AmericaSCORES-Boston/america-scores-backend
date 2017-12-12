@@ -6,8 +6,12 @@ const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const jwt = require('express-jwt');
+// const rsaValidation = require('auth0-api-jwt-rsa-validation');
 const makeResponse = require('./lib/utils').makeResponse;
+const jwksRsa = require('jwks-rsa');
 const app = express();
+
 
 // Routes
 const students = require('./routes/students');
@@ -19,6 +23,28 @@ const stats = require('./routes/stats');
 const accounts = require('./routes/accounts');
 const reports = require('./routes/reports');
 
+var jwtCheck = jwt({
+    // secret: rsaValidation(),
+    // algorithms: ['RS256'],
+    // issuer: 'https://asbadmin.auth0.com/',
+    // audience: 'https://asbadmin.auth0.com/api/v2/'
+    // Dynamically provide a signing key
+    // based on the kid in the header and
+    // the signing keys provided by the JWKS endpoint.
+    secret: jwksRsa.expressJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 50,
+        jwksUri: 'https://asbadmin.auth0.com/.well-known/jwks.json'
+    }),
+
+    // Validate the audience and the issuer.
+    audience: 'https://asbadmin.auth0.com/api/v2/',
+    issuer: 'https://asbadmin.auth0.com/',
+    algorithms: ['RS256','HS256']
+});
+
+
 // parse application/json and look for raw text
 app.use(bodyParser.json({type: 'application/json'}));
 app.use(bodyParser.urlencoded({extended: true}));
@@ -28,6 +54,19 @@ app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
+});
+
+app.use(jwtCheck);
+
+// If we do not get the correct credentials, we’ll return an appropriate message
+app.use(function(err, req, res, next) {
+    console.log('jwtcheck')
+    console.log(req.headers)
+    console.log('error is')
+    console.log(err)
+    if (err.name === 'UnauthorizedError') {
+        res.status(401).json({message: 'UnAuthorized Access'});
+    }
 });
 
 app.get('/', function(req, res) {
@@ -47,7 +86,7 @@ app.route('/students')
   });
 
 app.route('/students/:student_id')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, students.getStudent(req));
   })
   .delete(function(req, res, next) {
@@ -58,12 +97,12 @@ app.route('/students/:student_id')
   });
 
 app.route('/students/:student_id/programs/:program_id')
-  .put(function(req, res, next) {
+  .put( function(req, res, next) {
     makeResponse(res, students.updateStudent(req));
   });
 
 app.route('/programs/:program_id/students')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, students.getStudentsByProgram(req));
   })
   .post(function(req, res, next) {
@@ -71,18 +110,18 @@ app.route('/programs/:program_id/students')
   });
 
 app.route('/sites/:site_id/students')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, students.getStudentsBySite(req));
   });
 
 app.route('/events/:event_id/students')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, students.getStudentsByEvent(req));
   });
 
 // Accounts
 app.route('/accounts')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, accounts.getAccounts(req));
   }).post(function(req, res, next) {
     makeResponse(res, accounts.createAccount(req));
@@ -98,7 +137,7 @@ app.route('/accounts/:account_id')
 
 // Sites
 app.route('/sites')
-  .get(function(req, res, next) {
+  .get(jwtCheck, function(req, res, next) {
     makeResponse(res, sites.getSites(req));
   })
   .post(function(req, res, next) {
@@ -106,12 +145,12 @@ app.route('/sites')
   });
 
 app.route('/accounts/:account_id/sites')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, sites.getSitesByAccount(req));
   });
 
 app.route('/sites/:site_id')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, sites.getSite(req));
   })
   .put(function(req, res, next) {
@@ -123,7 +162,7 @@ app.route('/sites/:site_id')
 
 // Programs
 app.route('/programs')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, programs.getPrograms(req));
   });
 
@@ -131,7 +170,7 @@ app.route('/programs/:program_id')
   .get(function(req, res, next) {
     makeResponse(res, programs.getProgram(req));
   })
-  .put(function(req, res, next) {
+  .put( function(req, res, next) {
     makeResponse(res, programs.updateProgram(req));
   })
   .delete(function(req, res, next) {
@@ -139,7 +178,7 @@ app.route('/programs/:program_id')
   });
 
 app.route('/sites/:site_id/programs')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, programs.getProgramsBySite(req));
   })
   .post(function(req, res, next) {
@@ -147,12 +186,12 @@ app.route('/sites/:site_id/programs')
   });
 
 app.route('/students/:student_id/programs')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, programs.getProgramsByStudent(req));
   });
 
 app.route('/accounts/:account_id/programs')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, programs.getProgramsByAccount(req));
   });
 
@@ -163,7 +202,7 @@ app.route('/events')
   });
 
 app.route('/events/:event_id')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, events.getEvent(req));
   })
   .delete(function(req, res, next) {
@@ -171,12 +210,12 @@ app.route('/events/:event_id')
   });
 
 app.route('/students/:student_id/events')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, events.getEventsByStudent(req));
   });
 
 app.route('/programs/:program_id/events')
-  .get(function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, events.getEventsByProgram(req));
   });
 
