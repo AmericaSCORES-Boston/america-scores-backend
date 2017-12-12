@@ -270,6 +270,9 @@ function createStudent(req) {
 }
 
 function updateStudent(req) {
+  console.log('came to add student');
+    console.log(req.params);
+    console.log(req.body);
   // Check that request has all necessary fields
   if (defined(req.params) && defined(req.params.student_id) && defined(req.body)) {
     // All required fields are present. Check that student_id is valid
