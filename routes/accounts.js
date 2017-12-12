@@ -202,8 +202,6 @@ const CREATE_ACCT = 'INSERT INTO Acct ' +
 
 
 function createAccount(req) {
-  console.log('backend');
-  console.log(req.body)
     var missingReqs = utils.findMissingRequirements(req, CREATE_REQS);
   if (missingReqs.length !== 0) {
     return errors.createMissingFieldError(missingReqs);
@@ -220,7 +218,6 @@ function createAccount(req) {
   var email = req.body.email;
   var acct_type = req.body.acct_type;
   var password = req.body.password;
-  console.log(acct_type)
   // if given an invalid account type, throw a 400
   if (ACCOUNT_TYPES.indexOf(acct_type) < 0) {
     return errors.create400({
@@ -233,12 +230,9 @@ function createAccount(req) {
       message: 'Password is too weak'
     });
   }
-    console.log('CALLINF createAuth0User-------------------------------------------');
   // first, create the auth0 user and get the id
   return auth0.createAuth0User(first_name, last_name, username, email, acct_type, password)
     .then(function(auth0_id) {
-      console.log('authid-------------------------------------------');
-      console.log(auth0_id);
     // then add the user to our database
     return query(CREATE_ACCT, [first_name, last_name, email, acct_type, auth0_id])
       .catch(function(err) {
