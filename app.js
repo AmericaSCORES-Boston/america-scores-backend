@@ -23,7 +23,7 @@ const stats = require('./routes/stats');
 const accounts = require('./routes/accounts');
 const reports = require('./routes/reports');
 
-var jwtCheck = jwt({
+/*var jwtCheck = jwt({
     // secret: rsaValidation(),
     // algorithms: ['RS256'],
     // issuer: 'https://asbadmin.auth0.com/',
@@ -42,7 +42,7 @@ var jwtCheck = jwt({
     audience: 'https://asbadmin.auth0.com/api/v2/',
     issuer: 'https://asbadmin.auth0.com/',
     algorithms: ['RS256','HS256']
-});
+});*/
 
 
 // parse application/json and look for raw text
@@ -56,10 +56,12 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(jwtCheck);
+//app.use(jwtCheck);
 
 // If we do not get the correct credentials, we’ll return an appropriate message
 app.use(function(err, req, res, next) {
+    console.log(req.headers)
+    console.log(req.body)
     console.log(err)
     if (err.name === 'UnauthorizedError') {
         res.status(401).json({message: 'UnAuthorized Access'});
@@ -134,7 +136,7 @@ app.route('/accounts/:account_id')
 
 // Sites
 app.route('/sites')
-  .get(jwtCheck, function(req, res, next) {
+  .get( function(req, res, next) {
     makeResponse(res, sites.getSites(req));
   })
   .post(function(req, res, next) {
