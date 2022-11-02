@@ -48,7 +48,7 @@
     "coveralls": "^2.11.15",
     "eslint": "^3.8.1",
     "eslint-config-google": "^0.7.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-eslint": "^3.0.1",
     "gulp-mocha": "^3.0.1",
     "istanbul": "^0.4.5",
